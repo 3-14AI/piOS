@@ -4,47 +4,40 @@
 
 ## WP-000 Инициализация Репозитория и Workspace
 **Описание:** Создание git-репозитория и настройка Rust workspace для управления множеством крейтов (ядро, библиотеки, пользовательские приложения).
-**Задачи:**
-- Инициализировать git repository.
-- Создать `.gitignore` (исключая `target/`, `.verus/` artifacts).
-- Настроить корневой `Cargo.toml` с `[workspace]`.
-- Определить профили сборки (`release`, `dev`, `verification`).
+
+- [ ] Инициализировать git repository.
+- [ ] Создать `.gitignore` (исключая `target/`, `.verus/` artifacts).
+- [ ] Настроить корневой `Cargo.toml` с `[workspace]`.
+- [ ] Определить профили сборки (`release`, `dev`, `verification`).
 
 ## WP-000.1 Дизайн Структуры Директорий
 **Описание:** Разработка логической структуры папок для разделения кода ядра (верифицированного), пользовательского пространства (WASM) и инструментов.
-**Предлагаемая структура:**
-```
-/
-├── kernel/             # Код микроядра (no_std, Verus)
-│   ├── src/
-│   │   ├── arch/       # Архитектурно-зависимый код (x86_64, aarch64)
-│   │   ├── memory/     # PMM, Mapper (WP-002, WP-004)
-│   │   ├── process/    # Scheduler, Threads (WP-007, WP-008)
-│   │   └── drivers/    # Встроенные драйверы (если есть)
-│   └── Cargo.toml
-├── userland/           # Пользовательские компоненты и драйверы (WASM)
-│   ├── drivers/        # VirtIO drivers (WP-016, WP-017)
-│   ├── services/       # VFS, Network stack (WP-020, WP-041)
-│   └── applications/   # Shell, GUI
-├── tools/              # Инструменты сборки и верификации
-│   ├── verus-runner/   # Скрипты для запуска верификации
-│   └── builder/        # Сборка образа диска
-├── libs/               # Общие библиотеки
-│   ├── pios-common/    # Типы и константы, общие для ядра и userland
-│   └── pios-api/       # API системных вызовов
-└── docs/               # Документация и спецификации
-```
+
+**Задачи по созданию структуры:**
+- [ ] `kernel/src/arch/` - Архитектурно-зависимый код (x86_64, aarch64)
+- [ ] `kernel/src/memory/` - PMM, Mapper (WP-002, WP-004)
+- [ ] `kernel/src/process/` - Scheduler, Threads (WP-007, WP-008)
+- [ ] `kernel/src/drivers/` - Встроенные драйверы (если есть)
+- [ ] `kernel/Cargo.toml` - Конфигурация крейта ядра
+- [ ] `userland/drivers/` - VirtIO drivers (WP-016, WP-017)
+- [ ] `userland/services/` - VFS, Network stack (WP-020, WP-041)
+- [ ] `userland/applications/` - Shell, GUI
+- [ ] `tools/verus-runner/` - Скрипты для запуска верификации
+- [ ] `tools/builder/` - Сборка образа диска
+- [ ] `libs/pios-common/` - Типы и константы, общие для ядра и userland
+- [ ] `libs/pios-api/` - API системных вызовов
+- [ ] `docs/` - Документация и спецификации
 
 ## WP-000.2 Настройка Окружения Разработки (Dev Environment)
 **Описание:** Подготовка воспроизводимой среды разработки, включающей Rust nightly, Verus, QEMU и инструменты для работы с WASM.
-**Задачи:**
-- Создать `Dockerfile` или `.devcontainer` для VS Code.
-- Установить зависимости: `qemu-system-x86_64`, `ovmf` (UEFI), `llvm-tools-preview`.
-- Настроить скрипты для автоматической установки Verus (или использовать pre-built binaries).
+
+- [ ] Создать `Dockerfile` или `.devcontainer` для VS Code.
+- [ ] Установить зависимости: `qemu-system-x86_64`, `ovmf` (UEFI), `llvm-tools-preview`.
+- [ ] Настроить скрипты для автоматической установки Verus (или использовать pre-built binaries).
 
 ## WP-000.3 Система Сборки и Запуска (Build System)
 **Описание:** Автоматизация процессов компиляции, создания загрузочного образа и запуска в эмуляторе.
-**Задачи:**
-- Настроить `cargo-make` или `justfile` для команд: `build-kernel`, `build-userland`, `run-qemu`, `verify`.
-- Интеграция с `bootloader` (или `uefi-rs`) для создания EFI-образа.
-- Настройка скриптов для конвертации Rust -> WASM компонентов.
+
+- [ ] Настроить `cargo-make` или `justfile` для команд: `build-kernel`, `build-userland`, `run-qemu`, `verify`.
+- [ ] Интеграция с `bootloader` (или `uefi-rs`) для создания EFI-образа.
+- [ ] Настройка скриптов для конвертации Rust -> WASM компонентов.
