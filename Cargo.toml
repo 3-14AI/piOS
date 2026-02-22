@@ -1,0 +1,16 @@
+[workspace]
+members = [
+    "kernel",
+    "libs/pios-common",
+    "libs/pios-api",
+    "tools/builder"
+]
+resolver = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+debug = true
