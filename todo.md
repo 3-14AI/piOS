@@ -4,10 +4,10 @@
 
 ## Фаза 0: Инициализация и Структура
 
-1.  **[Phase 0] WP-000: Инициализация Репозитория.** Инициализировать git repository, создать `.gitignore` (исключая артефакты), настроить корневой `Cargo.toml` с `[workspace]`, определить профили сборки.
-2.  **[Phase 0] WP-000.1: Структура Директорий.** Создать логическую структуру папок: `kernel` (arch, memory, process, drivers), `userland` (drivers, services, applications), `tools` (verus-runner, builder), `libs` (pios-common, pios-api), `docs`.
-3.  **[Phase 0] WP-000.2: Окружение Разработки.** Подготовить среду: создать `Dockerfile` или `.devcontainer`, установить зависимости (`qemu-system-x86_64`, `ovmf`, `llvm-tools-preview`), настроить скрипты для установки Verus.
-4.  **[Phase 0] WP-000.3: Система Сборки.** Настроить `cargo-make` или `justfile` для команд (build, run, verify), интегрировать `bootloader`/`uefi-rs` для создания EFI-образа, настроить скрипты конвертации Rust -> WASM.
+1.  **[x] [Phase 0] WP-000: Инициализация Репозитория.** Инициализировать git repository, создать `.gitignore` (исключая артефакты), настроить корневой `Cargo.toml` с `[workspace]`, определить профили сборки.
+2.  **[x] [Phase 0] WP-000.1: Структура Директорий.** Создать логическую структуру папок: `kernel` (arch, memory, process, drivers), `userland` (drivers, services, applications), `tools` (verus-runner, builder), `libs` (pios-common, pios-api), `docs`.
+3.  **[x] [Phase 0] WP-000.2: Окружение Разработки.** Подготовить среду: создать `Dockerfile` или `.devcontainer`, установить зависимости (`qemu-system-x86_64`, `ovmf`, `llvm-tools-preview`), настроить скрипты для установки Verus.
+4.  **[x] [Phase 0] WP-000.3: Система Сборки.** Настроить `cargo-make` или `justfile` для команд (build, run, verify), интегрировать `bootloader`/`uefi-rs` для создания EFI-образа, настроить скрипты конвертации Rust -> WASM.
 
 ## Фаза 1: Формально верифицированное микроядро
 
