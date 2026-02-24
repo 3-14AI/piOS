@@ -4,9 +4,24 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-uefi = "0.28.0"
+uefi = { version = "0.28.0", features = ["alloc"] }
 uefi-services = "0.25.0"
 log = "0.4.20"
+verus_builtin = { path = "../tools/verus/verus-x86-linux/builtin", optional = true }
+verus_builtin_macros = { path = "../tools/verus/verus-x86-linux/builtin_macros", optional = true }
+vstd = { path = "../tools/verus/verus-x86-linux/vstd", default-features = false, features = ["alloc"], optional = true }
+
+[lib]
+name = "kernel"
+path = "src/lib.rs"
+
+[[bin]]
+name = "kernel"
+path = "src/main.rs"
+
+[features]
+default = []
+verus = ["dep:verus_builtin", "dep:verus_builtin_macros", "dep:vstd"]
 
 [profile.dev]
 panic = "abort"
