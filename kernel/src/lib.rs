@@ -13,6 +13,9 @@ pub mod verifier;
 #[cfg(feature = "verus")]
 pub mod pmm;
 
+#[cfg(feature = "verus")]
+pub mod paging;
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
