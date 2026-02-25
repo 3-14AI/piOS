@@ -10,6 +10,9 @@ pub mod boot;
 #[cfg(feature = "verus")]
 pub mod verifier;
 
+#[cfg(feature = "verus")]
+pub mod pmm;
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
