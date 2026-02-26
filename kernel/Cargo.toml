@@ -9,6 +9,7 @@ uefi-services = "0.25.0"
 log = "0.4.20"
 verus_builtin = { path = "../tools/verus/verus-x86-linux/builtin", optional = true }
 verus_builtin_macros = { path = "../tools/verus/verus-x86-linux/builtin_macros", optional = true }
+verus_state_machines_macros = { path = "../tools/verus/verus-x86-linux/state_machines_macros", optional = true }
 vstd = { path = "../tools/verus/verus-x86-linux/vstd", default-features = false, features = ["alloc"], optional = true }
 
 [lib]
@@ -21,7 +22,7 @@ path = "src/main.rs"
 
 [features]
 default = []
-verus = ["dep:verus_builtin", "dep:verus_builtin_macros", "dep:vstd"]
+verus = ["dep:verus_builtin", "dep:verus_builtin_macros", "dep:verus_state_machines_macros", "dep:vstd"]
 
 [profile.dev]
 panic = "abort"
