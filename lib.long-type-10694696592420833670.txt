@@ -1,0 +1,1 @@
+(vstd::prelude::Ghost<core::option::Option<vstd::cell::PointsTo<V>>>, vstd::prelude::Tracked<vstd::cell::PointsTo<V>>, vstd::prelude::Tracked<vstd::tokens::MapToken<vstd::prelude::int, sync::TicketStatus, sync::TicketLockToks::tickets<(Pred, vstd::cell::CellId), vstd::cell::PointsTo<V>, sync::InternalPred<V, Pred>>>>)
