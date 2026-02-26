@@ -97,4 +97,14 @@ impl PhysicalMemoryManager {
     }
 }
 
-}
+} // verus!
+
+// Global instance for the allocator (Unverified static access for now)
+// In a real verified system, this would be protected by a verified spinlock.
+// We put this outside verus! block but guarded by the feature because PhysicalMemoryManager depends on verus feature?
+// Actually, PhysicalMemoryManager is defined inside verus! which is guarded by cfg(feature="verus") in lib.rs.
+// So this whole file is guarded. We don't need extra guard here if the file is only included when feature is on.
+// But to be safe and explicit:
+
+#[cfg(feature = "verus")]
+pub static mut GLOBAL_PMM: Option<PhysicalMemoryManager> = None;
