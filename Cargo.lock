@@ -705,6 +705,7 @@ dependencies = [
  "uefi-services",
  "verus_builtin",
  "verus_builtin_macros",
+ "verus_state_machines_macros",
  "vstd",
 ]
 
