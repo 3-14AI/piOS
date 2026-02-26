@@ -16,6 +16,9 @@ pub mod pmm;
 #[cfg(feature = "verus")]
 pub mod paging;
 
+#[cfg(feature = "verus")]
+pub mod allocator;
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
