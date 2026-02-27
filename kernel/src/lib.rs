@@ -25,6 +25,9 @@ pub mod sync;
 #[cfg(feature = "verus")]
 pub mod thread;
 
+#[cfg(feature = "verus")]
+pub mod scheduler;
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
