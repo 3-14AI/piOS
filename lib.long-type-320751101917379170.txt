@@ -1,1 +1,0 @@
-sync::TicketLockToks::tickets<(Pred, vstd::cell::CellId), vstd::cell::PointsTo<V>, sync::InternalPred<V, Pred>>
