@@ -21,12 +21,24 @@ pub enum ThreadState {
     Running,
     Ready,
     Suspended,
+    Unused,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TCB {
     pub stack_ptr: u64,
     pub state: ThreadState,
     pub id: u64,
+}
+
+impl TCB {
+    pub fn new(id: u64, stack_ptr: u64) -> Self {
+        TCB {
+            stack_ptr,
+            state: ThreadState::Unused,
+            id,
+        }
+    }
 }
 
 pub ghost struct Thread {
