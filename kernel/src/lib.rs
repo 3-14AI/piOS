@@ -20,8 +20,10 @@ pub mod paging;
 pub mod allocator;
 
 #[cfg(feature = "verus")]
-// #[verifier::macro_use] // This doesn't exist apparently
 pub mod sync;
+
+#[cfg(feature = "verus")]
+pub mod thread;
 
 #[cfg(not(feature = "verus"))]
 pub mod boot {
