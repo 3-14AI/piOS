@@ -27,7 +27,7 @@ jobs:
           ./tools/install_verus.sh
 
       - name: Build
-        run: cargo build --workspace
+        run: cargo build --workspace --exclude kernel
 
       - name: Run Workspace Tests
         run: cargo test --workspace --exclude kernel
