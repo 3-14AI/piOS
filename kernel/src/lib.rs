@@ -31,6 +31,9 @@ pub mod scheduler;
 #[cfg(feature = "verus")]
 pub mod ipc;
 
+#[cfg(feature = "verus")]
+pub mod interrupts;
+
 
 
 #[cfg(not(feature = "verus"))]
