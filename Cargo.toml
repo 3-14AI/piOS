@@ -5,6 +5,9 @@ members = [
     "libs/pios-api",
     "tools/builder"
 ]
+exclude = [
+    "tools/verus"
+]
 resolver = "2"
 
 [workspace.lints.rust]

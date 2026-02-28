@@ -69,6 +69,8 @@ fi
 echo "Patching dependencies Cargo.toml..."
 find "$VERUS_DIR/dependencies" -name "Cargo.toml" -exec sed -i 's/^\[workspace\]/# [workspace]/' {} \;
 find "$VERUS_DIR/dependencies" -name "Cargo.toml" -exec sed -i 's/^members =/# members =/' {} \;
+find "$VERUS_DIR" -name "Cargo.toml" -exec sed -i 's/^\[lints\]/# \[lints\]/g' {} \;
+find "$VERUS_DIR" -name "Cargo.toml" -exec sed -i 's/^workspace = true/# workspace = true/g' {} \;
 
 rm verus-source.zip
 rm -rf "$SOURCE_DIR"
