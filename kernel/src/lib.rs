@@ -28,6 +28,11 @@ pub mod thread;
 #[cfg(feature = "verus")]
 pub mod scheduler;
 
+#[cfg(feature = "verus")]
+pub mod ipc;
+
+
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
