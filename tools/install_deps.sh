@@ -15,7 +15,7 @@ rustup component add llvm-tools-preview rust-src
 
 if ! command -v just &> /dev/null; then
     echo "Installing just..."
-    curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.cargo/bin || echo "Failed to install just. Please install manually."
+    curl --retry 5 --retry-delay 2 --retry-max-time 30 --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.cargo/bin || echo "Failed to install just. Please install manually."
 else
     echo "just is already installed."
 fi
