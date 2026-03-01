@@ -6,6 +6,7 @@ fn main() {
 mod tests {
     #[test]
     fn test_builder_basic() {
+        super::main();
         assert_eq!(1 + 1, 2);
     }
 }
