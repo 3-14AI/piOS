@@ -63,4 +63,5 @@ pub mod verifier {
     }
 }
 
+#[cfg(not(feature = "verus"))]
 pub mod wasm;

@@ -21,10 +21,27 @@ jobs:
           toolchain: 1.93.0-x86_64-unknown-linux-gnu
           components: llvm-tools-preview, rust-src, rustfmt, clippy
 
+      - name: Cache target directory
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: target-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            target-${{ runner.os }}-
+
+      - name: Cache Verus and Z3
+        id: cache-verus
+        uses: actions/cache@v4
+        with:
+          path: tools/verus
+          key: verus-${{ runner.os }}-${{ hashFiles('tools/install_verus.sh') }}
+
       - name: Install dependencies
         run: |
           ./tools/install_deps.sh
-          ./tools/install_verus.sh
+          if [ "${{ steps.cache-verus.outputs.cache-hit }}" != "true" ]; then
+            ./tools/install_verus.sh
+          fi
 
       - name: Check Formatting
         run: cargo fmt --check
@@ -57,6 +74,6 @@ jobs:
       - name: Install cargo-tarpaulin
         uses: taiki-e/install-action@cargo-tarpaulin
 
-      - name: Run Test Coverage (30%)
+      - name: Run Test Coverage (70%)
         run: |
-          cargo tarpaulin --workspace --exclude kernel --engine llvm --fail-under 30 --exclude-files "tools/verus/*" --out Xml
+          cargo tarpaulin --workspace --exclude kernel --engine llvm --fail-under 70 --exclude-files "tools/verus/*" --out Xml

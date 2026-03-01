@@ -76,7 +76,7 @@ tokenized_state_machine!(
                 // So `pre.tickets.dom().contains(pre.now_serving)` and `pre.tickets[pre.now_serving] == TicketStatus::Waiting`
                 // Thus `pre.storage.is_some()` by `waiting_implies_storage` invariant
 
-                birds_eye let v = pre.storage.get_Some_0();
+                birds_eye let v = pre.storage->Some_0;
                 withdraw storage -= Some(v);
                 assert Pred::inv(pre.k, v);
             }
@@ -127,7 +127,7 @@ tokenized_state_machine!(
             if self.tickets.dom().contains(self.now_serving) && self.tickets[self.now_serving] == TicketStatus::Entered {
                 self.storage.is_none()
             } else {
-                self.storage.is_some() && Pred::inv(self.k, self.storage.get_Some_0())
+                self.storage.is_some() && Pred::inv(self.k, self.storage->Some_0)
             }
         }
 
