@@ -19,7 +19,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.0-x86_64-unknown-linux-gnu
-          components: llvm-tools-preview, rust-src
+          components: llvm-tools-preview, rust-src, rustfmt, clippy
 
       - name: Install dependencies
         run: |
