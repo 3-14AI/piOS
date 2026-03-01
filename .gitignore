@@ -26,3 +26,7 @@ target
 
 tools/verus/
 lib.long-type*
+
+# Test output artifacts
+cobertura.xml
+qemu_output.log

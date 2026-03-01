@@ -126,7 +126,7 @@ unsafe impl GlobalAlloc for KernelAllocator {
 
         // Initialize Global PMM if needed (lazy init)
         if crate::pmm::GLOBAL_PMM.is_none() {
-             crate::pmm::GLOBAL_PMM = Some(crate::pmm::PhysicalMemoryManager::new());
+            crate::pmm::GLOBAL_PMM = Some(crate::pmm::PhysicalMemoryManager::new());
         }
 
         // Initialize Slab if needed
@@ -138,7 +138,7 @@ unsafe impl GlobalAlloc for KernelAllocator {
                     return core::ptr::null_mut();
                 }
             } else {
-                 return core::ptr::null_mut();
+                return core::ptr::null_mut();
             }
         }
 
@@ -155,7 +155,7 @@ unsafe impl GlobalAlloc for KernelAllocator {
         if let Some(slab) = &mut SLAB {
             let addr = ptr as u64;
             if addr >= slab.page_addr && addr < slab.page_addr + 4096 {
-                 slab.dealloc(addr);
+                slab.dealloc(addr);
             }
         }
     }

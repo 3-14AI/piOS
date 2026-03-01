@@ -1,15 +1,15 @@
 #![allow(unused_imports)]
 
-use vstd::prelude::*;
+use core::marker::PhantomData;
 use vstd::atomic_ghost::*;
-use vstd::cell::{PCell, pcell_maybe_uninit as un, PointsTo, CellId};
+use vstd::cell::{pcell_maybe_uninit as un, CellId, PCell, PointsTo};
 use vstd::invariant::InvariantPredicate;
+use vstd::map::*;
 use vstd::modes::*;
 use vstd::multiset::*;
+use vstd::prelude::*;
 use vstd::set::*;
-use vstd::map::*;
 use vstd::tokens::*;
-use core::marker::PhantomData;
 
 #[cfg(feature = "verus")]
 use verus_state_machines_macros::tokenized_state_machine;

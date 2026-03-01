@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
+use crate::thread::{context_switch, Registers, Thread, ThreadState, TCB};
 use vstd::prelude::*;
-use crate::thread::{TCB, ThreadState, Thread, Registers, context_switch};
 
 verus! {
 

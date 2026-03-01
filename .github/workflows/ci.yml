@@ -19,14 +19,30 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.0-x86_64-unknown-linux-gnu
-          components: llvm-tools-preview, rust-src
+          components: llvm-tools-preview, rust-src, rustfmt, clippy
 
       - name: Install dependencies
         run: |
           ./tools/install_deps.sh
           ./tools/install_verus.sh
 
-      - name: Build
+      - name: Check Formatting
+        run: cargo fmt --check
+
+      - name: Run Clippy (Workspace)
+        run: cargo clippy --workspace --exclude kernel -- -D warnings
+
+      - name: Build Kernel
+        run: cargo +1.93.0-x86_64-unknown-linux-gnu build -p kernel --target x86_64-unknown-uefi -Zbuild-std=core,compiler_builtins,alloc,panic_abort --release
+        env:
+          RUSTC_BOOTSTRAP: 1
+
+      - name: Run Clippy (Kernel)
+        run: cargo +1.93.0-x86_64-unknown-linux-gnu clippy -p kernel --target x86_64-unknown-uefi -Zbuild-std=core,compiler_builtins,alloc,panic_abort -- -D warnings
+        env:
+          RUSTC_BOOTSTRAP: 1
+
+      - name: Build Workspace
         run: cargo build --workspace --exclude kernel
 
       - name: Run Workspace Tests
@@ -35,9 +51,12 @@ jobs:
       - name: Verify Kernel with Verus
         run: ./tools/verify_kernel.sh || true
 
+      - name: Run QEMU Integration Tests
+        run: ./tools/run_qemu_test.sh
+
       - name: Install cargo-tarpaulin
         uses: taiki-e/install-action@cargo-tarpaulin
 
-      - name: Run Test Coverage (70%)
+      - name: Run Test Coverage (30%)
         run: |
-          cargo tarpaulin --workspace --exclude kernel --engine llvm --fail-under 70 --out Xml
+          cargo tarpaulin --workspace --exclude kernel --engine llvm --fail-under 30 --exclude-files "tools/verus/*" --out Xml

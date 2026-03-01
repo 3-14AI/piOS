@@ -1,5 +1,5 @@
-use vstd::prelude::*;
 use crate::pmm::PhysicalMemoryManager;
+use vstd::prelude::*;
 
 verus! {
 
