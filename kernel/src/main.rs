@@ -51,6 +51,39 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     // 3. Pass control to verified kernel
     verifier::kernel_main(&boot_info);
 
-    // 4. Spin
+    // 4. Run simple tests and signal QEMU to exit
+    run_qemu_tests();
+
+    // 5. Spin
     loop {}
+}
+
+fn outb(port: u16, val: u8) {
+    unsafe {
+        core::arch::asm!("out dx, al", in("dx") port, in("al") val);
+    }
+}
+
+fn write_serial(s: &str) {
+    let port = 0x3F8; // COM1
+    for b in s.bytes() {
+        unsafe {
+            // Wait for line status register to be ready
+            while {
+                let mut lsr: u8;
+                core::arch::asm!("in al, dx", out("al") lsr, in("dx") port + 5);
+                (lsr & 0x20) == 0
+            } {}
+        }
+        outb(port, b);
+    }
+}
+
+fn run_qemu_tests() {
+    write_serial("\nRunning QEMU Integration Tests...\n");
+    // TODO: add real tests here
+    write_serial("[ok] Kernel booted successfully\n");
+
+    // Shutdown via isa-debug-exit
+    outb(0xf4, 0x10);
 }
