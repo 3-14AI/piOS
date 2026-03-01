@@ -62,3 +62,5 @@ pub mod verifier {
         // No-op for non-verus build
     }
 }
+
+pub mod wasm;

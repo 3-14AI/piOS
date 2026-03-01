@@ -11,6 +11,7 @@ verus_builtin = { path = "../tools/verus/verus-x86-linux/builtin", optional = tr
 verus_builtin_macros = { path = "../tools/verus/verus-x86-linux/builtin_macros", optional = true }
 verus_state_machines_macros = { path = "../tools/verus/verus-x86-linux/state_machines_macros", optional = true }
 vstd = { path = "../tools/verus/verus-x86-linux/vstd", default-features = false, features = ["alloc"], optional = true }
+wasmi = { version = "1.0.9", default-features = false }
 
 [lib]
 name = "kernel"
