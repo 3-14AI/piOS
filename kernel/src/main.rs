@@ -2,7 +2,7 @@
 #![no_main]
 
 use uefi::prelude::*;
-use uefi::table::boot::{MemoryType, MemoryDescriptor};
+use uefi::table::boot::{MemoryDescriptor, MemoryType};
 
 // We use the library crate 'kernel' for shared definitions and verified code.
 use kernel::boot;
@@ -18,7 +18,8 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     // 1. Exit Boot Services
     // Note: In uefi-rs 0.28+, exit_boot_services helper handles allocation.
     // It returns (SystemTable<Runtime>, MemoryMap<'static>).
-    let (_system_table_runtime, memory_map) = system_table.exit_boot_services(MemoryType::LOADER_DATA);
+    let (_system_table_runtime, memory_map) =
+        system_table.exit_boot_services(MemoryType::LOADER_DATA);
 
     // 2. Construct BootInfo
     let entries_len = memory_map.entries().len();
