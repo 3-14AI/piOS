@@ -65,3 +65,20 @@ pub mod verifier {
 
 #[cfg(not(feature = "verus"))]
 pub mod wasm;
+
+#[cfg(not(feature = "verus"))]
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_boot_info() {
+        let _info = boot::BootInfo {
+            memory_map: core::ptr::null_mut(),
+            memory_map_len: 0,
+            descriptor_size: 0,
+            descriptor_version: 0,
+        };
+        assert_eq!(_info.memory_map_len, 0);
+    }
+}
