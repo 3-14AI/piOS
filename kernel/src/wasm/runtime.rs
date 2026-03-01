@@ -45,3 +45,22 @@ impl WasmRuntime {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_wasm_runtime_creation() {
+        let _runtime = WasmRuntime::new();
+        let _default_runtime = WasmRuntime::default();
+        assert!(true);
+    }
+
+    #[test]
+    fn test_wasm_runtime_run_invalid_bytes() {
+        let runtime = WasmRuntime::new();
+        let res = runtime.run(&[0x00, 0x01, 0x02]); // Invalid WASM header
+        assert!(res.is_err());
+    }
+}
