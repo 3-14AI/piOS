@@ -39,23 +39,26 @@ impl Scheduler {
             forall|i: int| 0 <= i < MAX_THREADS ==> s.tcbs[i].id == i as u64,
             s.current_tid == 0,
     {
-        let mut tcbs = [TCB::new(0, 0); 4];
-        let mut i = 0;
-        while i < 4 // MAX_THREADS
-            invariant
-                0 <= i <= 4,
-                tcbs.len() == 4,
-                forall|j: int| 0 <= j < i ==> tcbs[j].id == j as u64,
-                forall|j: int| 0 <= j < i ==> #[trigger] tcbs[j].state == ThreadState::Unused,
-                forall|j: int| i <= j < 4 ==> #[trigger] tcbs[j].state == ThreadState::Unused,
-                forall|j: int| i <= j < 4 ==> tcbs[j].id == 0,
-            decreases
-                4 - i,
-        {
-            let mut new_tcb = tcbs[i];
-            new_tcb.id = i as u64;
-            tcbs[i] = new_tcb;
-            i = i + 1;
+        let mut tcbs = [
+            TCB::new(0, 0),
+            TCB::new(1, 0),
+            TCB::new(2, 0),
+            TCB::new(3, 0),
+        ];
+
+        proof {
+            assert(tcbs[0].id == 0);
+            assert(tcbs[1].id == 1);
+            assert(tcbs[2].id == 2);
+            assert(tcbs[3].id == 3);
+
+            assert(tcbs[0].state == ThreadState::Unused);
+            assert(tcbs[1].state == ThreadState::Unused);
+            assert(tcbs[2].state == ThreadState::Unused);
+            assert(tcbs[3].state == ThreadState::Unused);
+
+            assert forall|j: int| 0 <= j < 4 implies #[trigger] tcbs[j].state == ThreadState::Unused by {};
+            assert forall|j: int| 0 <= j < 4 implies tcbs[j].id == j as u64 by {};
         }
 
         Scheduler {
@@ -228,13 +231,16 @@ pub fn test_scheduler() {
     assert(sched.tcbs[0].state == ThreadState::Running);
 
     // Add a new thread
-    match sched.add_thread(0x2000) {
+    let res = sched.add_thread(0x2000);
+    match res {
         Ok(tid) => {
             assert(tid == 1);
             assert(sched.tcbs[1].state == ThreadState::Ready);
             assert(sched.tcbs[1].stack_ptr == 0x2000);
         },
-        Err(_) => {},
+        Err(_) => {
+            assert(false);
+        },
     }
 
     assert(sched.valid());
@@ -243,10 +249,17 @@ pub fn test_scheduler() {
     sched.schedule();
 
     assert(sched.valid());
+    assert(sched.current_tid == 1);
+    assert(sched.tcbs[1].state == ThreadState::Running);
+    assert(sched.tcbs[0].state == ThreadState::Ready);
+
     // Schedule again should switch back to 0
     sched.schedule();
 
     assert(sched.valid());
+    assert(sched.current_tid == 0);
+    assert(sched.tcbs[0].state == ThreadState::Running);
+    assert(sched.tcbs[1].state == ThreadState::Ready);
 }
 
 } // verus!
