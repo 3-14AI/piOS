@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+#![allow(clippy::empty_loop)]
 
 use uefi::prelude::*;
 use uefi::table::boot::{MemoryDescriptor, MemoryType};
