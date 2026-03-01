@@ -5,6 +5,9 @@ members = [
     "libs/pios-api",
     "tools/builder"
 ]
+exclude = [
+    "tools/verus"
+]
 resolver = "2"
 
 [workspace.lints.rust]
@@ -13,7 +16,9 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(verus_keep_ghost)', 'cfg(v
 [profile.release]
 lto = true
 codegen-units = 1
+panic = "abort"
 
 [profile.dev]
 opt-level = 0
 debug = true
+panic = "abort"
