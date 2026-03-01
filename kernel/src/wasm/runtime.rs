@@ -1,10 +1,16 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
-use wasmi::{Engine, Module, Store, Linker, Func, Caller, Extern};
+use wasmi::{Caller, Engine, Extern, Func, Linker, Module, Store};
 
 pub struct WasmRuntime {
     engine: Engine,
+}
+
+impl Default for WasmRuntime {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl WasmRuntime {
