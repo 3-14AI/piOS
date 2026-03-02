@@ -24,7 +24,7 @@ impl Scheduler {
         // Current thread is Running
         match self.tcbs[self.current_tid as int].state { ThreadState::Running => true, _ => false } &&
         // IDs match indices
-        (forall|i: int| 0 <= i < MAX_THREADS ==> self.tcbs[i].id == i as u64) &&
+        (forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] self.tcbs[i].id == i as u64) &&
         // Other threads are not Running (they are Ready, Suspended, or Unused)
         (forall|i: int| 0 <= i < MAX_THREADS && i != self.current_tid as int ==>
             #[trigger] self.tcbs[i].state != ThreadState::Running)
@@ -36,7 +36,7 @@ impl Scheduler {
             // Initially all threads are Unused except maybe tid 0 which we might set later,
             // but for now let's say all are unused in this raw init.
             forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].state == ThreadState::Unused,
-            forall|i: int| 0 <= i < MAX_THREADS ==> s.tcbs[i].id == i as u64,
+            forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].id == i as u64,
             s.current_tid == 0,
     {
         let mut tcbs: [TCB; 4];
@@ -54,7 +54,7 @@ impl Scheduler {
                 else if j == 2 { assert(tcbs[2].state == ThreadState::Unused); }
                 else if j == 3 { assert(tcbs[3].state == ThreadState::Unused); }
             };
-            assert forall|j: int| 0 <= j < 4 implies tcbs[j].id == j as u64 by {
+            assert forall|j: int| 0 <= j < 4 implies #[trigger] tcbs[j].id == j as u64 by {
                 if j == 0 { assert(tcbs[0].id == 0); }
                 else if j == 1 { assert(tcbs[1].id == 1); }
                 else if j == 2 { assert(tcbs[2].id == 2); }
@@ -215,7 +215,12 @@ impl Scheduler {
                 assert(self.current_tid < MAX_THREADS);
                 assert(self.tcbs.len() == MAX_THREADS);
                 assert(self.tcbs[self.current_tid as int].state == ThreadState::Running);
-                assert(forall|i: int| 0 <= i < MAX_THREADS ==> self.tcbs[i].id == i as u64);
+                assert forall|i: int| 0 <= i < 4 implies #[trigger] self.tcbs[i].id == i as u64 by {
+                    if i == 0 { assert(old_self.tcbs[0].id == 0); assert(self.tcbs[0].id == 0); }
+                    else if i == 1 { assert(old_self.tcbs[1].id == 1); assert(self.tcbs[1].id == 1); }
+                    else if i == 2 { assert(old_self.tcbs[2].id == 2); assert(self.tcbs[2].id == 2); }
+                    else if i == 3 { assert(old_self.tcbs[3].id == 3); assert(self.tcbs[3].id == 3); }
+                };
 
                 // Prove other threads are not running
                 assert(forall|i: int| 0 <= i < MAX_THREADS && i != self.current_tid as int ==>
