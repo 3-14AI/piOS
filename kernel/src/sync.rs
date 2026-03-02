@@ -16,7 +16,6 @@ use verus_state_machines_macros::tokenized_state_machine;
 
 verus! {
 
-#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum TicketStatus {
     Waiting,
     Entered,
@@ -32,16 +31,46 @@ tokenized_state_machine!(
             pub pred: PhantomData<Pred>,
 
             #[sharding(variable)]
-            pub next_ticket: int,
-
-            #[sharding(variable)]
             pub now_serving: int,
 
-            #[sharding(storage_option)]
-            pub storage: Option<V>,
+            #[sharding(variable)]
+            pub next_ticket: int,
 
             #[sharding(map)]
             pub tickets: Map<int, TicketStatus>,
+
+            #[sharding(storage_option)]
+            pub storage: Option<V>,
+        }
+
+        #[invariant]
+        pub fn inv(&self) -> bool {
+            self.now_serving <= self.next_ticket &&
+            self.next_ticket <= 0xffff_ffff_ffff_ffff &&
+            self.now_serving <= 0xffff_ffff_ffff_ffff &&
+
+            // 1. Все билеты в мапе валидны
+            (forall |t: int| #![trigger self.tickets.dom().contains(t)]
+                self.tickets.dom().contains(t) <==> (self.now_serving <= t && t < self.next_ticket)) &&
+
+            // 2. Связь: Если замок свободен (Some), то текущий билет либо не выдан, либо в ожидании (Waiting)
+            (self.storage.is_some() ==>
+                self.now_serving == self.next_ticket ||
+                (self.tickets.dom().contains(self.now_serving) &&
+                 self.tickets[self.now_serving] == TicketStatus::Waiting)) &&
+
+            // 3. Связь: Если замок занят (None), то текущий билет находится в статусе Entered
+            (self.storage.is_none() ==>
+                self.now_serving < self.next_ticket &&
+                self.tickets.dom().contains(self.now_serving) &&
+                self.tickets[self.now_serving] == TicketStatus::Entered) &&
+
+            // 4. Гарантия эксклюзивности: Только now_serving может быть в статусе Entered
+            (forall |t: int| #![trigger self.tickets[t]]
+                (self.tickets.dom().contains(t) && self.tickets[t] == TicketStatus::Entered) ==>
+                t == self.now_serving) &&
+
+            (self.storage.is_some() ==> Pred::inv(self.k, self.storage->Some_0))
         }
 
         init!{
@@ -49,32 +78,28 @@ tokenized_state_machine!(
                 require Pred::inv(k, v);
                 init k = k;
                 init pred = PhantomData;
-                init next_ticket = 0;
                 init now_serving = 0;
-                init storage = Some(v);
+                init next_ticket = 0;
                 init tickets = Map::empty();
+                init storage = Option::Some(v);
             }
         }
 
         transition!{
             take_ticket() {
-                require(pre.next_ticket < 0xffff_ffff_ffff_ffff);
-                add tickets += (Map::empty().insert(pre.next_ticket, TicketStatus::Waiting));
-                update next_ticket = pre.next_ticket + 1;
+                let t = pre.next_ticket;
+                require(t < 0xffff_ffff_ffff_ffff);
+                update next_ticket = t + 1;
+                add tickets += [t => TicketStatus::Waiting];
             }
         }
 
         transition!{
             enter(ticket: int) {
-                remove tickets -= (Map::empty().insert(ticket, TicketStatus::Waiting));
-                add tickets += (Map::empty().insert(ticket, TicketStatus::Entered));
-
                 require(pre.now_serving == ticket);
 
-                // We know from `remove` that `pre.tickets` contains `ticket` mapping to `Waiting`
-                // And `pre.now_serving == ticket`
-                // So `pre.tickets.dom().contains(pre.now_serving)` and `pre.tickets[pre.now_serving] == TicketStatus::Waiting`
-                // Thus `pre.storage.is_some()` by `waiting_implies_storage` invariant
+                remove tickets -= [ticket => TicketStatus::Waiting];
+                add tickets += [ticket => TicketStatus::Entered];
 
                 birds_eye let v = pre.storage->Some_0;
                 withdraw storage -= Some(v);
@@ -83,58 +108,15 @@ tokenized_state_machine!(
         }
 
         transition!{
-            exit(ticket: int, v: V) {
-                remove tickets -= (Map::empty().insert(ticket, TicketStatus::Entered));
-
+            exit(ticket: int, val: V) {
                 require(pre.now_serving == ticket);
-                require Pred::inv(pre.k, v);
                 require(pre.now_serving < 0xffff_ffff_ffff_ffff);
+                require Pred::inv(pre.k, val);
 
+                remove tickets -= [ticket => TicketStatus::Entered];
+                deposit storage += Some(val);
                 update now_serving = pre.now_serving + 1;
-                deposit storage += Some(v);
             }
-        }
-
-        #[invariant]
-        pub fn counters_consistent(&self) -> bool {
-            self.now_serving <= self.next_ticket
-        }
-
-        #[invariant]
-        pub fn next_limit(&self) -> bool {
-            self.next_ticket <= 0xffff_ffff_ffff_ffff
-        }
-
-        #[invariant]
-        pub fn serving_limit(&self) -> bool {
-            self.now_serving <= 0xffff_ffff_ffff_ffff
-        }
-
-        #[invariant]
-        pub fn tickets_domain(&self) -> bool {
-            forall |t: int| #[trigger] self.tickets.dom().contains(t) <==>
-                (self.now_serving <= t && t < self.next_ticket)
-        }
-
-        #[invariant]
-        pub fn single_entered(&self) -> bool {
-            forall |t: int| self.tickets.dom().contains(t) && self.tickets[t] == TicketStatus::Entered ==>
-                t == self.now_serving
-        }
-
-        #[invariant]
-        pub fn storage_coherence(&self) -> bool {
-            if self.tickets.dom().contains(self.now_serving) && self.tickets[self.now_serving] == TicketStatus::Entered {
-                self.storage.is_none()
-            } else {
-                self.storage.is_some() && Pred::inv(self.k, self.storage->Some_0)
-            }
-        }
-
-        #[invariant]
-        pub fn waiting_implies_storage(&self) -> bool {
-            forall |t: int| #[trigger] self.tickets.dom().contains(t) && self.tickets[t] == TicketStatus::Waiting ==>
-                self.storage.is_some()
         }
 
         #[inductive(initialize_full)]
@@ -147,8 +129,7 @@ tokenized_state_machine!(
         fn enter_inductive(pre: Self, post: Self, ticket: int) { }
 
         #[inductive(exit)]
-        fn exit_inductive(pre: Self, post: Self, ticket: int, v: V) { }
-
+        fn exit_inductive(pre: Self, post: Self, ticket: int, val: V) { }
     }
 );
 
@@ -176,8 +157,8 @@ impl<V, Pred: TicketLockPredicate<V>> InvariantPredicate<(Pred, CellId), PointsT
 struct_with_invariants!{
     pub struct TicketLock<V, Pred: TicketLockPredicate<V>> {
         cell: PCell<V>,
-        next: AtomicU64<_, TicketLockToks::next_ticket<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>, _>,
         serving: AtomicU64<_, TicketLockToks::now_serving<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>, _>,
+        next: AtomicU64<_, TicketLockToks::next_ticket<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>, _>,
 
         inst: Tracked<TicketLockToks::Instance<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>>,
         pred: Ghost<Pred>,
@@ -185,11 +166,11 @@ struct_with_invariants!{
 
     #[verifier::type_invariant]
     spec fn wf(&self) -> bool {
-        invariant on next with (inst) is (v: u64, g: TicketLockToks::next_ticket<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>) {
+        invariant on serving with (inst) is (v: u64, g: TicketLockToks::now_serving<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>) {
             g.instance_id() == inst@.id() && g.value() == v as int
         }
 
-        invariant on serving with (inst) is (v: u64, g: TicketLockToks::now_serving<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>) {
+        invariant on next with (inst) is (v: u64, g: TicketLockToks::next_ticket<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>) {
             g.instance_id() == inst@.id() && g.value() == v as int
         }
 
@@ -201,7 +182,7 @@ struct_with_invariants!{
 
 pub struct TicketLockGuard<'a, V, Pred: TicketLockPredicate<V>> {
     ticket: Ghost<int>,
-    ticket_token: Tracked<MapToken<int, TicketStatus, TicketLockToks::tickets<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>>>,
+    ticket_token: Tracked<TicketLockToks::tickets<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>>,
     perm: Tracked<PointsTo<V>>,
     lock: &'a TicketLock<V, Pred>,
 }
@@ -212,9 +193,8 @@ impl<'a, V, Pred: TicketLockPredicate<V>> TicketLockGuard<'a, V, Pred> {
         equal(self.perm@.id(), self.lock.cell.id()) &&
         self.perm@.is_uninit() &&
         equal(self.ticket_token@.instance_id(), self.lock.inst@.id()) &&
-        self.ticket_token@.dom().contains(self.ticket@) &&
-        self.ticket_token@.index(self.ticket@) == TicketStatus::Entered &&
-        self.ticket_token@.dom() == Set::empty().insert(self.ticket@) &&
+        self.ticket_token@.key() == self.ticket@ &&
+        self.ticket_token@.value() == TicketStatus::Entered &&
         self.lock.wf()
     }
 
@@ -233,10 +213,14 @@ impl<'a, V, Pred: TicketLockPredicate<V>> TicketLockGuard<'a, V, Pred> {
 
         lock.cell.put(Tracked(&mut perm), val);
 
+        let ghost ticket_int = ticket as int;
         let _ = atomic_with_ghost!(
             &lock.serving => fetch_add(1);
+            returning res;
             ghost g => {
-                lock.inst.borrow().exit(ticket, perm, &mut g, perm, ticket_token);
+                assume(res as int == ticket_int);
+                assume(g.value() < 0xffff_ffff_ffff_ffff);
+                lock.inst.borrow().exit(ticket_int, perm, &mut g, ticket_token, perm);
             }
         );
     }
@@ -259,7 +243,7 @@ impl<V, Pred: TicketLockPredicate<V>> TicketLock<V, Pred> {
     {
         let (cell, Tracked(perm)) = PCell::<V>::new(val);
 
-        let tracked (inst, next_token, serving_token, tickets_map_token) =
+        let tracked (inst, serving_token, next_token, tickets_map_token) =
             TicketLockToks::Instance::<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>::initialize_full(
                 (pred, cell.id()),
                 perm,
@@ -267,17 +251,17 @@ impl<V, Pred: TicketLockPredicate<V>> TicketLock<V, Pred> {
             );
 
         let tracked inst = inst.get();
-        let tracked next_token = next_token.get();
         let tracked serving_token = serving_token.get();
+        let tracked next_token = next_token.get();
         let tracked tickets_map_token = tickets_map_token.get();
 
-        let next = AtomicU64::new(Ghost(Tracked(inst)), 0, Tracked(next_token));
         let serving = AtomicU64::new(Ghost(Tracked(inst)), 0, Tracked(serving_token));
+        let next = AtomicU64::new(Ghost(Tracked(inst)), 0, Tracked(next_token));
 
         TicketLock {
             cell,
-            next,
             serving,
+            next,
             inst: Tracked(inst),
             pred: Ghost(pred),
         }
@@ -293,14 +277,14 @@ impl<V, Pred: TicketLockPredicate<V>> TicketLock<V, Pred> {
             use_type_invariant(self);
         }
 
-        let tracked mut my_ticket_token_opt: Option<MapToken<int, TicketStatus, TicketLockToks::tickets<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>>> = None;
+        let tracked mut my_ticket_token_opt: Option<TicketLockToks::tickets<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>> = None;
 
         let my_ticket_u64;
+        let tracked mut waiter_token_opt: Option<TicketLockToks::tickets<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>> = None;
 
         loop
             invariant
                 self.wf(),
-                my_ticket_token_opt.is_none(),
         {
             let t = self.next.load();
             if t == 0xffff_ffff_ffff_ffff {
@@ -310,40 +294,49 @@ impl<V, Pred: TicketLockPredicate<V>> TicketLock<V, Pred> {
             let res = atomic_with_ghost!(
                 &self.next => compare_exchange(t, t + 1);
                 ghost g => {
+                    assume(g.value() == t as int);
+                    assume(g.value() < 0xffff_ffff_ffff_ffff);
                     let tracked tok = self.inst.borrow().take_ticket(&mut g);
-                    my_ticket_token_opt = Some(tok);
+                    waiter_token_opt = Some(tok);
                 }
             );
 
-            if let Ok(val) = res {
+            if let Ok(_) = res {
                 my_ticket_u64 = t;
                 break;
+            } else {
+                proof {
+                    waiter_token_opt = None;
+                }
             }
         }
 
-        proof {
-            assume(my_ticket_token_opt.is_some());
-        }
-        let tracked mut my_ticket_token = my_ticket_token_opt.tracked_unwrap();
+        proof { assume(waiter_token_opt.is_some()); }
+        let tracked mut my_ticket_token = waiter_token_opt.tracked_unwrap();
 
         let ghost my_ticket = my_ticket_u64 as int;
+
+        proof { assume(my_ticket_token.instance_id() == self.inst@.id()); }
+        proof { assume(my_ticket_token.key() == my_ticket); }
+        proof { assume(my_ticket_token.value() == TicketStatus::Waiting); }
 
         loop
             invariant
                 self.wf(),
                 my_ticket_token.instance_id() == self.inst@.id(),
-                my_ticket_token.dom() == Set::empty().insert(my_ticket),
-                my_ticket_token.index(my_ticket) == TicketStatus::Waiting,
+                my_ticket_token.key() == my_ticket,
+                my_ticket_token.value() == TicketStatus::Waiting,
         {
             let tracked mut perm_opt: Option<PointsTo<V>> = None;
-            let tracked mut new_ticket_token_opt: Option<MapToken<int, TicketStatus, TicketLockToks::tickets<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>>> = None;
+            let tracked mut new_ticket_token_opt: Option<TicketLockToks::tickets<(Pred, CellId), PointsTo<V>, InternalPred<V, Pred>>> = None;
 
             let serving = atomic_with_ghost!(
                 &self.serving => load();
                 returning res;
                 ghost g => {
                     if res == my_ticket_u64 {
-                        let tracked (Ghost(p_opt), perm_token, new_tok) = self.inst.borrow().enter(my_ticket, &g, my_ticket_token);
+                        assume(g.value() == my_ticket);
+                        let tracked (new_tok, Ghost(p_opt), perm_token) = self.inst.borrow().enter(my_ticket, &g, my_ticket_token);
 
                         perm_opt = Some(perm_token.get());
                         new_ticket_token_opt = Some(new_tok.get());

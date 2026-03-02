@@ -74,6 +74,6 @@ jobs:
       - name: Install cargo-tarpaulin
         uses: taiki-e/install-action@cargo-tarpaulin
 
-      - name: Run Test Coverage (50%)
+      - name: Run Test Coverage (95%)
         run: |
-          cargo tarpaulin --workspace --engine llvm --fail-under 50 --exclude-files "tools/verus/*" --out Xml
+          RUSTC_BOOTSTRAP=1 RUSTFLAGS="-Zbuild-std=core,compiler_builtins,alloc,panic_abort" cargo tarpaulin --workspace --engine llvm --fail-under 95 --exclude-files "tools/verus/*" --out Xml

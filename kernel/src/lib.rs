@@ -80,5 +80,26 @@ mod tests {
             descriptor_version: 0,
         };
         assert_eq!(_info.memory_map_len, 0);
+
+        let desc = boot::SimpleMemoryDescriptor {
+            type_: 0,
+            pad: 0,
+            phys_start: 0,
+            virt_start: 0,
+            page_count: 0,
+            attribute: 0,
+        };
+        assert_eq!(desc.page_count, 0);
+    }
+
+    #[test]
+    fn test_verifier_kernel_main() {
+        let info = boot::BootInfo {
+            memory_map: core::ptr::null_mut(),
+            memory_map_len: 0,
+            descriptor_size: 0,
+            descriptor_version: 0,
+        };
+        verifier::kernel_main(&info);
     }
 }

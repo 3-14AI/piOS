@@ -1,0 +1,1 @@
+&vstd::atomic_ghost::AtomicU64<vstd::prelude::Tracked<TicketLockToks::Instance<(Pred, vstd::cell::CellId), vstd::cell::PointsTo<V>, InternalPred<V, Pred>>>, TicketLockToks::next_ticket<(Pred, vstd::cell::CellId), vstd::cell::PointsTo<V>, InternalPred<V, Pred>>, InvariantPredicate_auto_TicketLock_next>
