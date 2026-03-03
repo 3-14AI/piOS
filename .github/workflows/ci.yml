@@ -66,7 +66,7 @@ jobs:
         run: cargo test --workspace
 
       - name: Verify Kernel with Verus
-        run: ./tools/verify_kernel.sh || true
+        run: ./tools/verify_kernel.sh
 
       - name: Run QEMU Integration Tests
         run: ./tools/run_qemu_test.sh
