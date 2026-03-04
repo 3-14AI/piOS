@@ -34,6 +34,9 @@ pub mod ipc;
 #[cfg(feature = "verus")]
 pub mod interrupts;
 
+#[cfg(feature = "verus")]
+pub mod wasm;
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
