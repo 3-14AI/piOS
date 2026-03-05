@@ -1,7 +1,11 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
-use wasmi::{Caller, Engine, Extern, Func, Linker, Module, Store};
+use wasmi::{Engine, Extern, Func, Linker, Module, Store};
+use crate::wasm::wasi::{
+    WasiCtx, fd_write, fd_read, fd_close, environ_get, environ_sizes_get, args_get,
+    args_sizes_get, proc_exit,
+};
 
 pub struct WasmRuntime {
     engine: Engine,
@@ -22,22 +26,58 @@ impl WasmRuntime {
     pub fn run(&self, wasm_bytes: &[u8]) -> Result<(), wasmi::Error> {
         let module = Module::new(&self.engine, wasm_bytes)?;
 
-        type HostState = u32;
-        let mut store = Store::new(&self.engine, 42);
+        type HostState = WasiCtx;
+        let mut store = Store::new(&self.engine, WasiCtx::new());
 
         let mut linker = <Linker<HostState>>::new(&self.engine);
         linker.define(
+            "wasi_snapshot_preview1",
+            "fd_write",
+            Func::wrap(&mut store, fd_write),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "fd_read",
+            Func::wrap(&mut store, fd_read),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "fd_close",
+            Func::wrap(&mut store, fd_close),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "environ_get",
+            Func::wrap(&mut store, environ_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "environ_sizes_get",
+            Func::wrap(&mut store, environ_sizes_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "args_get",
+            Func::wrap(&mut store, args_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "args_sizes_get",
+            Func::wrap(&mut store, args_sizes_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "proc_exit",
+            Func::wrap(&mut store, proc_exit),
+        )?;
+
+        // For backward compatibility with the old test
+        let _ = linker.define(
             "env",
             "hello",
-            Func::wrap(&mut store, |caller: Caller<'_, HostState>, param: i32| {
-                // Dummy syscall or host function
-                log::info!(
-                    "Hello from WASM host! State: {}, Param: {}",
-                    caller.data(),
-                    param
-                );
+            Func::wrap(&mut store, |_caller: wasmi::Caller<'_, HostState>, _param: i32| {
             }),
-        )?;
+        );
 
         let instance = linker.instantiate_and_start(&mut store, &module)?;
 

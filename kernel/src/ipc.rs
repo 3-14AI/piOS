@@ -1,6 +1,9 @@
 #![allow(unused_imports)]
+
+#[cfg(feature = "verus")]
 use vstd::prelude::*;
 
+#[cfg(feature = "verus")]
 verus! {
 
 /// Synchronous Rendezvous Channel for IPC (Message Passing)
@@ -101,4 +104,34 @@ pub fn test_rendezvous() {
 
 } // verus!
 
-// I've already added `test_rendezvous` function above! Let's just make sure tests run correctly.
+#[cfg(not(feature = "verus"))]
+pub struct RendezvousChannel<T> {
+    pub data: Option<T>,
+}
+
+#[cfg(not(feature = "verus"))]
+impl<T> RendezvousChannel<T> {
+    pub fn new() -> Self {
+        Self { data: None }
+    }
+
+    pub fn try_send(&mut self, val: T) -> Result<(), T> {
+        if self.data.is_some() {
+            Err(val)
+        } else {
+            self.data = Some(val);
+            Ok(())
+        }
+    }
+
+    pub fn try_recv(&mut self) -> Option<T> {
+        self.data.take()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+impl<T> Default for RendezvousChannel<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
