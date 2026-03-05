@@ -1,11 +1,11 @@
 extern crate alloc;
 
+use crate::wasm::wasi::{
+    args_get, args_sizes_get, environ_get, environ_sizes_get, fd_close, fd_read, fd_write,
+    proc_exit, WasiCtx,
+};
 use alloc::vec::Vec;
 use wasmi::{Engine, Extern, Func, Linker, Module, Store};
-use crate::wasm::wasi::{
-    WasiCtx, fd_write, fd_read, fd_close, environ_get, environ_sizes_get, args_get,
-    args_sizes_get, proc_exit,
-};
 
 pub struct WasmRuntime {
     engine: Engine,
@@ -75,8 +75,10 @@ impl WasmRuntime {
         let _ = linker.define(
             "env",
             "hello",
-            Func::wrap(&mut store, |_caller: wasmi::Caller<'_, HostState>, _param: i32| {
-            }),
+            Func::wrap(
+                &mut store,
+                |_caller: wasmi::Caller<'_, HostState>, _param: i32| {},
+            ),
         );
 
         let instance = linker.instantiate_and_start(&mut store, &module)?;

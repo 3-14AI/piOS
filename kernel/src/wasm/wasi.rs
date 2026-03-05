@@ -85,14 +85,23 @@ pub fn fd_write(
     }
 
     let written_bytes = (total_written as u32).to_le_bytes();
-    if memory.write(&mut caller, nwritten_ptr as usize, &written_bytes).is_err() {
+    if memory
+        .write(&mut caller, nwritten_ptr as usize, &written_bytes)
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
 
     WASI_ERRNO_SUCCESS
 }
 
-pub fn fd_read(_caller: Caller<'_, WasiCtx>, _fd: i32, _iovs: i32, _iovs_len: i32, _nread: i32) -> i32 {
+pub fn fd_read(
+    _caller: Caller<'_, WasiCtx>,
+    _fd: i32,
+    _iovs: i32,
+    _iovs_len: i32,
+    _nread: i32,
+) -> i32 {
     WASI_ERRNO_NOSYS
 }
 
@@ -104,7 +113,11 @@ pub fn environ_get(_caller: Caller<'_, WasiCtx>, _environ: i32, _environ_buf: i3
     WASI_ERRNO_NOSYS
 }
 
-pub fn environ_sizes_get(_caller: Caller<'_, WasiCtx>, _environ_count: i32, _environ_buf_size: i32) -> i32 {
+pub fn environ_sizes_get(
+    _caller: Caller<'_, WasiCtx>,
+    _environ_count: i32,
+    _environ_buf_size: i32,
+) -> i32 {
     WASI_ERRNO_NOSYS
 }
 
