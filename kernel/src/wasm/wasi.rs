@@ -133,6 +133,8 @@ pub fn proc_exit(_caller: Caller<'_, WasiCtx>, _rval: i32) {
     // Usually this would trap or terminate the instance
 }
 
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -144,5 +146,7 @@ mod tests {
         assert!(ctx.fds[0].is_some());
         assert!(ctx.fds[1].is_some());
         assert!(ctx.fds[2].is_some());
+        let _ = WasiCtx::default();
     }
+
 }
