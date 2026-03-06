@@ -28,7 +28,6 @@ pub mod thread;
 #[cfg(feature = "verus")]
 pub mod scheduler;
 
-#[cfg(feature = "verus")]
 pub mod ipc;
 
 #[cfg(feature = "verus")]
