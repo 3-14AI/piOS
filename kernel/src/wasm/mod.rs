@@ -6,3 +6,6 @@ pub mod wasi;
 
 #[cfg(feature = "verus")]
 pub mod sandbox;
+
+#[cfg(not(feature = "verus"))]
+pub mod linker;
