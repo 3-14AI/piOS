@@ -196,8 +196,16 @@ impl Virtqueue {
         Virtqueue {
             queue_size: size,
             descriptors: alloc::vec![Descriptor { addr: 0, len: 0, flags: 0, next: 0 }; size as usize],
-            avail: AvailRing { flags: 0, idx: 0, ring: alloc::vec![0; size as usize] },
-            used: UsedRing { flags: 0, idx: 0, ring: alloc::vec![UsedElem { id: 0, len: 0 }; size as usize] },
+            avail: AvailRing {
+                flags: 0,
+                idx: 0,
+                ring: alloc::vec![0; size as usize],
+            },
+            used: UsedRing {
+                flags: 0,
+                idx: 0,
+                ring: alloc::vec![UsedElem { id: 0, len: 0 }; size as usize],
+            },
             last_used_idx: 0,
         }
     }

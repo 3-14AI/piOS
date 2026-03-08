@@ -158,7 +158,11 @@ impl CapTable {
     pub fn mint(&mut self, resource_id: u64, rights: Right) -> Handle {
         let handle = Handle(self.next_handle);
         self.next_handle += 1;
-        self.entries.push(CapEntry { handle, resource_id, rights });
+        self.entries.push(CapEntry {
+            handle,
+            resource_id,
+            rights,
+        });
         handle
     }
 
