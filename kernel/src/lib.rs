@@ -31,6 +31,12 @@ pub mod scheduler;
 pub mod ipc;
 
 #[cfg(feature = "verus")]
+pub mod capabilities;
+
+#[cfg(feature = "verus")]
+pub mod virtio_blk;
+
+#[cfg(feature = "verus")]
 pub mod interrupts;
 
 #[cfg(feature = "verus")]
@@ -67,6 +73,12 @@ pub mod verifier {
 
 #[cfg(not(feature = "verus"))]
 pub mod wasm;
+
+#[cfg(not(feature = "verus"))]
+pub mod capabilities;
+
+#[cfg(not(feature = "verus"))]
+pub mod virtio_blk;
 
 #[cfg(not(feature = "verus"))]
 #[cfg(test)]
