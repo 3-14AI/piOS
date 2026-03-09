@@ -147,6 +147,13 @@ pub struct CapTable {
 }
 
 #[cfg(not(feature = "verus"))]
+impl Default for CapTable {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 impl CapTable {
     pub fn new() -> Self {
         CapTable {

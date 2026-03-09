@@ -39,6 +39,14 @@ verus! {
         pub ring: Vec<UsedElem>,
     }
 
+    /// VirtIO Block Request Header
+    #[derive(Copy, Clone)]
+    pub struct VirtioBlkReq {
+        pub type_: u32,
+        pub reserved: u32,
+        pub sector: u64,
+    }
+
     /// Virtqueue abstraction
     pub struct Virtqueue {
         pub queue_size: u16,
@@ -46,6 +54,48 @@ verus! {
         pub avail: AvailRing,
         pub used: UsedRing,
         pub last_used_idx: u16,
+    }
+
+    /// VirtIO-Blk Driver
+    pub struct VirtioBlkDriver {
+        pub queue: Virtqueue,
+        pub capacity: u64,
+    }
+
+    impl VirtioBlkDriver {
+        pub fn new(size: u16, capacity: u64) -> (d: Self)
+            requires size > 0
+            ensures
+                d.capacity == capacity,
+                d.queue.queue_size == size
+        {
+            VirtioBlkDriver {
+                queue: Virtqueue::new(size),
+                capacity,
+            }
+        }
+
+        pub fn read_sector(&mut self, sector: u64, desc_idx: u16) -> (success: bool)
+            requires
+                old(self).queue.queue_size > 0,
+                old(self).queue.avail.ring.len() == old(self).queue.queue_size as int,
+                desc_idx < old(self).queue.queue_size
+            ensures
+                self.queue.queue_size == old(self).queue.queue_size,
+                self.queue.avail.ring.len() == old(self).queue.avail.ring.len(),
+                self.queue.avail.ring.len() == self.queue.queue_size as int,
+                success ==> self.queue.avail.idx == (old(self).queue.avail.idx + 1),
+                !success ==> self.queue.avail.idx == old(self).queue.avail.idx,
+                self.queue.descriptors == old(self).queue.descriptors,
+                self.queue.used == old(self).queue.used,
+                self.queue.last_used_idx == old(self).queue.last_used_idx,
+                self.capacity == old(self).capacity
+        {
+            if sector >= self.capacity {
+                return false;
+            }
+            self.queue.add_avail(desc_idx)
+        }
     }
 
     impl Virtqueue {
@@ -101,7 +151,10 @@ verus! {
                 self.avail.ring.len() == old(self).avail.ring.len(),
                 self.avail.ring.len() == self.queue_size as int,
                 success ==> self.avail.idx == (old(self).avail.idx + 1),
-                !success ==> self.avail.idx == old(self).avail.idx
+                !success ==> self.avail.idx == old(self).avail.idx,
+                self.descriptors == old(self).descriptors,
+                self.used == old(self).used,
+                self.last_used_idx == old(self).last_used_idx
         {
             // Simple check to avoid wrapping past u16::MAX
             if self.avail.idx == 0xffff {
@@ -128,7 +181,10 @@ verus! {
                 match res {
                     Some(_) => self.last_used_idx == (old(self).last_used_idx + 1) && old(self).last_used_idx < 0xffff,
                     None => self.last_used_idx == old(self).last_used_idx
-                }
+                },
+                self.descriptors == old(self).descriptors,
+                self.avail == old(self).avail,
+                self.used == old(self).used
         {
             if self.last_used_idx == self.used.idx {
                 return None;
@@ -187,6 +243,39 @@ pub struct Virtqueue {
     pub avail: AvailRing,
     pub used: UsedRing,
     pub last_used_idx: u16,
+}
+
+#[cfg(not(feature = "verus"))]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct VirtioBlkReq {
+    pub type_: u32,
+    pub reserved: u32,
+    pub sector: u64,
+}
+
+#[cfg(not(feature = "verus"))]
+#[derive(Debug)]
+pub struct VirtioBlkDriver {
+    pub queue: Virtqueue,
+    pub capacity: u64,
+}
+
+#[cfg(not(feature = "verus"))]
+impl VirtioBlkDriver {
+    pub fn new(size: u16, capacity: u64) -> Self {
+        assert!(size > 0);
+        VirtioBlkDriver {
+            queue: Virtqueue::new(size),
+            capacity,
+        }
+    }
+
+    pub fn read_sector(&mut self, sector: u64, desc_idx: u16) -> bool {
+        if sector >= self.capacity {
+            return false;
+        }
+        self.queue.add_avail(desc_idx)
+    }
 }
 
 #[cfg(not(feature = "verus"))]
@@ -280,5 +369,19 @@ mod tests {
         assert_eq!(vq.last_used_idx, 1);
 
         assert_eq!(vq.get_used(), None);
+    }
+
+    #[test]
+    fn test_virtio_blk_driver() {
+        let mut drv = VirtioBlkDriver::new(4, 100);
+        assert_eq!(drv.capacity, 100);
+
+        // Out of bounds sector
+        assert_eq!(drv.read_sector(200, 1), false);
+
+        // Valid sector
+        assert_eq!(drv.read_sector(10, 1), true);
+        assert_eq!(drv.queue.avail.idx, 1);
+        assert_eq!(drv.queue.avail.ring[0], 1);
     }
 }
