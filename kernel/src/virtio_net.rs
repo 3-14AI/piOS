@@ -4,7 +4,7 @@
 use vstd::prelude::*;
 
 #[cfg(feature = "verus")]
-use crate::virtio_blk::{Virtqueue, UsedElem};
+use crate::virtio_blk::{UsedElem, Virtqueue};
 
 #[cfg(feature = "verus")]
 verus! {
@@ -100,7 +100,7 @@ verus! {
 }
 
 #[cfg(not(feature = "verus"))]
-use crate::virtio_blk::{Virtqueue, UsedElem};
+use crate::virtio_blk::{UsedElem, Virtqueue};
 
 #[cfg(not(feature = "verus"))]
 #[derive(Debug)]
