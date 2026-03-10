@@ -138,15 +138,43 @@ impl VirtioNetDriver {
 
     pub fn process_tx_used(&mut self) -> Option<UsedElem> {
         let used = self.tx_queue.get_used();
-        if used.is_some() {
-            if self.unacked_tx_packets > 0 {
-                self.unacked_tx_packets -= 1;
-            }
+        if used.is_some() && self.unacked_tx_packets > 0 {
+            self.unacked_tx_packets -= 1;
         }
         used
     }
 }
 
+#[cfg(not(feature = "verus"))]
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_virtio_net_driver() {
+        let mut drv = VirtioNetDriver::new(4, [0x00, 0x11, 0x22, 0x33, 0x44, 0x55]);
+        assert_eq!(drv.mac_address, [0x00, 0x11, 0x22, 0x33, 0x44, 0x55]);
+        assert_eq!(drv.unacked_tx_packets, 0);
+
+        // Send a packet
+        assert_eq!(drv.send_packet(1), true);
+        assert_eq!(drv.unacked_tx_packets, 1);
+        assert_eq!(drv.tx_queue.avail.idx, 1);
+
+        // Process used
+        drv.tx_queue.used.ring[0] = UsedElem { id: 1, len: 100 };
+        drv.tx_queue.used.idx = 1;
+
+        let used = drv.process_tx_used();
+        assert_eq!(used, Some(UsedElem { id: 1, len: 100 }));
+        assert_eq!(drv.unacked_tx_packets, 0);
+
+        // No more used
+        let no_used = drv.process_tx_used();
+        assert_eq!(no_used, None);
+        assert_eq!(drv.unacked_tx_packets, 0);
+    }
+}
 #[cfg(not(feature = "verus"))]
 #[cfg(test)]
 mod tests {

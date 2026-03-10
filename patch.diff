@@ -1,0 +1,17 @@
+--- kernel/src/virtio_net.rs
++++ kernel/src/virtio_net.rs
+@@ -139,11 +139,9 @@
+
+     pub fn process_tx_used(&mut self) -> Option<UsedElem> {
+         let used = self.tx_queue.get_used();
+-        if used.is_some() {
+-            if self.unacked_tx_packets > 0 {
+-                self.unacked_tx_packets -= 1;
+-            }
+-        }
++        if used.is_some() && self.unacked_tx_packets > 0 {
++            self.unacked_tx_packets -= 1;
++        }
+         used
+     }
+ }
