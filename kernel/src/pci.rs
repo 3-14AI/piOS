@@ -173,14 +173,15 @@ impl PciEnumerator {
                     let class_code = ((class_info >> 24) & 0xFF) as u8;
 
                     if let PciParseResult::Valid(config) = self.parse_config(
-                        vendor_id, device_id, class_code, subclass, prog_if, bus, device, function
+                        vendor_id, device_id, class_code, subclass, prog_if, bus, device, function,
                     ) {
                         devices.push(config);
                     }
 
                     // Check if multi-function device
                     if function == 0 {
-                        let header_type = (Self::read_config_register(bus, device, function, 12) >> 16) as u8;
+                        let header_type =
+                            (Self::read_config_register(bus, device, function, 12) >> 16) as u8;
                         if (header_type & 0x80) == 0 {
                             break;
                         }
@@ -191,12 +192,23 @@ impl PciEnumerator {
         devices
     }
 
-    pub fn load_drivers(&self, linker: &mut crate::wasm::linker::WasmComponentLinker, devices: &[PciConfig], drivers_data: &[(&str, u16, u16, &[u8])]) -> Result<Vec<alloc::string::String>, wasmi::Error> {
+    pub fn load_drivers(
+        &self,
+        linker: &mut crate::wasm::linker::WasmComponentLinker,
+        devices: &[PciConfig],
+        drivers_data: &[(&str, u16, u16, &[u8])],
+    ) -> Result<Vec<alloc::string::String>, wasmi::Error> {
         let mut loaded = Vec::new();
         for config in devices {
             for (driver_name, vendor_id, device_id, wasm_bytes) in drivers_data {
                 if config.vendor_id == *vendor_id && config.device_id == *device_id {
-                    let instance_name = alloc::format!("{}_{}_{}_{}", driver_name, config.bus, config.device, config.function);
+                    let instance_name = alloc::format!(
+                        "{}_{}_{}_{}",
+                        driver_name,
+                        config.bus,
+                        config.device,
+                        config.function
+                    );
                     linker.add_module(&instance_name, wasm_bytes)?;
                     loaded.push(instance_name);
                 }
@@ -205,7 +217,17 @@ impl PciEnumerator {
         Ok(loaded)
     }
 
-    pub fn parse_config(&self, vendor_id: u16, device_id: u16, class_code: u8, subclass: u8, prog_if: u8, bus: u8, device: u8, function: u8) -> PciParseResult {
+    pub fn parse_config(
+        &self,
+        vendor_id: u16,
+        device_id: u16,
+        class_code: u8,
+        subclass: u8,
+        prog_if: u8,
+        bus: u8,
+        device: u8,
+        function: u8,
+    ) -> PciParseResult {
         if vendor_id == 0xffff {
             PciParseResult::InvalidVendor
         } else {
@@ -263,8 +285,26 @@ mod tests {
         let mut linker = crate::wasm::linker::WasmComponentLinker::new();
 
         let devices = alloc::vec![
-            PciConfig { vendor_id: 0x8086, device_id: 0x100e, class_code: 0x02, subclass: 0, prog_if: 0, bus: 0, device: 1, function: 0 },
-            PciConfig { vendor_id: 0x1234, device_id: 0x5678, class_code: 0x01, subclass: 0, prog_if: 0, bus: 0, device: 2, function: 0 },
+            PciConfig {
+                vendor_id: 0x8086,
+                device_id: 0x100e,
+                class_code: 0x02,
+                subclass: 0,
+                prog_if: 0,
+                bus: 0,
+                device: 1,
+                function: 0
+            },
+            PciConfig {
+                vendor_id: 0x1234,
+                device_id: 0x5678,
+                class_code: 0x01,
+                subclass: 0,
+                prog_if: 0,
+                bus: 0,
+                device: 2,
+                function: 0
+            },
         ];
 
         let dummy_wasm = [
