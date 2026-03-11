@@ -37,6 +37,9 @@ pub mod capabilities;
 pub mod virtio_blk;
 
 #[cfg(feature = "verus")]
+pub mod virtio_net;
+
+#[cfg(feature = "verus")]
 pub mod interrupts;
 
 #[cfg(feature = "verus")]
@@ -79,6 +82,9 @@ pub mod capabilities;
 
 #[cfg(not(feature = "verus"))]
 pub mod virtio_blk;
+
+#[cfg(not(feature = "verus"))]
+pub mod virtio_net;
 
 #[cfg(not(feature = "verus"))]
 #[cfg(test)]

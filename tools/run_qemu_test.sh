@@ -4,7 +4,7 @@ set -e
 echo "Building kernel..."
 # We need to build the kernel target
 # Use RUSTC_BOOTSTRAP=1 to allow -Z build-std on stable
-RUSTC_BOOTSTRAP=1 cargo +1.93.0-x86_64-unknown-linux-gnu build -p kernel --target x86_64-unknown-uefi -Zbuild-std=core,compiler_builtins,alloc,panic_abort --release
+RUSTC_BOOTSTRAP=1 cargo +1.93.1-x86_64-unknown-linux-gnu build -p kernel --target x86_64-unknown-uefi -Zbuild-std=core,compiler_builtins,alloc,panic_abort --release
 
 # Ensure we have ovmf for QEMU testing
 sudo apt-get update || true
