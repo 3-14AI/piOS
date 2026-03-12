@@ -38,6 +38,7 @@ verus! {
             PciEnumerator { max_bus }
         }
 
+        #[allow(clippy::too_many_arguments)]
         pub fn parse_config(&self, vendor_id: u16, device_id: u16, class_code: u8, subclass: u8, prog_if: u8, bus: u8, device: u8, function: u8) -> (res: PciParseResult)
             ensures
                 vendor_id == 0xffff ==> res is InvalidVendor,
@@ -78,11 +79,22 @@ use core::arch::asm;
 pub struct PciPortManager;
 
 #[cfg(not(feature = "verus"))]
+impl Default for PciPortManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 impl PciPortManager {
     pub fn new() -> Self {
         PciPortManager
     }
 
+    /// # Safety
+    /// Writing directly to arbitrary ports using `out` instruction is inherently unsafe.
+    /// The caller must ensure that the targeted port correctly handles the value provided
+    /// without violating memory bounds or triggering unstable device states.
     pub unsafe fn outl(&self, port: u16, value: u32) {
         asm!(
             "out dx, eax",
@@ -92,6 +104,10 @@ impl PciPortManager {
         );
     }
 
+    /// # Safety
+    /// Reading from arbitrary ports using `in` instruction is unsafe.
+    /// The caller must verify that performing a read on the specific I/O port does not
+    /// trigger undesired side effects (e.g., clearing hardware state inadvertently).
     pub unsafe fn inl(&self, port: u16) -> u32 {
         let value: u32;
         asm!(
@@ -217,6 +233,7 @@ impl PciEnumerator {
         Ok(loaded)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn parse_config(
         &self,
         vendor_id: u16,
