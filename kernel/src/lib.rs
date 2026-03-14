@@ -123,3 +123,9 @@ mod tests {
         verifier::kernel_main(&info);
     }
 }
+
+#[cfg(feature = "verus")]
+pub mod pci;
+
+#[cfg(not(feature = "verus"))]
+pub mod pci;
