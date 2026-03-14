@@ -152,6 +152,7 @@ impl PciEnumerator {
         PciEnumerator { max_bus }
     }
 
+    #[cfg(not(test))]
     pub fn read_config_register(bus: u8, device: u8, function: u8, offset: u8) -> u32 {
         let address = 0x80000000
             | ((bus as u32) << 16)
@@ -164,6 +165,46 @@ impl PciEnumerator {
             port_manager.outl(0xCF8, address);
             port_manager.inl(0xCFC)
         }
+    }
+
+    #[cfg(test)]
+    pub fn read_config_register(bus: u8, device: u8, function: u8, offset: u8) -> u32 {
+        // Mock implementation for tests
+        if bus == 0 && device == 0 && function == 0 {
+            if offset == 0 {
+                return 0x100e8086; // vendor 8086, device 100e
+            }
+            if offset == 8 {
+                return 0x02000000; // class code 0x02
+            }
+            if offset == 12 {
+                return 0x00000000; // single function
+            }
+        }
+        if bus == 0 && device == 1 && function == 0 {
+            if offset == 0 {
+                return 0x10011af4; // vendor 1af4, device 1001
+            }
+            if offset == 8 {
+                return 0x01000000; // class code 0x01
+            }
+            if offset == 12 {
+                return 0x00800000; // multi-function
+            }
+        }
+        if bus == 0 && device == 1 && function == 1 {
+            if offset == 0 {
+                return 0x10021af4; // vendor 1af4, device 1002
+            }
+            if offset == 8 {
+                return 0x02000000; // class code 0x02
+            }
+            if offset == 12 {
+                return 0x00000000; // multi-function flag only checked on func 0
+            }
+        }
+
+        0xFFFFFFFF // Invalid vendor
     }
 
     pub fn scan_bus(&self) -> Vec<PciConfig> {
@@ -294,6 +335,25 @@ mod tests {
         let e = PciEnumerator::new(255);
         let res = e.parse_config(0xffff, 0x0000, 0, 0, 0, 0, 0, 0);
         assert_eq!(res, PciParseResult::InvalidVendor);
+    }
+
+    #[test]
+    fn test_pci_port_manager_new() {
+        let _ = PciPortManager::new();
+        let _ = PciPortManager::default();
+    }
+
+    #[test]
+    fn test_pci_scan_bus() {
+        let e = PciEnumerator::new(0); // only scan bus 0 in tests
+        let devices = e.scan_bus();
+        assert_eq!(devices.len(), 3);
+        assert_eq!(devices[0].vendor_id, 0x8086);
+        assert_eq!(devices[0].device_id, 0x100e);
+        assert_eq!(devices[1].vendor_id, 0x1af4);
+        assert_eq!(devices[1].device_id, 0x1001);
+        assert_eq!(devices[2].vendor_id, 0x1af4);
+        assert_eq!(devices[2].device_id, 0x1002);
     }
 
     #[test]
