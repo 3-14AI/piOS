@@ -1,4 +1,5 @@
 #![allow(unused_imports)]
+#![allow(clippy::result_unit_err)]
 
 #[cfg(feature = "verus")]
 use vstd::prelude::*;
