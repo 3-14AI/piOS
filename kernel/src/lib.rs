@@ -47,6 +47,9 @@ pub mod wasm;
 
 pub mod dma;
 
+#[cfg(feature = "verus")]
+pub mod vfs;
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
@@ -87,6 +90,9 @@ pub mod virtio_blk;
 
 #[cfg(not(feature = "verus"))]
 pub mod virtio_net;
+
+#[cfg(not(feature = "verus"))]
+pub mod vfs;
 
 #[cfg(not(feature = "verus"))]
 #[cfg(test)]
