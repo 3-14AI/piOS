@@ -278,7 +278,11 @@ impl Vfs {
         depth_map.insert(root, 0);
         locks.insert(root, false);
 
-        Vfs { parent_map, depth_map, locks }
+        Vfs {
+            parent_map,
+            depth_map,
+            locks,
+        }
     }
 
     pub fn mkdir(&mut self, parent: u64, child: u64) -> Result<(), ()> {
