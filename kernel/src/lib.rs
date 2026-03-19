@@ -40,6 +40,9 @@ pub mod virtio_blk;
 pub mod virtio_net;
 
 #[cfg(feature = "verus")]
+pub mod virtio_gpu;
+
+#[cfg(feature = "verus")]
 pub mod interrupts;
 
 #[cfg(feature = "verus")]
@@ -90,6 +93,9 @@ pub mod virtio_blk;
 
 #[cfg(not(feature = "verus"))]
 pub mod virtio_net;
+
+#[cfg(not(feature = "verus"))]
+pub mod virtio_gpu;
 
 #[cfg(not(feature = "verus"))]
 pub mod vfs;
