@@ -4,7 +4,7 @@ members = [
     "libs/pios-common",
     "libs/pios-api",
     "tools/builder"
-, "test_wasi"]
+, "test_wasi", "libs/vector_db"]
 exclude = [
     "tools/verus"
 ]

@@ -283,6 +283,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
 
 [[package]]
+name = "vector_db"
+version = "0.1.0"
+dependencies = [
+ "libm",
+]
+
+[[package]]
 name = "verus_builtin"
 version = "0.0.0-2026-03-01-0109"
 
