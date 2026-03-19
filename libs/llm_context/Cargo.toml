@@ -1,0 +1,7 @@
+[package]
+name = "llm_context"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vector_db = { path = "../vector_db" }
