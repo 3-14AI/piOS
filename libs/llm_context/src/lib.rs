@@ -126,10 +126,8 @@ impl LlmContextManager {
                         };
 
                         // Check if we already have it to avoid duplicates
-                        if !self.active_pages.iter().any(|p| p.id == page.id) {
-                            if self.add_page(page) {
-                                loaded_count += 1;
-                            }
+                        if !self.active_pages.iter().any(|p| p.id == page.id) && self.add_page(page) {
+                            loaded_count += 1;
                         }
                     }
                 }
