@@ -82,11 +82,7 @@ impl WasmComponentLinker {
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::proc_exit),
         )?;
 
-        linker.define(
-            "wasi_ephemeral_nn",
-            "load",
-            Func::wrap(&mut store, load),
-        )?;
+        linker.define("wasi_ephemeral_nn", "load", Func::wrap(&mut store, load))?;
         linker.define(
             "wasi_ephemeral_nn",
             "load_by_name",
