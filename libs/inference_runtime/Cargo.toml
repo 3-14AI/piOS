@@ -1,0 +1,10 @@
+[package]
+name = "inference_runtime"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mistralrs = { version = "0.7.0", default-features = false }
+
+[lints]
+workspace = true
