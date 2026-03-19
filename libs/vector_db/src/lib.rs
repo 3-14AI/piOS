@@ -2,8 +2,8 @@
 
 extern crate alloc;
 
-use alloc::vec::Vec;
 use alloc::string::String;
+use alloc::vec::Vec;
 
 /// Represents a single vector record in the database.
 #[derive(Clone, Debug)]
@@ -63,10 +63,15 @@ impl VectorDb {
     }
 
     /// Searches for the top `k` most similar records using cosine similarity.
-    pub fn search_cosine(&self, query: &[f32], k: usize) -> Result<Vec<(f32, &VectorRecord)>, Error> {
+    pub fn search_cosine(
+        &self,
+        query: &[f32],
+        k: usize,
+    ) -> Result<Vec<(f32, &VectorRecord)>, Error> {
         self.check_dimension(query.len())?;
 
-        let mut results: Vec<(f32, &VectorRecord)> = self.records
+        let mut results: Vec<(f32, &VectorRecord)> = self
+            .records
             .iter()
             .map(|record| (cosine_similarity(&record.vector, query), record))
             .collect();
@@ -79,10 +84,15 @@ impl VectorDb {
     }
 
     /// Searches for the top `k` closest records using squared Euclidean distance.
-    pub fn search_euclidean(&self, query: &[f32], k: usize) -> Result<Vec<(f32, &VectorRecord)>, Error> {
+    pub fn search_euclidean(
+        &self,
+        query: &[f32],
+        k: usize,
+    ) -> Result<Vec<(f32, &VectorRecord)>, Error> {
         self.check_dimension(query.len())?;
 
-        let mut results: Vec<(f32, &VectorRecord)> = self.records
+        let mut results: Vec<(f32, &VectorRecord)> = self
+            .records
             .iter()
             .map(|record| (squared_euclidean_distance(&record.vector, query), record))
             .collect();
@@ -125,7 +135,7 @@ impl VectorDb {
                 });
             }
         } else if query_len == 0 {
-             return Err(Error::DimensionMismatch {
+            return Err(Error::DimensionMismatch {
                 expected: 1, // just something > 0
                 got: 0,
             });
@@ -215,16 +225,34 @@ mod tests {
 
         assert!(matches!(
             db.insert(record),
-            Err(Error::DimensionMismatch { expected: 2, got: 3 })
+            Err(Error::DimensionMismatch {
+                expected: 2,
+                got: 3
+            })
         ));
     }
 
     #[test]
     fn test_search_cosine() {
         let mut db = VectorDb::new();
-        db.insert(VectorRecord { id: String::from("1"), vector: vec![1.0, 0.0], metadata: None }).unwrap();
-        db.insert(VectorRecord { id: String::from("2"), vector: vec![0.0, 1.0], metadata: None }).unwrap();
-        db.insert(VectorRecord { id: String::from("3"), vector: vec![0.707, 0.707], metadata: None }).unwrap();
+        db.insert(VectorRecord {
+            id: String::from("1"),
+            vector: vec![1.0, 0.0],
+            metadata: None,
+        })
+        .unwrap();
+        db.insert(VectorRecord {
+            id: String::from("2"),
+            vector: vec![0.0, 1.0],
+            metadata: None,
+        })
+        .unwrap();
+        db.insert(VectorRecord {
+            id: String::from("3"),
+            vector: vec![0.707, 0.707],
+            metadata: None,
+        })
+        .unwrap();
 
         let query = vec![1.0, 0.0];
         let results = db.search_cosine(&query, 2).unwrap();
@@ -237,9 +265,24 @@ mod tests {
     #[test]
     fn test_search_euclidean() {
         let mut db = VectorDb::new();
-        db.insert(VectorRecord { id: String::from("1"), vector: vec![0.0, 0.0], metadata: None }).unwrap();
-        db.insert(VectorRecord { id: String::from("2"), vector: vec![1.0, 1.0], metadata: None }).unwrap();
-        db.insert(VectorRecord { id: String::from("3"), vector: vec![2.0, 2.0], metadata: None }).unwrap();
+        db.insert(VectorRecord {
+            id: String::from("1"),
+            vector: vec![0.0, 0.0],
+            metadata: None,
+        })
+        .unwrap();
+        db.insert(VectorRecord {
+            id: String::from("2"),
+            vector: vec![1.0, 1.0],
+            metadata: None,
+        })
+        .unwrap();
+        db.insert(VectorRecord {
+            id: String::from("3"),
+            vector: vec![2.0, 2.0],
+            metadata: None,
+        })
+        .unwrap();
 
         let query = vec![0.5, 0.5];
         let results = db.search_euclidean(&query, 2).unwrap();
@@ -256,7 +299,12 @@ mod tests {
     #[test]
     fn test_delete() {
         let mut db = VectorDb::new();
-        db.insert(VectorRecord { id: String::from("1"), vector: vec![1.0], metadata: None }).unwrap();
+        db.insert(VectorRecord {
+            id: String::from("1"),
+            vector: vec![1.0],
+            metadata: None,
+        })
+        .unwrap();
 
         assert!(db.delete("1"));
         assert!(!db.delete("2"));
