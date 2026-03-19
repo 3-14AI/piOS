@@ -8,6 +8,7 @@ pub const WASI_ERRNO_NOSYS: i32 = 52;
 
 pub struct WasiCtx {
     pub fds: Vec<Option<crate::ipc::RendezvousChannel<Vec<u8>>>>,
+    #[cfg(not(feature = "verus"))]
     pub nn_ctx: crate::wasm::wasi_nn::WasiNnCtx,
 }
 
@@ -26,6 +27,7 @@ impl WasiCtx {
         }
         Self {
             fds,
+            #[cfg(not(feature = "verus"))]
             nn_ctx: crate::wasm::wasi_nn::WasiNnCtx::new(),
         }
     }

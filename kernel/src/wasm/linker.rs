@@ -2,10 +2,8 @@ extern crate alloc;
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 // use alloc::vec::Vec;
-use crate::wasm::wasi::{
-    args_get, args_sizes_get, environ_get, environ_sizes_get, fd_close, fd_read, fd_write,
-    proc_exit, WasiCtx,
-};
+use crate::wasm::wasi::WasiCtx;
+#[cfg(not(feature = "verus"))]
 use crate::wasm::wasi_nn::{
     compute, get_output, init_execution_context, load, load_by_name, set_input,
 };
@@ -82,32 +80,35 @@ impl WasmComponentLinker {
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::proc_exit),
         )?;
 
-        linker.define("wasi_ephemeral_nn", "load", Func::wrap(&mut store, load))?;
-        linker.define(
-            "wasi_ephemeral_nn",
-            "load_by_name",
-            Func::wrap(&mut store, load_by_name),
-        )?;
-        linker.define(
-            "wasi_ephemeral_nn",
-            "init_execution_context",
-            Func::wrap(&mut store, init_execution_context),
-        )?;
-        linker.define(
-            "wasi_ephemeral_nn",
-            "set_input",
-            Func::wrap(&mut store, set_input),
-        )?;
-        linker.define(
-            "wasi_ephemeral_nn",
-            "compute",
-            Func::wrap(&mut store, compute),
-        )?;
-        linker.define(
-            "wasi_ephemeral_nn",
-            "get_output",
-            Func::wrap(&mut store, get_output),
-        )?;
+        #[cfg(not(feature = "verus"))]
+        {
+            linker.define("wasi_ephemeral_nn", "load", Func::wrap(&mut store, load))?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "load_by_name",
+                Func::wrap(&mut store, load_by_name),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "init_execution_context",
+                Func::wrap(&mut store, init_execution_context),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "set_input",
+                Func::wrap(&mut store, set_input),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "compute",
+                Func::wrap(&mut store, compute),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "get_output",
+                Func::wrap(&mut store, get_output),
+            )?;
+        }
 
         // First pass: instantiate all dependencies
         for (name, module) in &self.modules {
@@ -309,13 +310,49 @@ mod tests {
         let main_wasm = wat::parse_str(
             r#"
             (module
+              (import "wasi_ephemeral_nn" "load" (func $load (param i32 i32 i32 i32 i32) (result i32)))
               (import "wasi_ephemeral_nn" "load_by_name" (func $load_by_name (param i32 i32 i32) (result i32)))
+              (import "wasi_ephemeral_nn" "init_execution_context" (func $init_execution_context (param i32 i32) (result i32)))
+              (import "wasi_ephemeral_nn" "set_input" (func $set_input (param i32 i32 i32) (result i32)))
+              (import "wasi_ephemeral_nn" "compute" (func $compute (param i32) (result i32)))
+              (import "wasi_ephemeral_nn" "get_output" (func $get_output (param i32 i32 i32 i32 i32) (result i32)))
               (memory (export "memory") 1)
               (func $main (export "main")
                 i32.const 0
                 i32.const 0
+                i32.const 0
+                i32.const 0
                 i32.const 16
+                call $load
+                drop
+
+                i32.const 0
+                i32.const 0
+                i32.const 20
                 call $load_by_name
+                drop
+
+                i32.const 1
+                i32.const 24
+                call $init_execution_context
+                drop
+
+                i32.const 1
+                i32.const 0
+                i32.const 30
+                call $set_input
+                drop
+
+                i32.const 1
+                call $compute
+                drop
+
+                i32.const 1
+                i32.const 0
+                i32.const 30
+                i32.const 40
+                i32.const 44
+                call $get_output
                 drop
               )
             )
