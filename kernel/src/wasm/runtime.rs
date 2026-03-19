@@ -4,6 +4,10 @@ use crate::wasm::wasi::{
     args_get, args_sizes_get, environ_get, environ_sizes_get, fd_close, fd_read, fd_write,
     proc_exit, WasiCtx,
 };
+#[cfg(not(feature = "verus"))]
+use crate::wasm::wasi_nn::{
+    compute, get_output, init_execution_context, load, load_by_name, set_input,
+};
 use alloc::vec::Vec;
 use wasmi::{Engine, Extern, Func, Linker, Module, Store};
 
@@ -70,6 +74,36 @@ impl WasmRuntime {
             "proc_exit",
             Func::wrap(&mut store, proc_exit),
         )?;
+
+        #[cfg(not(feature = "verus"))]
+        {
+            linker.define("wasi_ephemeral_nn", "load", Func::wrap(&mut store, load))?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "load_by_name",
+                Func::wrap(&mut store, load_by_name),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "init_execution_context",
+                Func::wrap(&mut store, init_execution_context),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "set_input",
+                Func::wrap(&mut store, set_input),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "compute",
+                Func::wrap(&mut store, compute),
+            )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "get_output",
+                Func::wrap(&mut store, get_output),
+            )?;
+        }
 
         // For backward compatibility with the old test
         let _ = linker.define(
