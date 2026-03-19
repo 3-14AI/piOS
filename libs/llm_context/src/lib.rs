@@ -95,9 +95,15 @@ impl LlmContextManager {
 
     /// Searches the vector database for relevant context pages and loads them into the active window.
     /// Uses cosine similarity to find the top `k` records, and loads them if there's space.
-    pub fn load_relevant_context(&mut self, query: &[f32], k: usize) -> Result<usize, vector_db::Error> {
+    pub fn load_relevant_context(
+        &mut self,
+        query: &[f32],
+        k: usize,
+    ) -> Result<usize, vector_db::Error> {
         // Collect references and clone them to release the immutable borrow
-        let results: Vec<_> = self.vector_db.search_cosine(query, k)?
+        let results: Vec<_> = self
+            .vector_db
+            .search_cosine(query, k)?
             .into_iter()
             .map(|(score, rec)| (score, rec.clone()))
             .collect();
