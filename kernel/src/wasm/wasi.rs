@@ -8,6 +8,7 @@ pub const WASI_ERRNO_NOSYS: i32 = 52;
 
 pub struct WasiCtx {
     pub fds: Vec<Option<crate::ipc::RendezvousChannel<Vec<u8>>>>,
+    pub nn_ctx: crate::wasm::wasi_nn::WasiNnCtx,
 }
 
 impl Default for WasiCtx {
@@ -23,7 +24,10 @@ impl WasiCtx {
         for _ in 0..3 {
             fds.push(Some(crate::ipc::RendezvousChannel::new()));
         }
-        Self { fds }
+        Self {
+            fds,
+            nn_ctx: crate::wasm::wasi_nn::WasiNnCtx::new(),
+        }
     }
 }
 

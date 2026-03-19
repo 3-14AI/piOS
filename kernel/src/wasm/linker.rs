@@ -2,8 +2,14 @@ extern crate alloc;
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 // use alloc::vec::Vec;
-use crate::wasm::wasi::WasiCtx;
-use wasmi::{Engine, Instance, Linker, Module, Store};
+use crate::wasm::wasi::{
+    args_get, args_sizes_get, environ_get, environ_sizes_get, fd_close, fd_read, fd_write,
+    proc_exit, WasiCtx,
+};
+use crate::wasm::wasi_nn::{
+    compute, get_output, init_execution_context, load, load_by_name, set_input,
+};
+use wasmi::{Engine, Func, Instance, Linker, Module, Store};
 
 pub struct WasmComponentLinker {
     engine: Engine,
@@ -74,6 +80,37 @@ impl WasmComponentLinker {
             "wasi_snapshot_preview1",
             "proc_exit",
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::proc_exit),
+        )?;
+
+        linker.define(
+            "wasi_ephemeral_nn",
+            "load",
+            Func::wrap(&mut store, load),
+        )?;
+        linker.define(
+            "wasi_ephemeral_nn",
+            "load_by_name",
+            Func::wrap(&mut store, load_by_name),
+        )?;
+        linker.define(
+            "wasi_ephemeral_nn",
+            "init_execution_context",
+            Func::wrap(&mut store, init_execution_context),
+        )?;
+        linker.define(
+            "wasi_ephemeral_nn",
+            "set_input",
+            Func::wrap(&mut store, set_input),
+        )?;
+        linker.define(
+            "wasi_ephemeral_nn",
+            "compute",
+            Func::wrap(&mut store, compute),
+        )?;
+        linker.define(
+            "wasi_ephemeral_nn",
+            "get_output",
+            Func::wrap(&mut store, get_output),
         )?;
 
         // First pass: instantiate all dependencies
@@ -265,6 +302,37 @@ mod tests {
         assert!(
             res.is_ok(),
             "failed to link and run with dependency: {:?}",
+            res.err()
+        );
+    }
+
+    #[test]
+    fn test_wasi_nn_linking() {
+        let mut linker = WasmComponentLinker::new();
+
+        let main_wasm = wat::parse_str(
+            r#"
+            (module
+              (import "wasi_ephemeral_nn" "load_by_name" (func $load_by_name (param i32 i32 i32) (result i32)))
+              (memory (export "memory") 1)
+              (func $main (export "main")
+                i32.const 0
+                i32.const 0
+                i32.const 16
+                call $load_by_name
+                drop
+              )
+            )
+        "#,
+        )
+        .unwrap();
+
+        assert!(linker.add_module("main", &main_wasm).is_ok());
+
+        let res = linker.link_and_run("main");
+        assert!(
+            res.is_ok(),
+            "failed to link and run with wasi_ephemeral_nn: {:?}",
             res.err()
         );
     }
