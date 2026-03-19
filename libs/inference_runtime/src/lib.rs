@@ -73,7 +73,12 @@ impl InferenceEngine {
         Ok(self.execution_contexts)
     }
 
-    pub fn set_input(&mut self, _context: usize, _index: u32, _tensor: &Tensor) -> Result<(), Error> {
+    pub fn set_input(
+        &mut self,
+        _context: usize,
+        _index: u32,
+        _tensor: &Tensor,
+    ) -> Result<(), Error> {
         self.has_input = true;
         Ok(())
     }
@@ -85,7 +90,12 @@ impl InferenceEngine {
         Ok(())
     }
 
-    pub fn get_output(&self, _context: usize, _index: u32, out_buffer: &mut [u8]) -> Result<usize, Error> {
+    pub fn get_output(
+        &self,
+        _context: usize,
+        _index: u32,
+        out_buffer: &mut [u8],
+    ) -> Result<usize, Error> {
         if !self.has_input {
             return Err(Error::ComputeFailed);
         }

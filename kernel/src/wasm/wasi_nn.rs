@@ -11,8 +11,8 @@ pub const WASI_NN_ERRNO_UNSUPPORTED_OPERATION: i32 = 6;
 pub const WASI_NN_ERRNO_TOO_LARGE: i32 = 7;
 pub const WASI_NN_ERRNO_NOT_FOUND: i32 = 8;
 
-use inference_runtime::{InferenceEngine, Tensor};
 use alloc::vec::Vec;
+use inference_runtime::{InferenceEngine, Tensor};
 
 pub struct WasiNnCtx {
     pub engine: InferenceEngine,
@@ -76,7 +76,11 @@ pub fn load_by_name(
         None => return WASI_NN_ERRNO_MISSING_MEMORY,
     };
 
-    let model_res = caller.data_mut().nn_ctx.engine.load_model_by_name("mock_name");
+    let model_res = caller
+        .data_mut()
+        .nn_ctx
+        .engine
+        .load_model_by_name("mock_name");
     if model_res.is_err() {
         return WASI_NN_ERRNO_INVALID_ARGUMENT;
     }
@@ -112,7 +116,11 @@ pub fn init_execution_context(
         name: "mock_model",
     };
 
-    let ctx_res = caller.data_mut().nn_ctx.engine.init_execution_context(&mock_model);
+    let ctx_res = caller
+        .data_mut()
+        .nn_ctx
+        .engine
+        .init_execution_context(&mock_model);
     if ctx_res.is_err() {
         return WASI_NN_ERRNO_INVALID_ARGUMENT;
     }
@@ -140,14 +148,26 @@ pub fn set_input(
     _tensor_ptr: i32, // Simplified for mock, normally we'd read the tensor struct
 ) -> i32 {
     let tensor = Tensor::new(Vec::new(), Vec::new());
-    if caller.data_mut().nn_ctx.engine.set_input(context as usize, index as u32, &tensor).is_err() {
+    if caller
+        .data_mut()
+        .nn_ctx
+        .engine
+        .set_input(context as usize, index as u32, &tensor)
+        .is_err()
+    {
         return WASI_NN_ERRNO_INVALID_ARGUMENT;
     }
     WASI_NN_ERRNO_SUCCESS
 }
 
 pub fn compute(mut caller: Caller<'_, crate::wasm::wasi::WasiCtx>, context: i32) -> i32 {
-    if caller.data_mut().nn_ctx.engine.compute(context as usize).is_err() {
+    if caller
+        .data_mut()
+        .nn_ctx
+        .engine
+        .compute(context as usize)
+        .is_err()
+    {
         return WASI_NN_ERRNO_RUNTIME_ERROR;
     }
     WASI_NN_ERRNO_SUCCESS
@@ -168,12 +188,23 @@ pub fn get_output(
 
     let mut tmp_buffer = alloc::vec![0u8; out_buffer_max_size as usize];
 
-    let bytes_written = match caller.data_mut().nn_ctx.engine.get_output(context as usize, index as u32, &mut tmp_buffer) {
+    let bytes_written = match caller.data_mut().nn_ctx.engine.get_output(
+        context as usize,
+        index as u32,
+        &mut tmp_buffer,
+    ) {
         Ok(b) => b,
         Err(_) => return WASI_NN_ERRNO_RUNTIME_ERROR,
     };
 
-    if memory.write(&mut caller, out_buffer as u32 as usize, &tmp_buffer[..bytes_written]).is_err() {
+    if memory
+        .write(
+            &mut caller,
+            out_buffer as u32 as usize,
+            &tmp_buffer[..bytes_written],
+        )
+        .is_err()
+    {
         return WASI_NN_ERRNO_INVALID_ARGUMENT;
     }
 

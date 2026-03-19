@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-mistralrs = { version = "0.7.0", default-features = false }
+candle-core = { version = "0.3.3", default-features = false, optional = true }
 
 [lints]
 workspace = true
