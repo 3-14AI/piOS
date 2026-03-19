@@ -48,7 +48,11 @@ pub fn load(
     let graph_handle = caller.data().nn_ctx.loaded_graphs as u32;
 
     if memory
-        .write(&mut caller, graph_ptr as u32 as usize, &graph_handle.to_le_bytes())
+        .write(
+            &mut caller,
+            graph_ptr as u32 as usize,
+            &graph_handle.to_le_bytes(),
+        )
         .is_err()
     {
         return WASI_NN_ERRNO_INVALID_ARGUMENT;
@@ -72,7 +76,11 @@ pub fn load_by_name(
     let graph_handle = caller.data().nn_ctx.loaded_graphs as u32;
 
     if memory
-        .write(&mut caller, graph_ptr as u32 as usize, &graph_handle.to_le_bytes())
+        .write(
+            &mut caller,
+            graph_ptr as u32 as usize,
+            &graph_handle.to_le_bytes(),
+        )
         .is_err()
     {
         return WASI_NN_ERRNO_INVALID_ARGUMENT;
@@ -173,7 +181,7 @@ mod tests {
     #[test]
     fn test_wasi_nn_stubs() {
         use crate::wasm::wasi::WasiCtx;
-        use wasmi::{Engine, Store, Memory, MemoryType};
+        use wasmi::{Engine, Memory, MemoryType, Store};
 
         let engine = Engine::default();
         let mut store = Store::new(&engine, WasiCtx::new());
