@@ -2,7 +2,7 @@ extern crate alloc;
 
 use alloc::string::String;
 use alloc::vec::Vec;
-use inference_runtime::{InferenceEngine, Tensor, Model};
+use inference_runtime::{InferenceEngine, Model, Tensor};
 use vector_db::{VectorDb, VectorRecord};
 
 pub struct SemanticSearch {
@@ -15,7 +15,8 @@ impl SemanticSearch {
     pub fn new() -> Result<Self, &'static str> {
         let mut engine = InferenceEngine::new();
         // Load a mock model for generating embeddings
-        let model = engine.load_model_by_name("embedding_model")
+        let model = engine
+            .load_model_by_name("embedding_model")
             .map_err(|_| "Failed to load embedding model")?;
 
         Ok(Self {
@@ -26,21 +27,25 @@ impl SemanticSearch {
     }
 
     fn generate_embedding(&mut self, text: &str) -> Result<Vec<f32>, &'static str> {
-        let ctx = self.engine.init_execution_context(&self.model)
+        let ctx = self
+            .engine
+            .init_execution_context(&self.model)
             .map_err(|_| "Failed to init execution context")?;
 
         // Use the text length as a dummy tensor for the mock engine
         let data = alloc::vec![0; text.len()];
         let tensor = Tensor::new(data, alloc::vec![text.len()]);
 
-        self.engine.set_input(ctx, 0, &tensor)
+        self.engine
+            .set_input(ctx, 0, &tensor)
             .map_err(|_| "Failed to set input")?;
 
-        self.engine.compute(ctx)
-            .map_err(|_| "Failed to compute")?;
+        self.engine.compute(ctx).map_err(|_| "Failed to compute")?;
 
         let mut out_buffer = [0u8; 12]; // We'll mock a 3D float vector (3 * 4 bytes)
-        let _ = self.engine.get_output(ctx, 0, &mut out_buffer)
+        let _ = self
+            .engine
+            .get_output(ctx, 0, &mut out_buffer)
             .map_err(|_| "Failed to get output")?;
 
         // In reality, we'd parse the output buffer into floats.
@@ -58,14 +63,18 @@ impl SemanticSearch {
             metadata: Some(alloc::string::String::from(content)),
         };
 
-        self.db.insert(record).map_err(|_| "Failed to insert into vector DB")?;
+        self.db
+            .insert(record)
+            .map_err(|_| "Failed to insert into vector DB")?;
         Ok(())
     }
 
     pub fn search(&mut self, query: &str, k: usize) -> Result<Vec<(f32, u64)>, &'static str> {
         let query_embedding = self.generate_embedding(query)?;
 
-        let results = self.db.search_cosine(&query_embedding, k)
+        let results = self
+            .db
+            .search_cosine(&query_embedding, k)
             .map_err(|_| "Failed to search vector DB")?;
 
         let mut final_results = Vec::new();
