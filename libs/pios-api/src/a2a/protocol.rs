@@ -38,7 +38,13 @@ pub struct A2AMessage {
 }
 
 impl A2AMessage {
-    pub fn new(sender_id: u32, receiver_id: u32, msg_type: MessageType, priority: AgentPriority, payload_data: &[u8]) -> Self {
+    pub fn new(
+        sender_id: u32,
+        receiver_id: u32,
+        msg_type: MessageType,
+        priority: AgentPriority,
+        payload_data: &[u8],
+    ) -> Self {
         let mut payload = [0u8; 256];
         let payload_len = payload_data.len().min(256);
         payload[..payload_len].copy_from_slice(&payload_data[..payload_len]);

@@ -1,2 +1,2 @@
-pub mod protocol;
 pub mod priority;
+pub mod protocol;
