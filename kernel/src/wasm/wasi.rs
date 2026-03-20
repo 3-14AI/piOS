@@ -139,6 +139,89 @@ pub fn proc_exit(_caller: Caller<'_, WasiCtx>, _rval: i32) {
     // Usually this would trap or terminate the instance
 }
 
+#[cfg(not(feature = "verus"))]
+pub fn sys_intent(
+    mut caller: Caller<'_, WasiCtx>,
+    intent_ptr: i32,
+    intent_len: i32,
+    out_ptr: i32,
+    out_max_len: i32,
+    nwritten_ptr: i32,
+) -> i32 {
+    if !(0..=65536).contains(&intent_len) {
+        return WASI_ERRNO_BADF;
+    }
+    if !(0..=65536).contains(&out_max_len) {
+        return WASI_ERRNO_BADF;
+    }
+
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    let mut data = alloc::vec![0u8; intent_len as usize];
+    if memory
+        .read(&caller, intent_ptr as u32 as usize, &mut data)
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+
+    let engine = &mut caller.data_mut().nn_ctx.engine;
+
+    let model = match engine.load_model_by_name("intent_model") {
+        Ok(m) => m,
+        Err(_) => return WASI_ERRNO_BADF,
+    };
+
+    let ctx = match engine.init_execution_context(&model) {
+        Ok(c) => c,
+        Err(_) => return WASI_ERRNO_BADF,
+    };
+
+    let dims = alloc::vec![data.len()];
+    let tensor = inference_runtime::Tensor::new(data, dims);
+
+    if engine.set_input(ctx, 0, &tensor).is_err() {
+        return WASI_ERRNO_BADF;
+    }
+
+    if engine.compute(ctx).is_err() {
+        return WASI_ERRNO_BADF;
+    }
+
+    let mut out_buf = alloc::vec![0u8; out_max_len as usize];
+    let bytes = match engine.get_output(ctx, 0, &mut out_buf) {
+        Ok(b) => b,
+        Err(_) => return WASI_ERRNO_BADF,
+    };
+
+    let out_str = core::str::from_utf8(&out_buf[..bytes]).unwrap_or("");
+    log::info!("Intent translated to WASI: {}", out_str);
+
+    if memory
+        .write(&mut caller, out_ptr as u32 as usize, &out_buf[..bytes])
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+
+    let bytes_u32 = bytes as u32;
+    if memory
+        .write(
+            &mut caller,
+            nwritten_ptr as u32 as usize,
+            &bytes_u32.to_le_bytes(),
+        )
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+
+    WASI_ERRNO_SUCCESS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
