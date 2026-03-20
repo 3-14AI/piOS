@@ -148,10 +148,10 @@ pub fn sys_intent(
     out_max_len: i32,
     nwritten_ptr: i32,
 ) -> i32 {
-    if intent_len < 0 || intent_len > 65536 {
+    if !(0..=65536).contains(&intent_len) {
         return WASI_ERRNO_BADF;
     }
-    if out_max_len < 0 || out_max_len > 65536 {
+    if !(0..=65536).contains(&out_max_len) {
         return WASI_ERRNO_BADF;
     }
 
