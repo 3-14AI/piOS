@@ -8,6 +8,8 @@ use crate::wasm::wasi::{
 use crate::wasm::wasi_nn::{
     compute, get_output, init_execution_context, load, load_by_name, set_input,
 };
+#[cfg(not(feature = "verus"))]
+use crate::wasm::wasi::sys_intent;
 use alloc::vec::Vec;
 use wasmi::{Engine, Extern, Func, Linker, Module, Store};
 
@@ -77,6 +79,11 @@ impl WasmRuntime {
 
         #[cfg(not(feature = "verus"))]
         {
+            linker.define(
+                "wasi_snapshot_preview1",
+                "sys_intent",
+                Func::wrap(&mut store, sys_intent),
+            )?;
             linker.define("wasi_ephemeral_nn", "load", Func::wrap(&mut store, load))?;
             linker.define(
                 "wasi_ephemeral_nn",
@@ -242,5 +249,45 @@ mod tests {
         ];
         let res = runtime.run(&wasm_bytes);
         assert!(res.is_ok(), "failed to run valid wasm: {:?}", res.err());
+    }
+
+    #[test]
+    fn test_sys_intent() {
+        let runtime = WasmRuntime::new();
+        // A simple WASM module that imports sys_intent, allocates memory,
+        // writes "hello intent" to it, and calls sys_intent.
+        let wasm_text = r#"
+        (module
+            (import "wasi_snapshot_preview1" "sys_intent" (func $sys_intent (param i32 i32 i32 i32 i32) (result i32)))
+            (memory 1)
+            (export "memory" (memory 0))
+            (data (i32.const 16) "hello intent")
+            (func (export "main") (result i32)
+                ;; Call sys_intent(intent_ptr=16, intent_len=12, out_ptr=64, out_max_len=1024, nwritten_ptr=1100)
+                i32.const 16
+                i32.const 12
+                i32.const 64
+                i32.const 1024
+                i32.const 1100
+                call $sys_intent
+            )
+        )
+        "#;
+        let wasm_bytes = wat::parse_str(wasm_text).expect("Failed to parse WAT");
+
+        // Use lower-level wasmi to capture the return value of main
+        let module = Module::new(&runtime.engine, &wasm_bytes).unwrap();
+        let mut store = Store::new(&runtime.engine, WasiCtx::new());
+        let mut linker = <Linker<WasiCtx>>::new(&runtime.engine);
+        linker.define("wasi_snapshot_preview1", "sys_intent", Func::wrap(&mut store, crate::wasm::wasi::sys_intent)).unwrap();
+
+        let instance = linker.instantiate_and_start(&mut store, &module).unwrap();
+        let main = instance.get_export(&mut store, "main").unwrap().into_func().unwrap();
+        let typed_main = main.typed::<(), i32>(&store).unwrap();
+
+        let result = typed_main.call(&mut store, ()).unwrap();
+
+        // WASI_ERRNO_SUCCESS is 0
+        assert_eq!(result, 0, "sys_intent should return WASI_ERRNO_SUCCESS");
     }
 }
