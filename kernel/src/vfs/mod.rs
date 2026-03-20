@@ -394,3 +394,6 @@ mod tests {
         assert!(vfs.unlock(1).is_err());
     }
 }
+
+#[cfg(not(feature = "verus"))]
+pub mod semantic;

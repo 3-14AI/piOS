@@ -384,6 +384,7 @@ dependencies = [
  "log",
  "uefi",
  "uefi-services",
+ "vector_db",
  "verus_builtin",
  "verus_builtin_macros",
  "verus_state_machines_macros",

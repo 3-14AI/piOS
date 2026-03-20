@@ -13,6 +13,7 @@ verus_state_machines_macros = { path = "../tools/verus/verus-x86-linux/state_mac
 vstd = { path = "../tools/verus/verus-x86-linux/vstd", default-features = false, features = ["alloc"], optional = true }
 wasmi = { version = "1.0.9", default-features = false }
 inference_runtime = { path = "../libs/inference_runtime" }
+vector_db = { path = "../libs/vector_db" }
 
 [lib]
 name = "kernel"
