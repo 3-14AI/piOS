@@ -1,5 +1,7 @@
 extern crate alloc;
 
+#[cfg(not(feature = "verus"))]
+use crate::wasm::wasi::sys_intent;
 use crate::wasm::wasi::{
     args_get, args_sizes_get, environ_get, environ_sizes_get, fd_close, fd_read, fd_write,
     proc_exit, WasiCtx,
@@ -8,8 +10,6 @@ use crate::wasm::wasi::{
 use crate::wasm::wasi_nn::{
     compute, get_output, init_execution_context, load, load_by_name, set_input,
 };
-#[cfg(not(feature = "verus"))]
-use crate::wasm::wasi::sys_intent;
 use alloc::vec::Vec;
 use wasmi::{Engine, Extern, Func, Linker, Module, Store};
 
@@ -279,10 +279,20 @@ mod tests {
         let module = Module::new(&runtime.engine, &wasm_bytes).unwrap();
         let mut store = Store::new(&runtime.engine, WasiCtx::new());
         let mut linker = <Linker<WasiCtx>>::new(&runtime.engine);
-        linker.define("wasi_snapshot_preview1", "sys_intent", Func::wrap(&mut store, crate::wasm::wasi::sys_intent)).unwrap();
+        linker
+            .define(
+                "wasi_snapshot_preview1",
+                "sys_intent",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_intent),
+            )
+            .unwrap();
 
         let instance = linker.instantiate_and_start(&mut store, &module).unwrap();
-        let main = instance.get_export(&mut store, "main").unwrap().into_func().unwrap();
+        let main = instance
+            .get_export(&mut store, "main")
+            .unwrap()
+            .into_func()
+            .unwrap();
         let typed_main = main.typed::<(), i32>(&store).unwrap();
 
         let result = typed_main.call(&mut store, ()).unwrap();
