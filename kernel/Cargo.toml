@@ -12,6 +12,7 @@ verus_builtin_macros = { path = "../tools/verus/verus-x86-linux/builtin_macros",
 verus_state_machines_macros = { path = "../tools/verus/verus-x86-linux/state_machines_macros", optional = true }
 vstd = { path = "../tools/verus/verus-x86-linux/vstd", default-features = false, features = ["alloc"], optional = true }
 wasmi = { version = "1.0.9", default-features = false }
+inference_runtime = { path = "../libs/inference_runtime" }
 
 [lib]
 name = "kernel"
