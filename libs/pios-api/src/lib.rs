@@ -13,3 +13,5 @@ mod tests {
         assert_eq!(api_version(), 1);
     }
 }
+
+pub mod a2a;
