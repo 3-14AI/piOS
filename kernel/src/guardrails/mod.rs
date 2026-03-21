@@ -165,10 +165,11 @@ impl Guardrail {
 
     pub fn check_action(&self, agent: AgentId, resource: ResourceId) -> bool {
         for entry in &self.entries {
-            if entry.agent.0 == agent.0 && entry.resource.0 == resource.0 {
-                if entry.policy == AclPolicy::Allow {
-                    return true;
-                }
+            if entry.agent.0 == agent.0
+                && entry.resource.0 == resource.0
+                && entry.policy == AclPolicy::Allow
+            {
+                return true;
             }
         }
         false
