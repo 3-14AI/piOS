@@ -34,7 +34,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tools/verus
-          key: verus-${{ runner.os }}-${{ hashFiles('tools/install_verus.sh') }}
+          key: verus-${{ runner.os }}-1.94.0-${{ hashFiles('tools/install_verus.sh') }}
 
       - name: Install dependencies
         run: |
