@@ -135,13 +135,11 @@ mod tests {
         let prompt = McpPrompt {
             name: "test_prompt".to_string(),
             description: Some("A test prompt".to_string()),
-            arguments: vec![
-                McpPromptArgument {
-                    name: "arg1".to_string(),
-                    description: Some("Argument 1".to_string()),
-                    required: true,
-                }
-            ],
+            arguments: vec![McpPromptArgument {
+                name: "arg1".to_string(),
+                description: Some("Argument 1".to_string()),
+                required: true,
+            }],
         };
 
         assert_eq!(prompt.name, "test_prompt");
