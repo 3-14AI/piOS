@@ -1,5 +1,7 @@
 #![no_std]
 
+extern crate alloc;
+
 pub fn api_version() -> u32 {
     1
 }
@@ -15,3 +17,4 @@ mod tests {
 }
 
 pub mod a2a;
+pub mod mcp;
