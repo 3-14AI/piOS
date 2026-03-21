@@ -156,7 +156,11 @@ impl Guardrail {
     }
 
     pub fn add_rule(&mut self, agent: AgentId, resource: ResourceId, policy: AclPolicy) {
-        self.entries.push(AclEntry { agent, resource, policy });
+        self.entries.push(AclEntry {
+            agent,
+            resource,
+            policy,
+        });
     }
 
     pub fn check_action(&self, agent: AgentId, resource: ResourceId) -> bool {
