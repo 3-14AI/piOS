@@ -53,6 +53,9 @@ pub mod dma;
 #[cfg(feature = "verus")]
 pub mod vfs;
 
+#[cfg(feature = "verus")]
+pub mod guardrails;
+
 #[cfg(not(feature = "verus"))]
 pub mod boot {
     #[repr(C)]
@@ -99,6 +102,9 @@ pub mod virtio_gpu;
 
 #[cfg(not(feature = "verus"))]
 pub mod vfs;
+
+#[cfg(not(feature = "verus"))]
+pub mod guardrails;
 
 #[cfg(not(feature = "verus"))]
 #[cfg(test)]
