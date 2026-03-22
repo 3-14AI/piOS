@@ -31,7 +31,8 @@ pub extern "C" fn main() {
         sig.params.push(AbiParam::new(types::I32));
 
         let mut fn_builder_ctx = FunctionBuilderContext::new();
-        let mut func = Function::with_name_signature(cranelift_codegen::ir::UserFuncName::user(0, 0), sig);
+        let mut func =
+            Function::with_name_signature(cranelift_codegen::ir::UserFuncName::user(0, 0), sig);
         let mut builder = FunctionBuilder::new(&mut func, &mut fn_builder_ctx);
 
         let block0 = builder.create_block();
