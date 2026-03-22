@@ -1,15 +1,18 @@
-#![no_std]
 #![no_main]
 
-#[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> ! {
-    loop {}
-}
+use cranelift_codegen::{
+    ir::{types, AbiParam, Function, InstBuilder, Signature},
+    isa::CallConv,
+    Context,
+};
+use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext, Variable};
+use cranelift_module::{Linkage, Module};
+// use cranelift_native::builder as host_isa_builder; // not using native in wasi
 
 #[no_mangle]
 pub extern "C" fn main() {
     unsafe {
-        let text = b"hello\n";
+        let text = b"hello from cranelift integration\n";
         let iov = [text.as_ptr() as u32, text.len() as u32];
         let ptr = iov.as_ptr() as i32;
         let mut nwritten = 0i32;
@@ -22,6 +25,32 @@ pub extern "C" fn main() {
         environ_sizes_get(0, 0);
         args_get(0, 0);
         args_sizes_get(0, 0);
+
+        let mut sig = Signature::new(CallConv::SystemV);
+        sig.returns.push(AbiParam::new(types::I32));
+        sig.params.push(AbiParam::new(types::I32));
+
+        let mut fn_builder_ctx = FunctionBuilderContext::new();
+        let mut func = Function::with_name_signature(cranelift_codegen::ir::UserFuncName::user(0, 0), sig);
+        let mut builder = FunctionBuilder::new(&mut func, &mut fn_builder_ctx);
+
+        let block0 = builder.create_block();
+        builder.append_block_params_for_function_params(block0);
+        builder.switch_to_block(block0);
+        builder.seal_block(block0);
+
+        let x = builder.block_params(block0)[0];
+        let y = builder.ins().iconst(types::I32, 42);
+        let sum = builder.ins().iadd(x, y);
+        builder.ins().return_(&[sum]);
+
+        builder.finalize();
+
+        let text2 = b"cranelift build complete\n";
+        let iov2 = [text2.as_ptr() as u32, text2.len() as u32];
+        let ptr2 = iov2.as_ptr() as i32;
+        fd_write(1, ptr2, 1, &mut nwritten as *mut _ as i32);
+
         proc_exit(0);
     }
 }

@@ -3,6 +3,17 @@ name = "test_wasi"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+cranelift-codegen = { version = "0.106.0", default-features = false, features = ["std", "x86"] }
+cranelift-frontend = { version = "0.106.0" }
+cranelift-module = { version = "0.106.0" }
+cranelift-native = { version = "0.106.0" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
 [lib]
-crate-type = ["cdylib"]
 test = false
+crate-type = ["cdylib"]
