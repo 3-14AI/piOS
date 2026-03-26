@@ -3,10 +3,8 @@
 use cranelift_codegen::{
     ir::{types, AbiParam, Function, InstBuilder, Signature},
     isa::CallConv,
-    Context,
 };
-use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext, Variable};
-use cranelift_module::{Linkage, Module};
+use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext};
 // use cranelift_native::builder as host_isa_builder; // not using native in wasi
 
 #[no_mangle]
