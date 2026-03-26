@@ -17,6 +17,7 @@ pub enum CompileError {
     UndefinedVariable(String),
 }
 
+#[derive(Default)]
 pub struct CompilerContext {
     locals: BTreeMap<String, usize>,
     next_local: usize,
