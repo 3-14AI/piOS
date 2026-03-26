@@ -214,4 +214,53 @@ mod tests {
         let mir = result.unwrap();
         assert_eq!(mir.functions.len(), 1);
     }
+
+    #[test]
+    fn test_compile_complex() {
+        let function = Function {
+            name: "complex".into(),
+            params: vec!["a".into(), "b".into()],
+            body: vec![
+                Stmt::Let(
+                    "x".into(),
+                    Expr::Sub(
+                        Box::new(Expr::Var("a".into())),
+                        Box::new(Expr::Var("b".into())),
+                    ),
+                ),
+                Stmt::Assign(
+                    "x".into(),
+                    Expr::Mul(
+                        Box::new(Expr::Var("x".into())),
+                        Box::new(Expr::IntLiteral(2)),
+                    ),
+                ),
+                Stmt::Expr(Expr::Call("dummy".into(), vec![Expr::Var("x".into())])),
+                Stmt::Return(Expr::Var("x".into())),
+            ],
+        };
+        let module = Module {
+            functions: vec![function],
+        };
+        let result = compile_to_mir(&module);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_compile_errors() {
+        let function = Function {
+            name: "err".into(),
+            params: vec![],
+            body: vec![Stmt::Assign("undef".into(), Expr::IntLiteral(42))],
+        };
+        let module = Module {
+            functions: vec![function],
+        };
+        let result = compile_to_mir(&module);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            CompileError::UndefinedVariable("undef".into())
+        );
+    }
 }
