@@ -369,4 +369,16 @@ mod tests {
             res.err()
         );
     }
+
+    #[test]
+    fn test_cranelift_compiler_backend_integration() {
+        let mut linker = WasmComponentLinker::new();
+
+        // The `test_wasi.wasm` includes the cranelift integration
+        let wasm_bytes = include_bytes!("../../../test_wasi/test_wasi.wasm");
+
+        let result = linker.add_module("test_wasi", wasm_bytes);
+        // Depending on whether we want to run it, linking itself shouldn't fail due to imports
+        assert!(result.is_ok());
+    }
 }
