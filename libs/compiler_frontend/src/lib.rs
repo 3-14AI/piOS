@@ -167,8 +167,8 @@ pub fn compile_to_mir(module: &Module) -> Result<MirModule, CompileError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::boxed::Box;
     use crate::ast::Function;
+    use alloc::boxed::Box;
     use alloc::vec;
 
     #[test]
