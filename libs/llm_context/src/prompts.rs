@@ -12,6 +12,8 @@ Follow these guidelines strictly:
 5. Ensure safety and absence of undefined behavior.
 6. When performing bounds checking, rewrite additions as subtractions to prevent verifier failures related to potential arithmetic overflow.
 7. Use `Matches` or standard Rust `is_some()`/`is_none()` where appropriate instead of deprecated `#[is_variant]`.
+8. Explicitly using `assume(...)` statements bypasses the theorem prover and invalidates the proof; proofs should rely strictly on logical deductions from established invariants.
+9. Use the `=~=` operator instead of `==` to assert extensional equality of map domains (e.g., `map1.dom() =~= map2.dom()`).
 ";
 
 pub fn build_verus_rag_prompt(
