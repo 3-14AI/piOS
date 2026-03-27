@@ -151,3 +151,9 @@ pub mod pci;
 pub mod pci;
 
 pub mod hot_reload;
+
+#[cfg(feature = "verus")]
+pub mod telemetry;
+
+#[cfg(not(feature = "verus"))]
+pub mod telemetry;
