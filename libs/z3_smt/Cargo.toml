@@ -1,0 +1,11 @@
+[package]
+name = "z3_smt"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+std = ["z3"]
+
+[dependencies]
+z3 = { version = "0.12.1", optional = true }
