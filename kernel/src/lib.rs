@@ -149,3 +149,5 @@ pub mod pci;
 
 #[cfg(not(feature = "verus"))]
 pub mod pci;
+
+pub mod hot_reload;
