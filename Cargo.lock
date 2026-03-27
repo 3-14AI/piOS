@@ -114,6 +114,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
+name = "compiler_frontend"
+version = "0.1.0"
+
+[[package]]
 name = "cranelift-bforest"
 version = "0.106.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1114,11 +1118,11 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "verus_builtin"
-version = "0.0.0-2026-03-01-0109"
+version = "0.0.0-2026-03-22-0106"
 
 [[package]]
 name = "verus_builtin_macros"
-version = "0.0.0-2026-03-15-0111"
+version = "0.0.0-2026-03-17-2326"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1157,7 +1161,7 @@ dependencies = [
 
 [[package]]
 name = "vstd"
-version = "0.0.0-2026-03-15-0111"
+version = "0.0.0-2026-03-22-0106"
 dependencies = [
  "verus_builtin",
  "verus_builtin_macros",
