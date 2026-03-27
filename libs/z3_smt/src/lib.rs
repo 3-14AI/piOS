@@ -1,11 +1,11 @@
 #![no_std]
+extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
-extern crate alloc;
 
 #[cfg(feature = "std")]
 pub mod verifier {
-    use z3::ast::{Int};
+    use z3::ast::Int;
     use z3::{Config, Context, Solver};
 
     /// Verifies simple bounds arithmetic
