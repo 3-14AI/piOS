@@ -1,4 +1,6 @@
+extern crate alloc;
 use vstd::prelude::*;
+use alloc::vec::Vec;
 
 verus! {
     /// Pipeline result representing success or failure
@@ -41,6 +43,65 @@ verus! {
             } else if !valid_gen {
                 PipelineResult::ErrorGenerationFailed
             } else if !valid_verif {
+                PipelineResult::ErrorVerificationFailed
+            } else if !valid_load {
+                PipelineResult::ErrorLoadFailed
+            } else {
+                PipelineResult::Success
+            }
+        }
+
+        pub fn execute_with_retry(
+            &self,
+            valid_device: bool,
+            valid_spec: bool,
+            valid_gens: &Vec<bool>,
+            valid_verifs: &Vec<bool>,
+            valid_load: bool,
+        ) -> (res: PipelineResult)
+            requires
+                self.is_initialized == true,
+                valid_gens.len() == valid_verifs.len(),
+            ensures
+                (!valid_device) ==> res is ErrorDeviceNotFound,
+                (valid_device && !valid_spec) ==> res is ErrorSpecNotFound,
+                (valid_device && valid_spec && valid_gens.len() == 0) ==> res is ErrorGenerationFailed,
+        {
+            if !valid_device {
+                return PipelineResult::ErrorDeviceNotFound;
+            }
+            if !valid_spec {
+                return PipelineResult::ErrorSpecNotFound;
+            }
+
+            let max_retries: usize = valid_gens.len();
+            if max_retries == 0 {
+                return PipelineResult::ErrorGenerationFailed;
+            }
+
+            let mut i: usize = 0;
+            let mut final_gen = false;
+            let mut final_verif = false;
+
+            while i < max_retries
+                invariant
+                    i <= max_retries,
+                    valid_gens.len() == max_retries,
+                    valid_verifs.len() == max_retries,
+                decreases max_retries - i,
+            {
+                final_gen = valid_gens[i];
+                final_verif = valid_verifs[i];
+
+                if final_gen && final_verif {
+                    break;
+                }
+                i += 1;
+            }
+
+            if !final_gen {
+                PipelineResult::ErrorGenerationFailed
+            } else if !final_verif {
                 PipelineResult::ErrorVerificationFailed
             } else if !valid_load {
                 PipelineResult::ErrorLoadFailed
