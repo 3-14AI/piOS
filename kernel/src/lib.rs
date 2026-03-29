@@ -150,6 +150,7 @@ pub mod pci;
 #[cfg(not(feature = "verus"))]
 pub mod pci;
 
+pub mod blue_green;
 pub mod co_generation;
 pub mod driver_pipeline;
 pub mod hot_reload;
