@@ -32,7 +32,13 @@ impl Compositor {
     pub fn create_window(&mut self, x: u32, y: u32, width: u32, height: u32) -> u32 {
         let id = self.next_window_id;
         self.next_window_id += 1;
-        self.windows.push(Window { id, x, y, width, height });
+        self.windows.push(Window {
+            id,
+            x,
+            y,
+            width,
+            height,
+        });
         id
     }
 
