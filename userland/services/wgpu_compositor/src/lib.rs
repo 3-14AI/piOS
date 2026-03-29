@@ -1,6 +1,5 @@
 // Window manager and compositor using wgpu
 
-
 pub struct Window {
     pub id: u32,
     pub x: u32,
