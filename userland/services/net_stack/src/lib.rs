@@ -21,6 +21,12 @@ pub struct MockDevice {
     tx_buffer: Vec<u8>,
 }
 
+impl Default for MockDevice {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockDevice {
     pub fn new() -> Self {
         Self {
@@ -190,6 +196,12 @@ pub struct WasmNetStack {
     device: MockDevice,
     interface: Interface,
     sockets: SocketSet<'static>,
+}
+
+impl Default for WasmNetStack {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl WasmNetStack {
