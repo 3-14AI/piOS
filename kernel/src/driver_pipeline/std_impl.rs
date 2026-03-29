@@ -53,12 +53,13 @@ impl DriverPipeline {
         }
     }
 
+    #[allow(clippy::ptr_arg)]
     pub fn execute_with_retry(
         &self,
         valid_device: bool,
         valid_spec: bool,
-        valid_gens: &Vec<bool>,
-        valid_verifs: &Vec<bool>,
+        valid_gens: &[bool],
+        valid_verifs: &[bool],
         valid_load: bool,
     ) -> PipelineResult {
         if !self.is_initialized {

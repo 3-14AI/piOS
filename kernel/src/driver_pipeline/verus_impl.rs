@@ -55,17 +55,16 @@ verus! {
             &self,
             valid_device: bool,
             valid_spec: bool,
-            valid_gens: &Vec<bool>,
-            valid_verifs: &Vec<bool>,
+            valid_gens: &[bool],
+            valid_verifs: &[bool],
             valid_load: bool,
         ) -> (res: PipelineResult)
             requires
                 self.is_initialized == true,
-                valid_gens.len() == valid_verifs.len(),
             ensures
                 (!valid_device) ==> res is ErrorDeviceNotFound,
                 (valid_device && !valid_spec) ==> res is ErrorSpecNotFound,
-                (valid_device && valid_spec && valid_gens.len() == 0) ==> res is ErrorGenerationFailed,
+                (valid_device && valid_spec && (valid_gens@.len() == 0 || valid_gens@.len() != valid_verifs@.len())) ==> res is ErrorGenerationFailed,
         {
             if !valid_device {
                 return PipelineResult::ErrorDeviceNotFound;
@@ -75,7 +74,7 @@ verus! {
             }
 
             let max_retries: usize = valid_gens.len();
-            if max_retries == 0 {
+            if max_retries == 0 || max_retries != valid_verifs.len() {
                 return PipelineResult::ErrorGenerationFailed;
             }
 
@@ -86,8 +85,8 @@ verus! {
             while i < max_retries
                 invariant
                     i <= max_retries,
-                    valid_gens.len() == max_retries,
-                    valid_verifs.len() == max_retries,
+                    valid_gens@.len() == max_retries as int,
+                    valid_verifs@.len() == max_retries as int,
                 decreases max_retries - i,
             {
                 final_gen = valid_gens[i];
