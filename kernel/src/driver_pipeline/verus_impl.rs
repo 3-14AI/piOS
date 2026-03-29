@@ -1,6 +1,6 @@
 extern crate alloc;
-use vstd::prelude::*;
 use alloc::vec::Vec;
+use vstd::prelude::*;
 
 verus! {
     /// Pipeline result representing success or failure
