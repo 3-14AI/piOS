@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+ab_glyph = "0.2.32"
+ab_glyph_rasterizer = "0.1.10"
+inference_runtime = { version = "0.1.0", path = "../../../libs/inference_runtime" }
+vector_db = { version = "0.1.0", path = "../../../libs/vector_db" }
 wgpu = "0.20.0"
 
 [lints]
