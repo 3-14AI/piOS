@@ -1224,6 +1224,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "nl_sh"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+ "pios-api",
+ "vector_db",
+]
+
+[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

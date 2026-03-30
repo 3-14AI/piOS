@@ -1,0 +1,9 @@
+[package]
+name = "nl_sh"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+vector_db = { path = "../../../libs/vector_db" }
+pios-api = { path = "../../../libs/pios-api" }
