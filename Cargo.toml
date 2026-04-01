@@ -1,11 +1,12 @@
 [workspace]
 members = [
-    "kernel",
+
     "libs/pios-common",
     "libs/pios-api",
     "tools/builder"
 , "test_wasi", "libs/vector_db", "libs/llm_context", "libs/inference_runtime", "libs/compiler_frontend", "libs/z3_smt", "userland/services/net_stack", "userland/services/wgpu_compositor", "userland/services/nl_sh", "userland/services/slint_gui"]
 exclude = [
+    "kernel",
     "tools/verus"
 ]
 resolver = "2"
