@@ -4,7 +4,7 @@ members = [
     "libs/pios-common",
     "libs/pios-api",
     "tools/builder"
-, "test_wasi", "libs/vector_db", "libs/llm_context", "libs/inference_runtime", "libs/compiler_frontend", "libs/z3_smt", "userland/services/net_stack", "userland/services/wgpu_compositor"]
+, "test_wasi", "libs/vector_db", "libs/llm_context", "libs/inference_runtime", "libs/compiler_frontend", "libs/z3_smt", "userland/services/net_stack", "userland/services/wgpu_compositor", "userland/services/nl_sh"]
 exclude = [
     "tools/verus"
 ]
