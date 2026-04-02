@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-uefi = { version = "0.28.0", features = ["alloc"] }
+uefi = { version = "0.28.0", default-features = false, features = ["alloc"] }
 uefi-services = "0.25.0"
 log = "0.4.20"
 verus_builtin = { path = "../tools/verus/verus-x86-linux/builtin", optional = true }
