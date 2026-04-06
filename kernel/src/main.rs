@@ -2,6 +2,8 @@
 #![no_main]
 #![allow(clippy::empty_loop)]
 
+mod panic;
+
 use uefi::prelude::*;
 use uefi::table::boot::{MemoryDescriptor, MemoryType};
 

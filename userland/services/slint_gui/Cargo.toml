@@ -1,0 +1,14 @@
+[package]
+name = "slint_gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wgpu_compositor = { path = "../wgpu_compositor" }
+slint = { version = "1.9", default-features = false, features = ["compat-1-2", "unsafe-single-threaded", "std", "renderer-software"] }
+
+[build-dependencies]
+slint-build = "1.9"
+
+[lints]
+workspace = true

@@ -1,0 +1,15 @@
+export component AppWindow inherits Window {
+    preferred-width: 400px;
+    preferred-height: 300px;
+
+    in property <string> generative_text: "Welcome to Generative UI";
+
+    VerticalLayout {
+        alignment: center;
+        Text {
+            text: root.generative_text;
+            font-size: 24px;
+            horizontal-alignment: center;
+        }
+    }
+}
