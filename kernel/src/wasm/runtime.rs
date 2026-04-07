@@ -26,6 +26,22 @@ impl Default for WasmRuntime {
 }
 
 impl WasmRuntime {
+    pub fn run_verified(
+        &self,
+        wasm_bytes: &[u8],
+        signature: &[u8],
+        public_key: &[u8],
+    ) -> Result<(), wasmi::Error> {
+        if !crate::wasm::secure_boot::SecureBoot::verify_signature(
+            wasm_bytes, signature, public_key,
+        ) {
+            return Err(wasmi::Error::new(
+                "Secure Boot validation failed: invalid signature",
+            ));
+        }
+        self.run(wasm_bytes)
+    }
+
     pub fn new() -> Self {
         let engine = Engine::default();
         Self { engine }

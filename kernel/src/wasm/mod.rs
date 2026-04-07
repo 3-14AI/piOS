@@ -14,3 +14,5 @@ pub mod linker;
 pub mod wasi_nn;
 
 pub mod wasi_crypto;
+
+pub mod secure_boot;
