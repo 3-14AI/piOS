@@ -145,3 +145,27 @@ pub fn constant_time_eq_host(
 
     crate::wasm::wasi::WASI_ERRNO_SUCCESS
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_wasi_crypto_ctx_init() {
+        let ctx = WasiCryptoCtx::new();
+        assert!(ctx.is_initialized);
+        let _ = WasiCryptoCtx::default();
+    }
+
+    #[test]
+    fn test_constant_time_eq() {
+        let a = [1, 2, 3];
+        let b = [1, 2, 3];
+        let c = [1, 2, 4];
+        let d = [1, 2];
+
+        assert_eq!(constant_time_eq(&a, &b), 1);
+        assert_eq!(constant_time_eq(&a, &c), 0);
+        assert_eq!(constant_time_eq(&a, &d), 0);
+    }
+}
