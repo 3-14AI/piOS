@@ -12,3 +12,5 @@ pub mod linker;
 
 #[cfg(not(feature = "verus"))]
 pub mod wasi_nn;
+
+pub mod wasi_crypto;

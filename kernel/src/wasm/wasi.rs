@@ -10,6 +10,7 @@ pub struct WasiCtx {
     pub fds: Vec<Option<crate::ipc::RendezvousChannel<Vec<u8>>>>,
     #[cfg(not(feature = "verus"))]
     pub nn_ctx: crate::wasm::wasi_nn::WasiNnCtx,
+    pub crypto_ctx: crate::wasm::wasi_crypto::WasiCryptoCtx,
 }
 
 impl Default for WasiCtx {
@@ -29,6 +30,7 @@ impl WasiCtx {
             fds,
             #[cfg(not(feature = "verus"))]
             nn_ctx: crate::wasm::wasi_nn::WasiNnCtx::new(),
+            crypto_ctx: crate::wasm::wasi_crypto::WasiCryptoCtx::new(),
         }
     }
 }

@@ -7,6 +7,8 @@ use crate::wasm::wasi::{
     proc_exit, WasiCtx,
 };
 #[cfg(not(feature = "verus"))]
+use crate::wasm::wasi_crypto::constant_time_eq_host;
+#[cfg(not(feature = "verus"))]
 use crate::wasm::wasi_nn::{
     compute, get_output, init_execution_context, load, load_by_name, set_input,
 };
@@ -109,6 +111,11 @@ impl WasmRuntime {
                 "wasi_ephemeral_nn",
                 "get_output",
                 Func::wrap(&mut store, get_output),
+            )?;
+            linker.define(
+                "wasi_ephemeral_crypto",
+                "constant_time_eq",
+                Func::wrap(&mut store, constant_time_eq_host),
             )?;
         }
 
