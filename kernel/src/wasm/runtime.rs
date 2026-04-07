@@ -308,3 +308,107 @@ mod tests {
         assert_eq!(result, 0, "sys_intent should return WASI_ERRNO_SUCCESS");
     }
 }
+
+#[test]
+fn test_constant_time_eq_host() {
+    let runtime = WasmRuntime::new();
+    // A WASM module that imports constant_time_eq, allocates memory,
+    // writes two matching arrays, and calls the host function.
+    let wasm_text = r#"
+        (module
+            (import "wasi_ephemeral_crypto" "constant_time_eq" (func $constant_time_eq (param i32 i32 i32 i32) (result i32)))
+            (memory 1)
+            (export "memory" (memory 0))
+            ;; write 1,2,3 at offset 16
+            (data (i32.const 16) "\01\02\03")
+            ;; write 1,2,3 at offset 32
+            (data (i32.const 32) "\01\02\03")
+            ;; write 1,2,4 at offset 48 (mismatch)
+            (data (i32.const 48) "\01\02\04")
+
+            (func (export "main_eq") (result i32)
+                ;; Call constant_time_eq(a_ptr=16, b_ptr=32, len=3, res_ptr=64)
+                i32.const 16
+                i32.const 32
+                i32.const 3
+                i32.const 64
+                call $constant_time_eq
+
+                ;; Return the success code, we'll check memory for the result value
+            )
+
+            (func (export "main_neq") (result i32)
+                ;; Call constant_time_eq(a_ptr=16, b_ptr=48, len=3, res_ptr=64)
+                i32.const 16
+                i32.const 48
+                i32.const 3
+                i32.const 64
+                call $constant_time_eq
+            )
+
+            (func (export "main_too_large") (result i32)
+                ;; Call constant_time_eq with len = 2 * 1024 * 1024 (should fail bound check)
+                i32.const 16
+                i32.const 32
+                i32.const 2097152
+                i32.const 64
+                call $constant_time_eq
+            )
+        )
+        "#;
+    let wasm_bytes = wat::parse_str(wasm_text).expect("Failed to parse WAT");
+
+    let module = Module::new(&runtime.engine, &wasm_bytes).unwrap();
+    let mut store = Store::new(&runtime.engine, WasiCtx::new());
+    let mut linker = <Linker<WasiCtx>>::new(&runtime.engine);
+    linker
+        .define(
+            "wasi_ephemeral_crypto",
+            "constant_time_eq",
+            Func::wrap(&mut store, crate::wasm::wasi_crypto::constant_time_eq_host),
+        )
+        .unwrap();
+
+    let instance = linker.instantiate_and_start(&mut store, &module).unwrap();
+    let memory = instance
+        .get_export(&mut store, "memory")
+        .unwrap()
+        .into_memory()
+        .unwrap();
+
+    // Test equality
+    let main_eq = instance
+        .get_export(&mut store, "main_eq")
+        .unwrap()
+        .into_func()
+        .unwrap();
+    let typed_main_eq = main_eq.typed::<(), i32>(&store).unwrap();
+    let result = typed_main_eq.call(&mut store, ()).unwrap();
+    assert_eq!(result, 0); // WASI_ERRNO_SUCCESS
+    let mut res_buf = [0u8; 1];
+    memory.read(&mut store, 64, &mut res_buf).unwrap();
+    assert_eq!(res_buf[0], 1); // 1 for equal
+
+    // Test inequality
+    let main_neq = instance
+        .get_export(&mut store, "main_neq")
+        .unwrap()
+        .into_func()
+        .unwrap();
+    let typed_main_neq = main_neq.typed::<(), i32>(&store).unwrap();
+    let result = typed_main_neq.call(&mut store, ()).unwrap();
+    assert_eq!(result, 0); // WASI_ERRNO_SUCCESS
+    let mut res_buf = [0u8; 1];
+    memory.read(&mut store, 64, &mut res_buf).unwrap();
+    assert_eq!(res_buf[0], 0); // 0 for not equal
+
+    // Test bound check
+    let main_too_large = instance
+        .get_export(&mut store, "main_too_large")
+        .unwrap()
+        .into_func()
+        .unwrap();
+    let typed_main_too_large = main_too_large.typed::<(), i32>(&store).unwrap();
+    let result = typed_main_too_large.call(&mut store, ()).unwrap();
+    assert_eq!(result, 8); // WASI_ERRNO_BADF
+}
