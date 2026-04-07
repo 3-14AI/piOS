@@ -249,6 +249,7 @@ impl PciEnumerator {
         devices
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn load_drivers(
         &self,
         linker: &mut crate::wasm::linker::WasmComponentLinker,
