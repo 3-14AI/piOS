@@ -249,16 +249,26 @@ impl PciEnumerator {
         devices
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn load_drivers(
         &self,
         linker: &mut crate::wasm::linker::WasmComponentLinker,
         devices: &[PciConfig],
-        drivers_data: &[(&str, u16, u16, &[u8])],
+        drivers_data: &[(&str, u16, u16, &[u8], &[u8], &[u8])],
     ) -> Result<Vec<alloc::string::String>, wasmi::Error> {
         let mut loaded = Vec::new();
         for config in devices {
-            for (driver_name, vendor_id, device_id, wasm_bytes) in drivers_data {
+            for (driver_name, vendor_id, device_id, wasm_bytes, signature, public_key) in
+                drivers_data
+            {
                 if config.vendor_id == *vendor_id && config.device_id == *device_id {
+                    if !crate::wasm::secure_boot::SecureBoot::verify_signature(
+                        wasm_bytes, signature, public_key,
+                    ) {
+                        return Err(wasmi::Error::new(
+                            "Secure Boot validation failed: invalid signature",
+                        ));
+                    }
                     let instance_name = alloc::format!(
                         "{}_{}_{}_{}",
                         driver_name,
@@ -477,9 +487,33 @@ mod tests {
             0x79, 0x70, 0x65, 0x73, 0x2b, 0x08, 0x73, 0x69, 0x67, 0x6e, 0x2d, 0x65, 0x78, 0x74,
         ];
 
-        let drivers_data: &[(&str, u16, u16, &[u8])] = &[
-            ("virtio-net", 0x8086, 0x100e, &dummy_wasm),
-            ("virtio-blk", 0x1af4, 0x1001, &dummy_wasm),
+        let dummy_sig = {
+            let mut s = [0u8; 32];
+            let mut c = 0;
+            for &b in dummy_wasm.iter() {
+                c ^= b;
+            }
+            s[0] = c ^ 0xAA;
+            s
+        };
+        let pub_key = [0xAA];
+        let drivers_data: &[(&str, u16, u16, &[u8], &[u8], &[u8])] = &[
+            (
+                "virtio-net",
+                0x8086,
+                0x100e,
+                &dummy_wasm,
+                &dummy_sig,
+                &pub_key,
+            ),
+            (
+                "virtio-blk",
+                0x1af4,
+                0x1001,
+                &dummy_wasm,
+                &dummy_sig,
+                &pub_key,
+            ),
         ];
 
         let res = e.load_drivers(&mut linker, &devices, drivers_data);
