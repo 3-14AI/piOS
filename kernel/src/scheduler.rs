@@ -1,7 +1,12 @@
 #![allow(unused_imports)]
 use crate::thread::{context_switch, Registers, Thread, ThreadState, TCB};
+#[cfg(feature = "verus")]
 use vstd::prelude::*;
 
+#[cfg(not(feature = "verus"))]
+use tracing::{debug, info, trace};
+
+#[cfg(feature = "verus")]
 verus! {
 
 pub const MAX_THREADS: usize = 4;
@@ -235,3 +240,97 @@ pub fn test_scheduler() {
 }
 
 } // verus!
+
+#[cfg(not(feature = "verus"))]
+pub const MAX_THREADS: usize = 4;
+
+#[cfg(not(feature = "verus"))]
+#[derive(Clone, Copy)]
+pub struct Scheduler {
+    pub tcbs: [TCB; 4],
+    pub current_tid: usize,
+}
+
+#[cfg(not(feature = "verus"))]
+impl Scheduler {
+    pub fn new() -> Self {
+        Scheduler {
+            tcbs: [
+                TCB {
+                    stack_ptr: 0,
+                    state: ThreadState::Unused,
+                    id: 0,
+                },
+                TCB {
+                    stack_ptr: 0,
+                    state: ThreadState::Unused,
+                    id: 1,
+                },
+                TCB {
+                    stack_ptr: 0,
+                    state: ThreadState::Unused,
+                    id: 2,
+                },
+                TCB {
+                    stack_ptr: 0,
+                    state: ThreadState::Unused,
+                    id: 3,
+                },
+            ],
+            current_tid: 0,
+        }
+    }
+
+    pub fn init(current_stack_ptr: u64) -> Self {
+        let mut s = Self::new();
+        s.tcbs[0] = TCB {
+            stack_ptr: current_stack_ptr,
+            state: ThreadState::Running,
+            id: 0,
+        };
+        s
+    }
+
+    pub fn add_thread(&mut self, stack_ptr: u64) -> Result<usize, ()> {
+        for i in 0..4 {
+            if matches!(self.tcbs[i].state, ThreadState::Unused) {
+                self.tcbs[i] = TCB {
+                    stack_ptr,
+                    state: ThreadState::Ready,
+                    id: i as u64,
+                };
+                info!("Added thread {} with stack_ptr: {:#x}", i, stack_ptr);
+                return Ok(i);
+            }
+        }
+        Err(())
+    }
+
+    pub fn schedule(&mut self) {
+        let mut next_tid = (self.current_tid + 1) % 4;
+        let mut found = false;
+
+        for _ in 0..4 {
+            if matches!(self.tcbs[next_tid].state, ThreadState::Ready) {
+                found = true;
+                break;
+            }
+            next_tid = (next_tid + 1) % 4;
+        }
+
+        if found && self.current_tid != next_tid {
+            let cur = self.current_tid;
+            let next = next_tid;
+
+            trace!(
+                "Scheduling context switch from thread {} to thread {}",
+                cur,
+                next
+            );
+
+            self.tcbs[cur].state = ThreadState::Ready;
+            self.tcbs[next].state = ThreadState::Running;
+            self.current_tid = next;
+        }
+    }
+}
