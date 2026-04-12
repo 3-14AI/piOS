@@ -1,6 +1,10 @@
-# Documentation
-This documentation covers the stabilization of Verus proofs and general system architecture.
-## Verus Proofs Stabilization
-All remaining verifications have been resolved ensuring stable execution context.
-## Userland Testing
-Integration tests for the WebAssembly component interface and native SLM inferencing have been successful.
+# Документация Проекта
+
+Добро пожаловать в документацию проекта экспериментальной, формально верифицированной ОС (Pi-OS). Данный проект представляет собой операционную систему, ядро которой написано на Rust (no_std) и математически доказано с помощью инструмента Verus. Главной целью проекта является создание надежной архитектуры, способной к саморазвитию (Autopoiesis), с глубокой интеграцией искусственного интеллекта на уровне ядра и пользовательского пространства (WASM).
+
+## Разделы документации
+
+* [Архитектура Системы (architecture.md)](./architecture.md) — Описание общих компонентов системы: микроядро, UEFI-загрузчик, файловая система, и механизмы горячей замены (Blue-Green).
+* [Формальная Верификация (verus_verification.md)](./verus_verification.md) — Обзор подходов к математическому доказательству надежности кода с использованием Verus, Z3 и управления Ghost-состояниями.
+* [AI-Native Интеграция (ai_integration.md)](./ai_integration.md) — Описание ИИ-подсистем, включая WASI-NN, векторную БД, управление контекстом LLM, и механизмы автоматической кодогенерации драйверов.
+* [Пользовательское Пространство (user_space.md)](./user_space.md) — Описание среды выполнения WebAssembly компонентов, графического стека (WGPU, Slint), сетевого стека и оболочки на естественном языке (NL-SH).
