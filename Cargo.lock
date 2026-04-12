@@ -5803,7 +5803,7 @@ dependencies = [
 
 [[package]]
 name = "verus_state_machines_macros"
-version = "0.0.0-2026-03-15-0111"
+version = "0.0.0-2026-04-05-0114"
 dependencies = [
  "indexmap 1.9.3",
  "proc-macro2",
