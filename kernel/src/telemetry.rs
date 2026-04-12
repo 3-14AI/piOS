@@ -1,6 +1,9 @@
 #[cfg(feature = "verus")]
 use vstd::prelude::*;
 
+#[cfg(not(feature = "verus"))]
+use tracing::{debug, info, trace};
+
 #[cfg(feature = "verus")]
 verus! {
     pub struct PerformanceMetrics {
@@ -102,14 +105,20 @@ impl PerformanceMetrics {
 
     pub fn record_allocation(&mut self) {
         self.memory_allocations = self.memory_allocations.saturating_add(1);
+        trace!(
+            "Memory allocation recorded. Total: {}",
+            self.memory_allocations
+        );
     }
 
     pub fn record_ipc_message(&mut self) {
         self.ipc_messages_sent = self.ipc_messages_sent.saturating_add(1);
+        trace!("IPC message recorded. Total: {}", self.ipc_messages_sent);
     }
 
     pub fn record_page_fault(&mut self) {
         self.page_faults = self.page_faults.saturating_add(1);
+        debug!("Page fault recorded. Total: {}", self.page_faults);
     }
 }
 
@@ -121,6 +130,7 @@ pub struct TelemetrySystem {
 #[cfg(not(feature = "verus"))]
 impl TelemetrySystem {
     pub fn new() -> Self {
+        info!("TelemetrySystem initialized");
         Self {
             metrics: PerformanceMetrics::new(),
         }
