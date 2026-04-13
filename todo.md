@@ -79,3 +79,6 @@
 52. **[x] [Phase 5] WP-048: Многопользовательская Система Прав.** Реализовать UID/GID через Capabilities, обеспечить соблюдение границ ИИ-агентами.
 53. **[x] [Phase 5] WP-049: Системная Наблюдаемость.** Внедрить трейсинг (OpenTelemetry) в ядро для визуализации решений ИИ и планировщика.
 54. **[x] [Phase 5] WP-050: Финальная стабилизация и Документация.** Провести стресс-тестирование, стабилизировать доказательства Verus, написать документацию.
+
+- [ ] **Fix CI issues with test-mkimage job**
+  The newly added `test-mkimage` job in CI might need further tweaks if `mtools` or `parted` behave differently in the runner environment, or if caching of the kernel build artifacts is required between jobs.
