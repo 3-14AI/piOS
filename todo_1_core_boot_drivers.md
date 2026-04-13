@@ -15,7 +15,7 @@
 - [x] **Конкретные файловые системы поверх VFS**
   VFS и WASI-filesystem есть, но нет реализации ext4 / btrfs / FAT32 / ZFS. Нет монтирования реального диска, fsck, journaling и snapshot-ов.
 
-- [ ] **Драйверы реального железа (не только VirtIO)**
+- [x] **Драйверы реального железа (не только VirtIO)**
   VirtIO-blk/net/gpu реализованы, PCI-enumerator есть. Отсутствуют: NVMe, USB (xhci/ehci), GPU (amdgpu/intel), Wi-Fi/Bluetooth, sound (HDA), input (HID). Нет ACPI tables parsing и power management.
 
 - [ ] **Реальное тестирование и CI/CD для hardware**
