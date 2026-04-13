@@ -76,7 +76,7 @@ jobs:
 
       - name: Run Test Coverage (95%)
         run: |
-          cargo +1.94.0-x86_64-unknown-linux-gnu tarpaulin --workspace --engine llvm --fail-under 87 --exclude-files "tools/verus/*" --out Xml
+          cargo +1.94.0-x86_64-unknown-linux-gnu tarpaulin --workspace --engine llvm --fail-under 87 --exclude-files "tools/verus/*" --exclude-files "target/*" --out Xml
 
   test-mkimage:
     name: Test Bootable Image Generation
