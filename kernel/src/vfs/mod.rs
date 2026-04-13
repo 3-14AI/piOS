@@ -399,10 +399,10 @@ mod tests {
 pub mod semantic;
 
 #[cfg(not(feature = "verus"))]
+pub mod btrfs;
+#[cfg(not(feature = "verus"))]
 pub mod ext4;
 #[cfg(not(feature = "verus"))]
 pub mod fat32;
 #[cfg(not(feature = "verus"))]
 pub mod zfs;
-#[cfg(not(feature = "verus"))]
-pub mod btrfs;

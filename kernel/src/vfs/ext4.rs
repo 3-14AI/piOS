@@ -3,15 +3,25 @@ pub struct Ext4 {}
 
 #[cfg(not(feature = "verus"))]
 impl Ext4 {
-    pub fn new() -> Self { Ext4 {} }
-    pub fn mount(&self) -> Result<(), ()> { Ok(()) }
-    pub fn fsck(&self) -> Result<(), ()> { Ok(()) }
-    pub fn journal(&self) -> Result<(), ()> { Ok(()) }
+    pub fn new() -> Self {
+        Ext4 {}
+    }
+    pub fn mount(&self) -> Result<(), ()> {
+        Ok(())
+    }
+    pub fn fsck(&self) -> Result<(), ()> {
+        Ok(())
+    }
+    pub fn journal(&self) -> Result<(), ()> {
+        Ok(())
+    }
 }
 
 #[cfg(not(feature = "verus"))]
 impl Default for Ext4 {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(not(feature = "verus"))]

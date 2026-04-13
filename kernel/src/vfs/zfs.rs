@@ -3,15 +3,25 @@ pub struct Zfs {}
 
 #[cfg(not(feature = "verus"))]
 impl Zfs {
-    pub fn new() -> Self { Zfs {} }
-    pub fn mount(&self) -> Result<(), ()> { Ok(()) }
-    pub fn fsck(&self) -> Result<(), ()> { Ok(()) }
-    pub fn snapshot(&self) -> Result<(), ()> { Ok(()) }
+    pub fn new() -> Self {
+        Zfs {}
+    }
+    pub fn mount(&self) -> Result<(), ()> {
+        Ok(())
+    }
+    pub fn fsck(&self) -> Result<(), ()> {
+        Ok(())
+    }
+    pub fn snapshot(&self) -> Result<(), ()> {
+        Ok(())
+    }
 }
 
 #[cfg(not(feature = "verus"))]
 impl Default for Zfs {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(not(feature = "verus"))]

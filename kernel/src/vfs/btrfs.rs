@@ -3,15 +3,25 @@ pub struct Btrfs {}
 
 #[cfg(not(feature = "verus"))]
 impl Btrfs {
-    pub fn new() -> Self { Btrfs {} }
-    pub fn mount(&self) -> Result<(), ()> { Ok(()) }
-    pub fn fsck(&self) -> Result<(), ()> { Ok(()) }
-    pub fn snapshot(&self) -> Result<(), ()> { Ok(()) }
+    pub fn new() -> Self {
+        Btrfs {}
+    }
+    pub fn mount(&self) -> Result<(), ()> {
+        Ok(())
+    }
+    pub fn fsck(&self) -> Result<(), ()> {
+        Ok(())
+    }
+    pub fn snapshot(&self) -> Result<(), ()> {
+        Ok(())
+    }
 }
 
 #[cfg(not(feature = "verus"))]
 impl Default for Btrfs {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(not(feature = "verus"))]
