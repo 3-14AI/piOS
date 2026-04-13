@@ -46,5 +46,7 @@ mod tests {
     fn test_sound_driver() {
         let drv = HdaSoundDriver::new();
         assert_eq!(drv.initialized, true);
+        let drv_def = HdaSoundDriver::default();
+        assert_eq!(drv_def.initialized, true);
     }
 }

@@ -46,5 +46,7 @@ mod tests {
     fn test_input_driver() {
         let drv = HidInputDriver::new();
         assert_eq!(drv.initialized, true);
+        let drv_def = HidInputDriver::default();
+        assert_eq!(drv_def.initialized, true);
     }
 }

@@ -46,5 +46,7 @@ mod tests {
     fn test_usb_driver() {
         let drv = UsbDriver::new();
         assert_eq!(drv.initialized, true);
+        let drv_def = UsbDriver::default();
+        assert_eq!(drv_def.initialized, true);
     }
 }

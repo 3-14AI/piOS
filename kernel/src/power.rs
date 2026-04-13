@@ -56,6 +56,8 @@ mod tests {
     fn test_power_management() {
         let mut pm = PowerManagement::new();
         assert_eq!(pm.state, 0);
+        let pm_def = PowerManagement::default();
+        assert_eq!(pm_def.state, 0);
         pm.set_state(3);
         assert_eq!(pm.state, 3);
     }
