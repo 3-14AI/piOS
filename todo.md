@@ -80,11 +80,5 @@
 53. **[x] [Phase 5] WP-049: Системная Наблюдаемость.** Внедрить трейсинг (OpenTelemetry) в ядро для визуализации решений ИИ и планировщика.
 54. **[x] [Phase 5] WP-050: Финальная стабилизация и Документация.** Провести стресс-тестирование, стабилизировать доказательства Verus, написать документацию.
 
-## General improvements
-
-58. **[x] [Cleanup] WP-054: Удаление временных файлов и скриптов.** Удалить `test.sh`, `patch.sh`, `test_crypto.rs`, `test_tracing.rs`, `update_todo.py`, `build_rs_cov.profraw` и любые другие ненужные артефакты в корне репозитория.
-59. **[x] [CI Fix] WP-055: Исправление проверки QEMU в CI.** Изменить `tools/run_qemu_test.sh` так, чтобы тесты реально выполнялись и их вывод проверялся (на текущий момент в `kernel/src/main.rs` стоит `TODO: add real tests here`, а скрипт лишь проверяет код возврата `33`, который всегда выдается жестко закодированным вызовом `outb(0xf4, 0x10)`). Скрипт не проверяет реальную работоспособность системы.
-60. **[x] [CI Fix] WP-056: Проверка покрытия кода (Coverage).** В `ci.yml` шаг `Run Test Coverage` (tarpaulin) может пропускать важные проверки или иметь жестко заданные костыли (как было в `test.sh`). Убедиться, что он работает корректно и не имеет ложных срабатываний.
-61. **[ ] [CI Fix] CI issues with test-mkimage job**
-
+- [ ] **Fix CI issues with test-mkimage job**
   The newly added `test-mkimage` job in CI might need further tweaks if `mtools` or `parted` behave differently in the runner environment, or if caching of the kernel build artifacts is required between jobs.
