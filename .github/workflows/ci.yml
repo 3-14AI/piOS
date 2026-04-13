@@ -78,6 +78,16 @@ jobs:
         run: |
           cargo +1.94.0-x86_64-unknown-linux-gnu tarpaulin --workspace --engine llvm --fail-under 87 --exclude-files "tools/verus/*" --out Xml
 
+
+      - name: Run Fuzz Drivers
+        run: ./tools/fuzz_drivers.sh
+
+      - name: Run Stress Tests
+        run: ./tools/stress_test.sh
+
+      - name: Generate FV Coverage Report
+        run: ./tools/generate_fv_coverage.sh
+
   test-mkimage:
     name: Test Bootable Image Generation
     runs-on: ubuntu-latest

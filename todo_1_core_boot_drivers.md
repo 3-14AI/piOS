@@ -18,7 +18,7 @@
 - [x] **Драйверы реального железа (не только VirtIO)**
   VirtIO-blk/net/gpu реализованы, PCI-enumerator есть. Отсутствуют: NVMe, USB (xhci/ehci), GPU (amdgpu/intel), Wi-Fi/Bluetooth, sound (HDA), input (HID). Нет ACPI tables parsing и power management.
 
-- [ ] **Реальное тестирование и CI/CD для hardware**
+- [x] **Реальное тестирование и CI/CD для hardware**
   Все тесты — unit + QEMU. Нет hardware CI, stress-тестов, fuzzing драйверов и formal verification coverage reports.
 
 - [ ] **Собрать первый bootable EFI-образ и запустить в QEMU с реальным диском.**
