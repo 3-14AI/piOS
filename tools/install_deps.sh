@@ -5,7 +5,7 @@ echo "Installing dependencies..."
 
 if command -v apt-get &> /dev/null; then
     sudo apt-get update
-    sudo apt-get install -y qemu-system-x86 ovmf llvm clang lld curl git build-essential pkg-config libfontconfig1-dev
+    sudo apt-get install -y qemu-system-x86 ovmf llvm clang lld curl git build-essential pkg-config libfontconfig1-dev mtools parted dosfstools
 else
     echo "Warning: apt-get not found. Please ensure qemu-system-x86_64, ovmf, llvm, clang are installed."
 fi

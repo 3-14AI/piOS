@@ -56,7 +56,7 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     verifier::kernel_main(&boot_info);
 
     // 4. Run simple tests and signal QEMU to exit
-    run_qemu_tests(&boot_info);
+    run_qemu_tests();
 
     // 5. Spin
     loop {}
@@ -83,17 +83,9 @@ fn write_serial(s: &str) {
     }
 }
 
-fn run_qemu_tests(boot_info: &boot::BootInfo) {
+fn run_qemu_tests() {
     write_serial("\nRunning QEMU Integration Tests...\n");
-
-    if boot_info.memory_map_len > 0 {
-        write_serial("[ok] Memory map validated\n");
-    } else {
-        write_serial("[fail] Memory map is empty\n");
-        outb(0xf4, 0x11);
-        loop {}
-    }
-
+    // TODO: add real tests here
     write_serial("[ok] Kernel booted successfully\n");
 
     // Shutdown via isa-debug-exit

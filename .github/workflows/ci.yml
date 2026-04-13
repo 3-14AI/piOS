@@ -76,4 +76,34 @@ jobs:
 
       - name: Run Test Coverage (95%)
         run: |
-          cargo +1.94.0-x86_64-unknown-linux-gnu tarpaulin --workspace --engine llvm --fail-under 87 --exclude-files "tools/verus/*" --exclude-files "target/*" --out Xml
+          cargo +1.94.0-x86_64-unknown-linux-gnu tarpaulin --workspace --engine llvm --fail-under 87 --exclude-files "tools/verus/*" --out Xml
+
+  test-mkimage:
+    name: Test Bootable Image Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.94.0-x86_64-unknown-linux-gnu
+          components: rust-src
+
+      - name: Cache Verus and Z3
+        id: cache-verus
+        uses: actions/cache@v4
+        with:
+          path: tools/verus
+          key: verus-${{ runner.os }}-1.94.0-${{ hashFiles('tools/install_verus.sh') }}
+
+      - name: Install dependencies
+        run: |
+          ./tools/install_deps.sh
+          if [ "${{ steps.cache-verus.outputs.cache-hit }}" != "true" ]; then
+            ./tools/install_verus.sh
+          fi
+
+      - name: Run mkimage Test
+        run: ./tools/test_mkimage.sh
