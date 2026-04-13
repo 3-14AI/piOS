@@ -12,7 +12,7 @@
 - [ ] **Полная интеграция bootloader и создание bootable-образа**
   WP-001 содержит только UEFI boot stub. Нет готового `mkimage`, EFI-образа для QEMU/real hardware, GRUB-подобного меню или Secure Boot chain с подписью всего образа.
 
-- [ ] **Конкретные файловые системы поверх VFS**
+- [x] **Конкретные файловые системы поверх VFS**
   VFS и WASI-filesystem есть, но нет реализации ext4 / btrfs / FAT32 / ZFS. Нет монтирования реального диска, fsck, journaling и snapshot-ов.
 
 - [ ] **Драйверы реального железа (не только VirtIO)**
