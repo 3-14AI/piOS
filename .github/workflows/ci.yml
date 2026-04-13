@@ -91,8 +91,19 @@ jobs:
           toolchain: 1.94.0-x86_64-unknown-linux-gnu
           components: rust-src
 
+      - name: Cache Verus and Z3
+        id: cache-verus
+        uses: actions/cache@v4
+        with:
+          path: tools/verus
+          key: verus-${{ runner.os }}-1.94.0-${{ hashFiles('tools/install_verus.sh') }}
+
       - name: Install dependencies
-        run: ./tools/install_deps.sh
+        run: |
+          ./tools/install_deps.sh
+          if [ "${{ steps.cache-verus.outputs.cache-hit }}" != "true" ]; then
+            ./tools/install_verus.sh
+          fi
 
       - name: Run mkimage Test
         run: ./tools/test_mkimage.sh
