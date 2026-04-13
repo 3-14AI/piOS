@@ -43,6 +43,23 @@ pub mod virtio_net;
 pub mod virtio_gpu;
 
 #[cfg(feature = "verus")]
+pub mod acpi;
+#[cfg(feature = "verus")]
+pub mod gpu;
+#[cfg(feature = "verus")]
+pub mod input;
+#[cfg(feature = "verus")]
+pub mod nvme;
+#[cfg(feature = "verus")]
+pub mod power;
+#[cfg(feature = "verus")]
+pub mod sound;
+#[cfg(feature = "verus")]
+pub mod usb;
+#[cfg(feature = "verus")]
+pub mod wifi;
+
+#[cfg(feature = "verus")]
 pub mod interrupts;
 
 #[cfg(feature = "verus")]
@@ -99,6 +116,23 @@ pub mod virtio_net;
 
 #[cfg(not(feature = "verus"))]
 pub mod virtio_gpu;
+
+#[cfg(not(feature = "verus"))]
+pub mod acpi;
+#[cfg(not(feature = "verus"))]
+pub mod gpu;
+#[cfg(not(feature = "verus"))]
+pub mod input;
+#[cfg(not(feature = "verus"))]
+pub mod nvme;
+#[cfg(not(feature = "verus"))]
+pub mod power;
+#[cfg(not(feature = "verus"))]
+pub mod sound;
+#[cfg(not(feature = "verus"))]
+pub mod usb;
+#[cfg(not(feature = "verus"))]
+pub mod wifi;
 
 #[cfg(not(feature = "verus"))]
 pub mod vfs;
