@@ -1,3 +1,35 @@
+#![allow(dead_code)]
+
+#[cfg(feature = "verus")]
+use vstd::prelude::*;
+
+#[cfg(feature = "verus")]
+verus! {
+    pub struct Ext4 {
+        pub mounted: bool,
+    }
+
+    impl Ext4 {
+        pub fn new() -> (d: Self)
+            ensures d.mounted == false
+        {
+            Ext4 { mounted: false }
+        }
+
+        pub fn mount(&mut self) -> (res: Result<(), ()>)
+            ensures
+                match res {
+                    Ok(_) => self.mounted == true,
+                    Err(_) => *self == *old(self),
+                }
+        {
+            let mut new_ext4 = Ext4 { mounted: true };
+            *self = new_ext4;
+            Ok(())
+        }
+    }
+}
+
 #[cfg(not(feature = "verus"))]
 pub struct Ext4 {}
 
