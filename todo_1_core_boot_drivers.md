@@ -18,7 +18,7 @@
 - [x] **Драйверы реального железа (не только VirtIO)**
   VirtIO-blk/net/gpu реализованы, PCI-enumerator есть. Отсутствуют: NVMe, USB (xhci/ehci), GPU (amdgpu/intel), Wi-Fi/Bluetooth, sound (HDA), input (HID). Нет ACPI tables parsing и power management.
 
-- [ ] **Реальное тестирование и CI/CD для hardware**
+- [x] **Реальное тестирование и CI/CD для hardware**
   Все тесты — unit + QEMU. Нет hardware CI, stress-тестов, fuzzing драйверов и formal verification coverage reports.
 
 - [ ] **Собрать первый bootable EFI-образ и запустить в QEMU с реальным диском.**
@@ -41,3 +41,7 @@
 
 - [ ] **Драйверов для современных файловых систем.**
   Драйверов для современных файловых систем.
+
+### Fuzzer / CI Fixes to do:
+- [ ] Install `cargo-fuzz` via `cargo install cargo-fuzz` directly in the `tools/fuzz_drivers.sh` script or CI environment instead of using native `rustc` compiler flags, since `-fsanitize-coverage=trace-pc-guard` is deprecated in modern libFuzzer versions.
+- [ ] Or alternatively, run `cargo +nightly rustc --bin kernel-fuzzer -- -Z sanitizer=address -Z sanitizer=fuzzer` inside the `fuzzer` folder directly rather than passing `-C passes=sancov-module` directly.
