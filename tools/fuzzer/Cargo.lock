@@ -103,6 +103,7 @@ name = "kernel-fuzzer"
 version = "0.1.0"
 dependencies = [
  "arbitrary",
+ "inference_runtime",
  "kernel",
  "libfuzzer-sys",
 ]

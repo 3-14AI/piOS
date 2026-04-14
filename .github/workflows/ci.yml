@@ -85,8 +85,16 @@ jobs:
       - name: Run Stress Tests
         run: ./tools/stress_test.sh
 
+
       - name: Generate FV Coverage Report
         run: ./tools/generate_fv_coverage.sh
+
+      - name: Upload FV Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: fv-coverage-report
+          path: target/fv_coverage/index.html
+
 
   test-mkimage:
     name: Test Bootable Image Generation
