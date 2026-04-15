@@ -135,3 +135,19 @@ impl<T> Default for RendezvousChannel<T> {
         Self::new()
     }
 }
+
+#[cfg(not(feature = "verus"))]
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ipc_rendezvous() {
+        let mut channel = RendezvousChannel::<u64>::new();
+        assert!(channel.try_recv().is_none());
+        assert!(channel.try_send(42).is_ok());
+        assert!(channel.try_send(43).is_err());
+        assert_eq!(channel.try_recv(), Some(42));
+        assert!(channel.try_recv().is_none());
+    }
+}
