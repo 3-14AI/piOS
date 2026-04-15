@@ -108,3 +108,32 @@ impl PhysicalMemoryManager {
 
 #[cfg(feature = "verus")]
 pub static mut GLOBAL_PMM: Option<PhysicalMemoryManager> = None;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pmm_alloc_and_free() {
+        let mut pmm = PhysicalMemoryManager::new();
+        let addr1 = pmm.alloc().unwrap();
+        assert_eq!(addr1, 0);
+
+        let addr2 = pmm.alloc().unwrap();
+        assert_eq!(addr2, 4096);
+
+        pmm.free(addr1);
+
+        let addr3 = pmm.alloc().unwrap();
+        assert_eq!(addr3, 0); // Should be reused
+    }
+
+    #[test]
+    fn test_pmm_out_of_memory() {
+        let mut pmm = PhysicalMemoryManager::new();
+        for _ in 0..MAX_PAGES {
+            assert!(pmm.alloc().is_some());
+        }
+        assert!(pmm.alloc().is_none());
+    }
+}
