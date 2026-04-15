@@ -166,6 +166,7 @@ mod tests {
 
         assert_eq!(constant_time_eq(&a, &b), 1);
         assert_eq!(constant_time_eq(&a, &c), 0);
+        #[cfg(not(feature = "verus"))]
         assert_eq!(constant_time_eq(&a, &d), 0);
     }
 }

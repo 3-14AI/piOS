@@ -165,5 +165,6 @@ unsafe impl GlobalAlloc for KernelAllocator {
 unsafe impl Sync for KernelAllocator {}
 
 #[cfg(feature = "verus")]
+#[cfg(not(test))]
 #[global_allocator]
 static ALLOCATOR: KernelAllocator = KernelAllocator;
