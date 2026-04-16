@@ -16,6 +16,10 @@ verus! {
             Ext4 { mounted: false }
         }
 
+        pub fn fsck(&self) -> (res: Result<(), ()>) { Ok(()) }
+
+        pub fn journal(&self) -> (res: Result<(), ()>) { Ok(()) }
+
         pub fn mount(&mut self) -> (res: Result<(), ()>)
             ensures
                 match res {

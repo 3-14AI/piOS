@@ -16,6 +16,8 @@ verus! {
             Fat32 { mounted: false }
         }
 
+        pub fn fsck(&self) -> (res: Result<(), ()>) { Ok(()) }
+
         pub fn mount(&mut self) -> (res: Result<(), ()>)
             ensures
                 match res {
