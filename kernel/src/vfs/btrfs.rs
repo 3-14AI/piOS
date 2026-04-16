@@ -1,3 +1,39 @@
+#![allow(dead_code)]
+
+#[cfg(feature = "verus")]
+use vstd::prelude::*;
+
+#[cfg(feature = "verus")]
+verus! {
+    pub struct Btrfs {
+        pub mounted: bool,
+    }
+
+    impl Btrfs {
+        pub fn new() -> (d: Self)
+            ensures d.mounted == false
+        {
+            Btrfs { mounted: false }
+        }
+
+        pub fn mount(&mut self) -> (res: Result<(), ()>)
+            ensures
+                match res {
+                    Ok(_) => self.mounted == true,
+                    Err(_) => *self == *old(self),
+                }
+        {
+            let mut new_btrfs = Btrfs { mounted: true };
+            *self = new_btrfs;
+            Ok(())
+        }
+
+        pub fn fsck(&self) -> (res: Result<(), ()>) { Ok(()) }
+
+        pub fn snapshot(&self) -> (res: Result<(), ()>) { Ok(()) }
+    }
+}
+
 #[cfg(not(feature = "verus"))]
 pub struct Btrfs {}
 
