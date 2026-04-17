@@ -9,7 +9,7 @@
 - [x] **Система инициализации и сервис-менеджер**
   Нет systemd-подобного init (или собственного supervisor), unit-файлов, dependency graph, graceful shutdown и watchdog.
 
-- [ ] **Система пакетов и управление приложениями**
+- [x] **Система пакетов и управление приложениями**
   Нет package manager (аналог apt/pacman/cargo для WASM-компонентов), репозитория, dependency resolution и sandboxed app store.
 
 - [ ] **Полноценный installer / live-образ**
