@@ -231,4 +231,57 @@ mod tests {
         // Lookup with wrong user
         assert_eq!(table.lookup(h1, Right::Read, 1002, 1002), None);
     }
+
+    #[test]
+    fn test_multi_user_sessions_and_sudo() {
+        let mut table = CapTable::new();
+
+        // Users:
+        // Alice: UID 1000, GID 1000
+        // Bob: UID 1001, GID 1000 (same group as Alice)
+        // Charlie: UID 1002, GID 1002 (different group)
+        // Root: UID 0, GID 0
+
+        let file1_alice_write = table.mint(10, Right::Write, 1000, 9999);
+        let file1_group_read = table.mint(10, Right::Read, 1000, 1000);
+
+        let file2_bob_read = table.mint(20, Right::Read, 1001, 1001);
+
+        // 1. Session Isolation: Charlie cannot access Bob private file
+        assert_eq!(table.lookup(file2_bob_read, Right::Read, 1002, 1002), None);
+
+        // 2. Session Isolation: Alice cannot access Bob private file
+        assert_eq!(table.lookup(file2_bob_read, Right::Read, 1000, 1000), None);
+
+        // 3. Owner Access: Bob can access his private file
+        assert_eq!(
+            table.lookup(file2_bob_read, Right::Read, 1001, 1001),
+            Some(20)
+        );
+
+        // 4. Group Access: Bob can read Alice file because he shares GID 1000
+        assert_eq!(
+            table.lookup(file1_group_read, Right::Read, 1001, 1000),
+            Some(10)
+        );
+
+        // 5. Session Isolation: Bob cannot write to Alice file
+        assert_eq!(
+            table.lookup(file1_alice_write, Right::Write, 1001, 1000),
+            None
+        );
+
+        // 6. Owner Access: Alice can write to her file
+        assert_eq!(
+            table.lookup(file1_alice_write, Right::Write, 1000, 1000),
+            Some(10)
+        );
+
+        // 7. Sudo-analog: Root (UID 0) can access ANY capability
+        assert_eq!(table.lookup(file2_bob_read, Right::Read, 0, 0), Some(20));
+        assert_eq!(
+            table.lookup(file1_alice_write, Right::Write, 0, 0),
+            Some(10)
+        );
+    }
 }
