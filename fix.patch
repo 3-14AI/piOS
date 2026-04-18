@@ -1,0 +1,15 @@
+--- userland/services/package_manager/src/lib.rs
++++ userland/services/package_manager/src/lib.rs
+@@ -19,6 +19,12 @@
+     pub packages: BTreeMap<String, Package>,
+ }
+
++impl Default for Repository {
++    fn default() -> Self {
++        Self::new()
++    }
++}
++
+ impl Repository {
+     pub fn new() -> Self {
+         Self {
