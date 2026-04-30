@@ -1,6 +1,8 @@
+#![no_std]
 use alloc::collections::BTreeMap;
 use alloc::collections::BTreeSet;
 use alloc::string::String;
+use alloc::string::ToString;
 use alloc::vec::Vec;
 
 extern crate alloc;
@@ -109,6 +111,7 @@ impl PackageManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
 
     #[test]
     fn test_resolve_dependencies() {
