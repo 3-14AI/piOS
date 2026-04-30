@@ -10,6 +10,9 @@ use core::ffi::{c_char, c_void};
 #[cfg(not(test))]
 use core::ptr;
 
+/// Calculate the length of a string.
+/// # Safety
+/// The caller must ensure that `s` points to a valid null-terminated string.
 #[cfg(not(test))]
 #[no_mangle]
 pub unsafe extern "C" fn strlen(s: *const c_char) -> usize {
@@ -22,6 +25,10 @@ pub unsafe extern "C" fn strlen(s: *const c_char) -> usize {
     len
 }
 
+/// Copy a string.
+/// # Safety
+/// The caller must ensure that `dest` points to a buffer large enough to hold `src`,
+/// and that `src` points to a valid null-terminated string.
 #[cfg(not(test))]
 #[no_mangle]
 pub unsafe extern "C" fn strcpy(dest: *mut c_char, src: *const c_char) -> *mut c_char {
@@ -37,6 +44,9 @@ pub unsafe extern "C" fn strcpy(dest: *mut c_char, src: *const c_char) -> *mut c
     dest
 }
 
+/// Copy memory area.
+/// # Safety
+/// The caller must ensure that `dest` and `src` point to valid memory buffers of at least `n` bytes.
 #[cfg(not(test))]
 #[no_mangle]
 pub unsafe extern "C" fn memcpy(dest: *mut c_void, src: *const c_void, n: usize) -> *mut c_void {
@@ -47,6 +57,9 @@ pub unsafe extern "C" fn memcpy(dest: *mut c_void, src: *const c_void, n: usize)
     dest
 }
 
+/// Fill memory with a constant byte.
+/// # Safety
+/// The caller must ensure that `s` points to a valid memory buffer of at least `n` bytes.
 #[cfg(not(test))]
 #[no_mangle]
 pub unsafe extern "C" fn memset(s: *mut c_void, c: i32, n: usize) -> *mut c_void {
@@ -62,6 +75,9 @@ use alloc::alloc::{alloc, dealloc, Layout};
 #[cfg(not(test))]
 const ALIGNMENT: usize = 8;
 
+/// Allocate dynamic memory.
+/// # Safety
+/// Always returns a pointer to an allocation of size `size` aligned to ALIGNMENT.
 #[cfg(not(test))]
 #[no_mangle]
 pub unsafe extern "C" fn malloc(size: usize) -> *mut c_void {
@@ -83,6 +99,9 @@ pub unsafe extern "C" fn malloc(size: usize) -> *mut c_void {
     ptr.add(padding) as *mut c_void
 }
 
+/// Free dynamic memory.
+/// # Safety
+/// The `ptr` must have been allocated by `malloc`.
 #[cfg(not(test))]
 #[no_mangle]
 pub unsafe extern "C" fn free(ptr: *mut c_void) {

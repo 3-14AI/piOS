@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 uefi = { version = "0.28.0", default-features = false, features = ["alloc"] }
 uefi-services = { version = "0.25.0", default-features = false }
-log = "0.4.20"
+log = { version = "0.4.20", default-features = false }
 verus_builtin = { path = "../tools/verus/verus-x86-linux/builtin", optional = true }
 verus_builtin_macros = { path = "../tools/verus/verus-x86-linux/builtin_macros", optional = true }
 verus_state_machines_macros = { path = "../tools/verus/verus-x86-linux/state_machines_macros", optional = true }

@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(clippy::empty_loop)]
 
 extern crate alloc;
 
