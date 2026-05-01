@@ -41,6 +41,7 @@ pub extern "C" fn _start() -> ! {
     loop {}
 }
 
+#[cfg(test)]
 pub fn main() {
     let args = vec!["install".to_string(), "hello_world".to_string()];
     let _ = run(args);

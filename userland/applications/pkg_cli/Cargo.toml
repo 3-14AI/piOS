@@ -6,3 +6,7 @@ edition = "2021"
 [dependencies]
 pios-api = { path = "../../../libs/pios-api" }
 package_manager = { path = "../../services/package_manager" }
+
+[lib]
+name = "pkg_cli"
+path = "src/lib.rs"

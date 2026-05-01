@@ -32,11 +32,16 @@ static ALLOCATOR: DummyAllocator = DummyAllocator;
 #[cfg(not(test))]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    main();
+    run();
     loop {}
 }
 
+#[cfg(test)]
 pub fn main() {
+    run();
+}
+
+pub fn run() {
     let _message = String::from("Hello, World from piOS!");
     // In a real WASM app, we would use a system call here to print
 }
@@ -47,6 +52,6 @@ mod tests {
 
     #[test]
     fn test_main_does_not_panic() {
-        main();
+        run();
     }
 }
