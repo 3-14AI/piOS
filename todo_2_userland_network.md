@@ -12,7 +12,7 @@
 - [x] **Система пакетов и управление приложениями**
   Нет package manager (аналог apt/pacman/cargo для WASM-компонентов), репозитория, dependency resolution и sandboxed app store.
 
-- [ ] **Полноценный installer / live-образ**
+- [x] **Полноценный installer / live-образ**
   Нет скриптов/приложения для установки на реальное железо, dual-boot, partition manager и recovery mode.
 
 - [ ] **Сетевой стек в production-ready состоянии**
