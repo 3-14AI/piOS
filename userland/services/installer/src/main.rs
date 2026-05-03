@@ -66,10 +66,11 @@ pub fn run() {
 
     // Partition manager
     log_messages.push(alloc::string::String::from("Running partition manager..."));
-    let mut partitions: alloc::vec::Vec<alloc::string::String> = alloc::vec::Vec::new();
-    partitions.push(alloc::string::String::from("/dev/sda1 (ESP)"));
-    partitions.push(alloc::string::String::from("/dev/sda2 (piOS)"));
-    partitions.push(alloc::string::String::from("/dev/sda3 (Recovery)"));
+    let partitions: alloc::vec::Vec<alloc::string::String> = alloc::vec![
+        alloc::string::String::from("/dev/sda1 (ESP)"),
+        alloc::string::String::from("/dev/sda2 (piOS)"),
+        alloc::string::String::from("/dev/sda3 (Recovery)"),
+    ];
 
     for p in partitions {
         log_messages.push(alloc::format!("Found partition: {}", p));
