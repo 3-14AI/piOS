@@ -1,12 +1,7 @@
 #![no_std]
-#![no_main]
-#![allow(static_mut_refs)]
+#![allow(clippy::empty_loop)]
 
 extern crate alloc;
-
-// We will skip allocations if not in test to avoid using a dummy allocator that crashes.
-// Alternatively, we can use libc allocator, but we're in no_std and we don't have a real allocator for this WASM module unless we link one.
-// Let's implement a simple static allocator for WASM or use an existing one?
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -41,6 +36,7 @@ unsafe impl GlobalAlloc for SimpleAllocator {
             core::ptr::null_mut()
         } else {
             self.offset.store(next_offset, Ordering::SeqCst);
+            #[allow(static_mut_refs)]
             HEAP.as_mut_ptr().add(res)
         }
     }
@@ -55,9 +51,14 @@ static ALLOCATOR: SimpleAllocator = SimpleAllocator {
 
 #[cfg(not(test))]
 #[no_mangle]
-pub extern "C" fn main() -> i32 {
+pub extern "C" fn _start() -> ! {
     run();
-    0
+    loop {}
+}
+
+#[cfg(test)]
+pub fn main() {
+    run();
 }
 
 pub fn run() {
@@ -94,12 +95,6 @@ pub fn run() {
     log_messages.push(alloc::string::String::from(
         "Installation complete. Please reboot.",
     ));
-}
-
-#[cfg(test)]
-#[no_mangle]
-pub extern "C" fn main() -> i32 {
-    0
 }
 
 #[cfg(test)]
