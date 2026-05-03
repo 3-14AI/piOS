@@ -49,7 +49,9 @@ unsafe impl GlobalAlloc for SimpleAllocator {
 
 #[cfg(not(test))]
 #[global_allocator]
-static ALLOCATOR: SimpleAllocator = SimpleAllocator { offset: AtomicUsize::new(0) };
+static ALLOCATOR: SimpleAllocator = SimpleAllocator {
+    offset: AtomicUsize::new(0),
+};
 
 #[cfg(not(test))]
 #[no_mangle]
@@ -74,15 +76,23 @@ pub fn run() {
     }
 
     // Dual-boot setup
-    log_messages.push(alloc::string::String::from("Configuring dual-boot with existing OS..."));
+    log_messages.push(alloc::string::String::from(
+        "Configuring dual-boot with existing OS...",
+    ));
 
     // Installation
-    log_messages.push(alloc::string::String::from("Installing piOS to /dev/sda2..."));
+    log_messages.push(alloc::string::String::from(
+        "Installing piOS to /dev/sda2...",
+    ));
 
     // Recovery setup
-    log_messages.push(alloc::string::String::from("Setting up recovery mode on /dev/sda3..."));
+    log_messages.push(alloc::string::String::from(
+        "Setting up recovery mode on /dev/sda3...",
+    ));
 
-    log_messages.push(alloc::string::String::from("Installation complete. Please reboot."));
+    log_messages.push(alloc::string::String::from(
+        "Installation complete. Please reboot.",
+    ));
 }
 
 #[cfg(test)]
