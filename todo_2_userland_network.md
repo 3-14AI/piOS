@@ -15,7 +15,7 @@
 - [x] **Полноценный installer / live-образ**
   Нет скриптов/приложения для установки на реальное железо, dual-boot, partition manager и recovery mode.
 
-- [ ] **Сетевой стек в production-ready состоянии**
+- [x] **Сетевой стек в production-ready состоянии**
   Smoltcp портирован, но нет firewall, nftables-подобного, DNS resolver, DHCP client, VPN и Wi-Fi supplicant.
 
 - [ ] **Поддержка нескольких архитектур**
