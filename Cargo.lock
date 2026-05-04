@@ -2733,6 +2733,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd4f5b4d1c00331c5245163aacfe5f20be75b564c7112d45893d4ae038119eb0"
 
 [[package]]
+name = "installer"
+version = "0.1.0"
+dependencies = [
+ "pios-api",
+]
+
+[[package]]
 name = "integer-sqrt"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
