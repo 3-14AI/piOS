@@ -2,8 +2,9 @@
 extern crate alloc;
 
 use alloc::collections::BTreeMap;
-use alloc::string::String;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use nl_sh::NlShell;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ServiceState {
@@ -30,6 +31,7 @@ pub struct Service {
 
 pub struct InitManager {
     services: BTreeMap<String, Service>,
+    pub default_shell: Option<NlShell>,
 }
 
 impl Default for InitManager {
@@ -42,7 +44,22 @@ impl InitManager {
     pub fn new() -> Self {
         Self {
             services: BTreeMap::new(),
+            default_shell: None,
         }
+    }
+
+    pub fn setup_default_shell(&mut self) -> Result<(), &'static str> {
+        let shell = NlShell::new()?;
+        self.default_shell = Some(shell);
+
+        self.load_unit(UnitFile {
+            name: "nl_sh".to_string(),
+            dependencies: alloc::vec![],
+            exec_start: "nl_sh".to_string(),
+            restart_on_failure: true,
+        });
+
+        self.start_service("nl_sh")
     }
 
     pub fn load_unit(&mut self, unit: UnitFile) {
@@ -120,6 +137,17 @@ mod tests {
     use super::*;
     use alloc::string::ToString;
     use alloc::vec;
+
+    #[test]
+    fn test_setup_default_shell() {
+        let mut init = InitManager::new();
+        assert_eq!(init.setup_default_shell(), Ok(()));
+        assert!(init.default_shell.is_some());
+        assert_eq!(
+            init.services.get("nl_sh").unwrap().state,
+            ServiceState::Running
+        );
+    }
 
     #[test]
     fn test_dependency_graph() {
