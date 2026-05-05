@@ -261,3 +261,4 @@ mod tests {
         assert_eq!(socket.state(), TcpState::Listen);
     }
 }
+pub mod shadowsocks_vpn;

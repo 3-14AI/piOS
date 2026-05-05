@@ -10,6 +10,9 @@ verus_builtin = { path = "../../../tools/verus/verus-x86-linux/builtin", optiona
 verus_builtin_macros = { path = "../../../tools/verus/verus-x86-linux/builtin_macros", optional = true }
 verus_state_machines_macros = { path = "../../../tools/verus/verus-x86-linux/state_machines_macros", optional = true }
 vstd = { path = "../../../tools/verus/verus-x86-linux/vstd", default-features = false, features = ["alloc"], optional = true }
+shadowsocks = "1.24.0"
+tokio = { version = "1.52.2", features = ["rt", "rt-multi-thread", "macros"] }
+shadowsocks-service = { version = "1.24.0", features = ["local", "server"] }
 
 
 [features]
