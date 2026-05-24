@@ -9,31 +9,12 @@ mkdir -p "$VERUS_DIR"
 rm -rf "$VERUS_DIR"
 mkdir -p "$VERUS_DIR"
 
-echo "Fetching Verus release info..."
+# PINNED Verus release compatible with Rust 1.94.0
+PINNED_TAG="0.2026.04.19.6f7d4de"
 
-# 1. Get the latest release page
-curl --retry 5 --retry-delay 2 --retry-max-time 30 -sL -o release_page.html https://github.com/verus-lang/verus/releases/latest
+echo "Using pinned Verus release: $PINNED_TAG"
 
-# 2. Extract the expanded_assets URL
-ASSETS_FRAGMENT_URL=$(grep -o 'src="[^"]*expanded_assets[^"]*"' release_page.html | cut -d '"' -f 2)
-
-if [ -z "$ASSETS_FRAGMENT_URL" ]; then
-    echo "Could not find assets fragment URL."
-    exit 1
-fi
-
-echo "Fetching assets from $ASSETS_FRAGMENT_URL..."
-curl --retry 5 --retry-delay 2 --retry-max-time 30 -sL -o assets_page.html "$ASSETS_FRAGMENT_URL"
-
-# 3. Find the download URL for linux
-DOWNLOAD_PATH=$(grep -o 'href="[^"]*linux.zip"' assets_page.html | head -n 1 | cut -d '"' -f 2)
-
-if [ -z "$DOWNLOAD_PATH" ]; then
-    echo "Could not find linux zip in assets."
-    exit 1
-fi
-
-FULL_DOWNLOAD_URL="https://github.com$DOWNLOAD_PATH"
+FULL_DOWNLOAD_URL="https://github.com/verus-lang/verus/releases/download/release/${PINNED_TAG}/verus-${PINNED_TAG}-x86-linux.zip"
 echo "Downloading Verus binary from $FULL_DOWNLOAD_URL..."
 
 curl --retry 5 --retry-delay 2 --retry-max-time 30 -L -o verus.zip "$FULL_DOWNLOAD_URL"
@@ -42,10 +23,8 @@ echo "Extracting binary..."
 unzip -q -o verus.zip -d "$VERUS_DIR"
 rm verus.zip
 
-# 4. Download source code for dependencies
-TAG=$(echo "$DOWNLOAD_PATH" | cut -d '/' -f 6)
-DECODED_TAG="${TAG//%2F//}"
-SOURCE_URL="https://github.com/verus-lang/verus/archive/refs/tags/${DECODED_TAG}.zip"
+# Download source code for dependencies
+SOURCE_URL="https://github.com/verus-lang/verus/archive/refs/tags/release/${PINNED_TAG}.zip"
 
 echo "Downloading source code from $SOURCE_URL..."
 curl --retry 5 --retry-delay 2 --retry-max-time 30 -L -o verus-source.zip "$SOURCE_URL"
@@ -74,7 +53,6 @@ find "$VERUS_DIR" -name "Cargo.toml" -exec sed -i 's/^workspace = true/# workspa
 
 rm verus-source.zip
 rm -rf "$SOURCE_DIR"
-rm release_page.html assets_page.html
 
 # Check contents
 echo "Verus installed in $VERUS_DIR"
