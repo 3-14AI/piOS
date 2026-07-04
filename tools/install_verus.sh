@@ -12,7 +12,7 @@ mkdir -p "$VERUS_DIR"
 echo "Fetching Verus release info..."
 
 # 1. Get the latest release page
-curl --retry 5 --retry-delay 2 --retry-max-time 30 -sL -o release_page.html https://github.com/verus-lang/verus/releases/latest
+curl --retry 5 --retry-delay 2 --retry-max-time 30 -sL -o release_page.html https://github.com/verus-lang/verus/releases/tag/release%2F0.2026.04.19.6f7d4de
 
 # 2. Extract the expanded_assets URL
 ASSETS_FRAGMENT_URL=$(grep -o 'src="[^"]*expanded_assets[^"]*"' release_page.html | cut -d '"' -f 2)
