@@ -181,6 +181,12 @@ mod tests {
 #[cfg(feature = "verus")]
 pub mod pci;
 
+#[cfg(feature = "verus")]
+pub mod arch;
+
+#[cfg(not(feature = "verus"))]
+pub mod arch;
+
 #[cfg(not(feature = "verus"))]
 pub mod pci;
 
