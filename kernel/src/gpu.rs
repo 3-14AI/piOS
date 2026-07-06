@@ -51,20 +51,38 @@ pub struct KmsCrtc {
 pub trait DrmDevice {
     fn get_connectors(&self) -> alloc::vec::Vec<KmsConnector>;
     fn get_crtcs(&self) -> alloc::vec::Vec<KmsCrtc>;
-    fn set_crtc(&mut self, crtc_id: u32, fb_id: u32, connector_ids: &[u32]) -> Result<(), &'static str>;
+    fn set_crtc(
+        &mut self,
+        crtc_id: u32,
+        fb_id: u32,
+        connector_ids: &[u32],
+    ) -> Result<(), &'static str>;
 }
 
 #[cfg(not(feature = "verus"))]
 impl DrmDevice for AmdIntelGpuDriver {
     fn get_connectors(&self) -> alloc::vec::Vec<KmsConnector> {
-        alloc::vec![KmsConnector { id: 1, connected: true }]
+        alloc::vec![KmsConnector {
+            id: 1,
+            connected: true
+        }]
     }
 
     fn get_crtcs(&self) -> alloc::vec::Vec<KmsCrtc> {
-        alloc::vec![KmsCrtc { id: 1, width: 1920, height: 1080, fb_id: None }]
+        alloc::vec![KmsCrtc {
+            id: 1,
+            width: 1920,
+            height: 1080,
+            fb_id: None
+        }]
     }
 
-    fn set_crtc(&mut self, _crtc_id: u32, _fb_id: u32, _connector_ids: &[u32]) -> Result<(), &'static str> {
+    fn set_crtc(
+        &mut self,
+        _crtc_id: u32,
+        _fb_id: u32,
+        _connector_ids: &[u32],
+    ) -> Result<(), &'static str> {
         Ok(())
     }
 }
