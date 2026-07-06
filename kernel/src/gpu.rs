@@ -98,7 +98,7 @@ verus! {
         pub id: u32,
         pub width: u32,
         pub height: u32,
-        pub fb_id: vstd::option::Option<u32>,
+        pub fb_id: Option<u32>,
     }
 }
 
