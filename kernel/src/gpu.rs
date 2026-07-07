@@ -5,6 +5,30 @@ use vstd::prelude::*;
 
 #[cfg(feature = "verus")]
 verus! {
+    pub struct FramebufferDriver {
+        pub width: u32,
+        pub height: u32,
+        pub stride: u32,
+        pub base_address: u64,
+        pub size: u64,
+        pub bpp: u8,
+    }
+
+    impl FramebufferDriver {
+        pub fn new(width: u32, height: u32, stride: u32, base_address: u64, size: u64, bpp: u8) -> (d: Self)
+            ensures d.width == width && d.height == height && d.stride == stride && d.base_address == base_address && d.size == size && d.bpp == bpp
+        {
+            FramebufferDriver { width, height, stride, base_address, size, bpp }
+        }
+
+        // We use an unverified external stub or assume it performs the same function as the std version.
+        // For Verus we can just declare the signature in verus block, or mark it as external_body.
+        #[verifier(external_body)]
+        pub fn write_pixel(&mut self, x: u32, y: u32, color: u32) {
+            // Unverified stub for verifier
+        }
+    }
+
     pub struct AmdIntelGpuDriver {
         pub vram_size: u64,
     }
@@ -14,6 +38,50 @@ verus! {
             ensures d.vram_size == vram_size
         {
             AmdIntelGpuDriver { vram_size }
+        }
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+pub struct FramebufferDriver {
+    pub width: u32,
+    pub height: u32,
+    pub stride: u32,
+    pub base_address: u64,
+    pub size: u64,
+    pub bpp: u8,
+}
+
+#[cfg(not(feature = "verus"))]
+impl FramebufferDriver {
+    pub fn new(
+        width: u32,
+        height: u32,
+        stride: u32,
+        base_address: u64,
+        size: u64,
+        bpp: u8,
+    ) -> Self {
+        FramebufferDriver {
+            width,
+            height,
+            stride,
+            base_address,
+            size,
+            bpp,
+        }
+    }
+
+    pub fn write_pixel(&mut self, x: u32, y: u32, color: u32) {
+        if x < self.width && y < self.height {
+            let byte_per_pixel = (self.bpp / 8) as usize;
+            let offset = (y * self.stride + x) as usize * byte_per_pixel;
+            if (offset as u64) < self.size {
+                let ptr = (self.base_address as usize + offset) as *mut u32;
+                unsafe {
+                    core::ptr::write_volatile(ptr, color);
+                }
+            }
         }
     }
 }
@@ -106,6 +174,20 @@ verus! {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_framebuffer_driver() {
+        let fb = FramebufferDriver::new(1024, 768, 1024, 0x10000000, 1024 * 768 * 4, 32);
+        assert_eq!(fb.width, 1024);
+        assert_eq!(fb.height, 768);
+        assert_eq!(fb.stride, 1024);
+        assert_eq!(fb.base_address, 0x10000000);
+        assert_eq!(fb.size, 1024 * 768 * 4);
+        assert_eq!(fb.bpp, 32);
+
+        // We cannot test write_pixel easily since it writes to physical memory addresses,
+        // which will page fault in userspace test runner. So we just ensure it compiles.
+    }
 
     #[test]
     fn test_gpu_driver() {
