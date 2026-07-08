@@ -40,6 +40,19 @@ verus! {
             AmdIntelGpuDriver { vram_size }
         }
     }
+
+    pub struct IntelGpuDriver {
+        pub vram_size: u64,
+        pub initialized: bool,
+    }
+
+    impl IntelGpuDriver {
+        pub fn new(vram_size: u64) -> (d: Self)
+            ensures d.vram_size == vram_size && d.initialized == true
+        {
+            IntelGpuDriver { vram_size, initialized: true }
+        }
+    }
 }
 
 #[cfg(not(feature = "verus"))]
@@ -99,6 +112,22 @@ impl AmdIntelGpuDriver {
 }
 
 #[cfg(not(feature = "verus"))]
+pub struct IntelGpuDriver {
+    pub vram_size: u64,
+    pub initialized: bool,
+}
+
+#[cfg(not(feature = "verus"))]
+impl IntelGpuDriver {
+    pub fn new(vram_size: u64) -> Self {
+        IntelGpuDriver {
+            vram_size,
+            initialized: true,
+        }
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 extern crate alloc;
 
 #[cfg(not(feature = "verus"))]
@@ -139,6 +168,34 @@ impl DrmDevice for AmdIntelGpuDriver {
     fn get_crtcs(&self) -> alloc::vec::Vec<KmsCrtc> {
         alloc::vec![KmsCrtc {
             id: 1,
+            width: 1920,
+            height: 1080,
+            fb_id: None
+        }]
+    }
+
+    fn set_crtc(
+        &mut self,
+        _crtc_id: u32,
+        _fb_id: u32,
+        _connector_ids: &[u32],
+    ) -> Result<(), &'static str> {
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+impl DrmDevice for IntelGpuDriver {
+    fn get_connectors(&self) -> alloc::vec::Vec<KmsConnector> {
+        alloc::vec![KmsConnector {
+            id: 2,
+            connected: true
+        }]
+    }
+
+    fn get_crtcs(&self) -> alloc::vec::Vec<KmsCrtc> {
+        alloc::vec![KmsCrtc {
+            id: 2,
             width: 1920,
             height: 1080,
             fb_id: None
@@ -207,6 +264,24 @@ mod tests {
         assert_eq!(crtcs[0].width, 1920);
 
         let res = drv.set_crtc(1, 100, &[1]);
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn test_intel_gpu_driver() {
+        let mut drv = IntelGpuDriver::new(4096);
+        assert_eq!(drv.vram_size, 4096);
+        assert!(drv.initialized);
+
+        let connectors = drv.get_connectors();
+        assert_eq!(connectors.len(), 1);
+        assert!(connectors[0].connected);
+
+        let crtcs = drv.get_crtcs();
+        assert_eq!(crtcs.len(), 1);
+        assert_eq!(crtcs[0].width, 1920);
+
+        let res = drv.set_crtc(2, 200, &[2]);
         assert!(res.is_ok());
     }
 }
