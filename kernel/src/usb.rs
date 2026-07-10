@@ -155,7 +155,12 @@ pub struct UsbEndpoint {
 
 #[cfg(not(feature = "verus"))]
 impl UsbEndpoint {
-    pub fn new(address: u8, transfer_type: UsbTransferType, max_packet_size: u16, interval: u8) -> Self {
+    pub fn new(
+        address: u8,
+        transfer_type: UsbTransferType,
+        max_packet_size: u16,
+        interval: u8,
+    ) -> Self {
         UsbEndpoint {
             address,
             transfer_type,
