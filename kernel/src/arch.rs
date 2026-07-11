@@ -22,6 +22,38 @@ verus! {
             ArchSupport { arch }
         }
     }
+
+    pub mod aarch64 {
+        use vstd::prelude::*;
+        verus! {
+            pub struct Uart {
+                pub base_addr: usize,
+            }
+
+            impl Uart {
+                pub fn new(base_addr: usize) -> (u: Self)
+                    ensures
+                        u.base_addr == base_addr
+                {
+                    Uart { base_addr }
+                }
+
+                #[verifier::external_body]
+                pub fn write_byte(&mut self, byte: u8) {
+                    // Flag register offset: 0x18
+                    // Data register offset: 0x000
+                    // Bit 5 (TXFF) is 1 when transmit FIFO is full
+                    let ptr = self.base_addr as *mut u32;
+                    unsafe {
+                        while (core::ptr::read_volatile(ptr.add(6)) & (1 << 5)) != 0 {
+                            core::hint::spin_loop();
+                        }
+                        core::ptr::write_volatile(ptr, byte as u32);
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[cfg(not(feature = "verus"))]
@@ -45,6 +77,30 @@ impl ArchSupport {
 }
 
 #[cfg(not(feature = "verus"))]
+pub mod aarch64 {
+    #[derive(Debug)]
+    pub struct Uart {
+        pub base_addr: usize,
+    }
+
+    impl Uart {
+        pub fn new(base_addr: usize) -> Self {
+            Uart { base_addr }
+        }
+
+        pub fn write_byte(&mut self, byte: u8) {
+            let ptr = self.base_addr as *mut u32;
+            unsafe {
+                while (core::ptr::read_volatile(ptr.add(6)) & (1 << 5)) != 0 {
+                    core::hint::spin_loop();
+                }
+                core::ptr::write_volatile(ptr, byte as u32);
+            }
+        }
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -59,5 +115,18 @@ mod tests {
 
         let arch_riscv = ArchSupport::new(Architecture::RiscV);
         assert_eq!(arch_riscv.arch, Architecture::RiscV);
+    }
+
+    #[test]
+    fn test_aarch64_uart_write() {
+        let mut mmio_region = [0u32; 8];
+        let base_addr = mmio_region.as_mut_ptr() as usize;
+        let mut uart = super::aarch64::Uart::new(base_addr);
+
+        assert_eq!(uart.base_addr, base_addr);
+
+        // Test writing a byte. Since mmio_region is all 0, TXFF is 0 (not full)
+        uart.write_byte(b'A');
+        assert_eq!(mmio_region[0], b'A' as u32);
     }
 }
