@@ -36,18 +36,18 @@ verus! {
             ensures
                 self.capacity == old(self).capacity,
                 self.dequeue_ptr == old(self).dequeue_ptr,
-                success ==> self.enqueue_ptr == (old(self).enqueue_ptr + 1) % old(self).capacity,
+                success ==> self.enqueue_ptr as int == (if old(self).enqueue_ptr + 1 == old(self).capacity { 0 } else { old(self).enqueue_ptr + 1 }) as int,
                 success ==> (old(self).enqueue_ptr + 1 == old(self).capacity) ==> self.cycle_state == !old(self).cycle_state,
                 success ==> (old(self).enqueue_ptr + 1 < old(self).capacity) ==> self.cycle_state == old(self).cycle_state
         {
-            let next_ptr = (self.enqueue_ptr + 1) % self.capacity;
+            let next_ptr = if self.enqueue_ptr + 1 == self.capacity { 0 } else { self.enqueue_ptr + 1 };
             if next_ptr == self.dequeue_ptr {
                 false
             } else {
-                self.enqueue_ptr = next_ptr;
-                if self.enqueue_ptr == 0 {
+                if next_ptr == 0 {
                     self.cycle_state = !self.cycle_state;
                 }
+                self.enqueue_ptr = next_ptr;
                 true
             }
         }

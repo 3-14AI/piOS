@@ -1,0 +1,2 @@
+#!/bin/bash
+sed -i 's/let next_ptr = (self.enqueue_ptr + 1) % self.capacity;/let next_ptr = (self.enqueue_ptr + 1) % self.capacity;\n        if next_ptr == self.dequeue_ptr {\n            false\n        } else {\n            self.enqueue_ptr = next_ptr;\n            if self.enqueue_ptr == 0 {\n                self.cycle_state = !self.cycle_state;\n            }\n            true\n        }/' kernel/src/xhci.rs
