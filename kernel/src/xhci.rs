@@ -226,3 +226,10 @@ mod additional_tests {
         assert_eq!(drv.init_device(1), true);
     }
 }
+
+#[cfg(not(feature = "verus"))]
+impl Default for XhciDeviceContext {
+    fn default() -> Self {
+        Self::new()
+    }
+}
