@@ -136,6 +136,13 @@ impl AudioMixer {
 }
 
 #[cfg(not(feature = "verus"))]
+impl Default for AudioMixer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 pub struct HdaSoundDriver {
     pub initialized: bool,
 }

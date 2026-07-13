@@ -6694,11 +6694,11 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "verus_builtin"
-version = "0.0.0-2026-04-12-0118"
+version = "0.0.0-2026-05-17-0151"
 
 [[package]]
 name = "verus_builtin_macros"
-version = "0.0.0-2026-04-19-0121"
+version = "0.0.0-2026-06-14-0213"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6710,7 +6710,7 @@ dependencies = [
 
 [[package]]
 name = "verus_prettyplease"
-version = "0.0.0-2026-04-12-0118"
+version = "0.0.0-2026-05-31-0205"
 dependencies = [
  "proc-macro2",
  "verus_syn",
@@ -6718,7 +6718,7 @@ dependencies = [
 
 [[package]]
 name = "verus_state_machines_macros"
-version = "0.0.0-2026-04-19-0121"
+version = "0.0.0-2026-06-14-0213"
 dependencies = [
  "indexmap 1.9.3",
  "proc-macro2",
@@ -6728,7 +6728,7 @@ dependencies = [
 
 [[package]]
 name = "verus_syn"
-version = "0.0.0-2026-04-05-0114"
+version = "0.0.0-2026-05-31-0205"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6737,7 +6737,7 @@ dependencies = [
 
 [[package]]
 name = "vstd"
-version = "0.0.0-2026-04-19-0121"
+version = "0.0.0-2026-06-14-0213"
 dependencies = [
  "verus_builtin",
  "verus_builtin_macros",
