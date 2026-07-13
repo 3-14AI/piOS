@@ -43,5 +43,5 @@
   Драйверов для современных файловых систем.
 
 ### Fuzzer / CI Fixes to do:
-- [ ] Install `cargo-fuzz` via `cargo install cargo-fuzz` directly in the `tools/fuzz_drivers.sh` script or CI environment instead of using native `rustc` compiler flags, since `-fsanitize-coverage=trace-pc-guard` is deprecated in modern libFuzzer versions.
-- [ ] Or alternatively, run `cargo +nightly rustc --bin kernel-fuzzer -- -Z sanitizer=address -Z sanitizer=fuzzer` inside the `fuzzer` folder directly rather than passing `-C passes=sancov-module` directly.
+- [x] Install `cargo-fuzz` via `cargo install cargo-fuzz` directly in the `tools/fuzz_drivers.sh` script or CI environment instead of using native `rustc` compiler flags, since `-fsanitize-coverage=trace-pc-guard` is deprecated in modern libFuzzer versions.
+- [x] Or alternatively, run `cargo +nightly rustc --bin kernel-fuzzer -- -Z sanitizer=address -Z sanitizer=fuzzer` inside the `fuzzer` folder directly rather than passing `-C passes=sancov-module` directly.

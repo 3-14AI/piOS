@@ -1,0 +1,15 @@
+[package]
+name = "fuzz"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libfuzzer-sys = "0.4"
+[package.metadata]
+cargo-fuzz = true
+[[bin]]
+name = "kernel-fuzzer"
+path = "fuzz_targets/kernel-fuzzer.rs"
+test = false
+doc = false
+bench = false
