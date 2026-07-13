@@ -10,3 +10,4 @@ kernel = { path = "../../kernel" }
 inference_runtime = { path = "../../libs/inference_runtime" }
 
 [workspace]
+members = ["fuzz"]
