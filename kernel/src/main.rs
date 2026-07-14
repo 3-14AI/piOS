@@ -4,13 +4,16 @@
 
 mod panic;
 
+#[cfg(target_arch = "x86_64")]
 use uefi::prelude::*;
+#[cfg(target_arch = "x86_64")]
 use uefi::table::boot::{MemoryDescriptor, MemoryType};
 
 // We use the library crate 'kernel' for shared definitions and verified code.
 use kernel::boot;
 use kernel::verifier;
 
+#[cfg(target_arch = "x86_64")]
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     if uefi::helpers::init(&mut system_table).is_err() {
@@ -62,12 +65,14 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     loop {}
 }
 
+#[cfg(target_arch = "x86_64")]
 fn outb(port: u16, val: u8) {
     unsafe {
         core::arch::asm!("out dx, al", in("dx") port, in("al") val);
     }
 }
 
+#[cfg(target_arch = "x86_64")]
 fn write_serial(s: &str) {
     let port = 0x3F8; // COM1
     for b in s.bytes() {
@@ -83,6 +88,7 @@ fn write_serial(s: &str) {
     }
 }
 
+#[cfg(target_arch = "x86_64")]
 fn run_qemu_tests() {
     write_serial("\nRunning QEMU Integration Tests...\n");
     // TODO: add real tests here
@@ -90,4 +96,20 @@ fn run_qemu_tests() {
 
     // Shutdown via isa-debug-exit
     outb(0xf4, 0x10);
+}
+
+#[cfg(any(target_arch = "riscv64", target_arch = "riscv32"))]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    let boot_info = boot::BootInfo {
+        memory_map: core::ptr::null_mut(),
+        memory_map_len: 0,
+        descriptor_size: 0,
+        descriptor_version: 0,
+    };
+
+    // Pass control to verified kernel
+    verifier::kernel_main(&boot_info);
+
+    loop {}
 }

@@ -54,6 +54,52 @@ verus! {
             }
         }
     }
+
+    pub mod riscv64 {
+        use vstd::prelude::*;
+        verus! {
+            pub struct Sbi;
+
+            impl Sbi {
+                #[verifier::external_body]
+                #[cfg(target_arch = "riscv64")]
+                pub fn console_putchar(ch: usize) {
+                    unsafe {
+                        core::arch::asm!(
+                            "ecall",
+                            in("a7") 1,
+                            in("a0") ch,
+                            options(nostack)
+                        );
+                    }
+                }
+
+                #[verifier::external_body]
+                #[cfg(not(target_arch = "riscv64"))]
+                pub fn console_putchar(_ch: usize) {}
+            }
+
+            pub struct Uart {
+                pub base_addr: usize,
+            }
+
+            impl Uart {
+                pub fn new(base_addr: usize) -> (u: Self)
+                    ensures u.base_addr == base_addr
+                {
+                    Uart { base_addr }
+                }
+
+                #[verifier::external_body]
+                pub fn write_byte(&mut self, byte: u8) {
+                    let ptr = self.base_addr as *mut u8;
+                    unsafe {
+                        core::ptr::write_volatile(ptr, byte);
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[cfg(not(feature = "verus"))]
@@ -101,6 +147,46 @@ pub mod aarch64 {
 }
 
 #[cfg(not(feature = "verus"))]
+pub mod riscv64 {
+    pub struct Sbi;
+
+    impl Sbi {
+        #[cfg(target_arch = "riscv64")]
+        pub fn console_putchar(ch: usize) {
+            unsafe {
+                core::arch::asm!(
+                    "ecall",
+                    in("a7") 1,
+                    in("a0") ch,
+                    options(nostack)
+                );
+            }
+        }
+
+        #[cfg(not(target_arch = "riscv64"))]
+        pub fn console_putchar(_ch: usize) {}
+    }
+
+    #[derive(Debug)]
+    pub struct Uart {
+        pub base_addr: usize,
+    }
+
+    impl Uart {
+        pub fn new(base_addr: usize) -> Self {
+            Uart { base_addr }
+        }
+
+        pub fn write_byte(&mut self, byte: u8) {
+            let ptr = self.base_addr as *mut u8;
+            unsafe {
+                core::ptr::write_volatile(ptr, byte);
+            }
+        }
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -125,8 +211,25 @@ mod tests {
 
         assert_eq!(uart.base_addr, base_addr);
 
-        // Test writing a byte. Since mmio_region is all 0, TXFF is 0 (not full)
         uart.write_byte(b'A');
         assert_eq!(mmio_region[0], b'A' as u32);
+    }
+
+    #[test]
+    fn test_riscv64_uart_write() {
+        let mut mmio_region = [0u8; 8];
+        let base_addr = mmio_region.as_mut_ptr() as usize;
+        let mut uart = super::riscv64::Uart::new(base_addr);
+
+        assert_eq!(uart.base_addr, base_addr);
+
+        uart.write_byte(b'R');
+        assert_eq!(mmio_region[0], b'R');
+    }
+
+    #[test]
+    fn test_riscv64_sbi() {
+        // Just call it, on non-riscv64 it's a no-op
+        super::riscv64::Sbi::console_putchar(b'R' as usize);
     }
 }

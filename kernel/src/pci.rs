@@ -95,28 +95,42 @@ impl PciPortManager {
     /// Writing directly to arbitrary ports using `out` instruction is inherently unsafe.
     /// The caller must ensure that the targeted port correctly handles the value provided
     /// without violating memory bounds or triggering unstable device states.
-    pub unsafe fn outl(&self, port: u16, value: u32) {
+    pub unsafe fn outl(
+        &self,
+        #[allow(unused_variables)] port: u16,
+        #[allow(unused_variables)] value: u32,
+    ) {
+        #[cfg(target_arch = "x86_64")]
         asm!(
             "out dx, eax",
             in("dx") port,
             in("eax") value,
             options(nomem, nostack, preserves_flags)
         );
+        #[cfg(not(target_arch = "x86_64"))]
+        {}
     }
 
     /// # Safety
     /// Reading from arbitrary ports using `in` instruction is unsafe.
     /// The caller must verify that performing a read on the specific I/O port does not
     /// trigger undesired side effects (e.g., clearing hardware state inadvertently).
-    pub unsafe fn inl(&self, port: u16) -> u32 {
-        let value: u32;
-        asm!(
-            "in eax, dx",
-            out("eax") value,
-            in("dx") port,
-            options(nomem, nostack, preserves_flags)
-        );
-        value
+    pub unsafe fn inl(&self, #[allow(unused_variables)] port: u16) -> u32 {
+        #[cfg(target_arch = "x86_64")]
+        {
+            let value: u32;
+            asm!(
+                "in eax, dx",
+                out("eax") value,
+                in("dx") port,
+                options(nomem, nostack, preserves_flags)
+            );
+            value
+        }
+        #[cfg(not(target_arch = "x86_64"))]
+        {
+            0
+        }
     }
 }
 
