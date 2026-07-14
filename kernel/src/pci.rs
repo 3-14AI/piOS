@@ -95,7 +95,11 @@ impl PciPortManager {
     /// Writing directly to arbitrary ports using `out` instruction is inherently unsafe.
     /// The caller must ensure that the targeted port correctly handles the value provided
     /// without violating memory bounds or triggering unstable device states.
-    pub unsafe fn outl(&self, #[allow(unused_variables)] port: u16, #[allow(unused_variables)] value: u32) {
+    pub unsafe fn outl(
+        &self,
+        #[allow(unused_variables)] port: u16,
+        #[allow(unused_variables)] value: u32,
+    ) {
         #[cfg(target_arch = "x86_64")]
         asm!(
             "out dx, eax",
