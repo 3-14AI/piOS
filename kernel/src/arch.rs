@@ -52,6 +52,108 @@ verus! {
                     }
                 }
             }
+
+            pub struct Gic {
+                pub gicd_base: usize,
+                pub gicc_base: usize,
+            }
+
+            impl Gic {
+                pub fn new(gicd_base: usize, gicc_base: usize) -> (g: Self)
+                    ensures
+                        g.gicd_base == gicd_base,
+                        g.gicc_base == gicc_base,
+                {
+                    Gic { gicd_base, gicc_base }
+                }
+
+                #[verifier::external_body]
+                pub fn enable(&mut self, irq: u32) {
+                    let ptr = (self.gicd_base + 0x100 + ((irq / 32) * 4) as usize) as *mut u32;
+                    unsafe {
+                        core::ptr::write_volatile(ptr, 1 << (irq % 32));
+                    }
+                }
+
+                #[verifier::external_body]
+                pub fn ack(&mut self) -> u32 {
+                    let ptr = (self.gicc_base + 0x0C) as *mut u32;
+                    unsafe {
+                        core::ptr::read_volatile(ptr)
+                    }
+                }
+
+                #[verifier::external_body]
+                pub fn eoi(&mut self, irq: u32) {
+                    let ptr = (self.gicc_base + 0x10) as *mut u32;
+                    unsafe {
+                        core::ptr::write_volatile(ptr, irq);
+                    }
+                }
+            }
+
+            pub struct GenericTimer;
+
+            impl Default for GenericTimer {
+                fn default() -> Self {
+                    Self::new()
+                }
+            }
+
+            impl GenericTimer {
+                pub fn new() -> (t: Self) {
+                    GenericTimer {}
+                }
+
+                #[verifier::external_body]
+                #[cfg(target_arch = "aarch64")]
+                pub fn enable(&mut self) {
+                    unsafe {
+                        core::arch::asm!(
+                            "msr cntv_ctl_el0, {0}",
+                            in(reg) 1u64,
+                        );
+                    }
+                }
+
+                #[verifier::external_body]
+                #[cfg(not(target_arch = "aarch64"))]
+                pub fn enable(&mut self) {}
+
+                #[verifier::external_body]
+                #[cfg(target_arch = "aarch64")]
+                pub fn set_timer(&mut self, ticks: u64) {
+                    unsafe {
+                        core::arch::asm!(
+                            "msr cntv_tval_el0, {0}",
+                            in(reg) ticks,
+                        );
+                    }
+                }
+
+                #[verifier::external_body]
+                #[cfg(not(target_arch = "aarch64"))]
+                pub fn set_timer(&mut self, _ticks: u64) {}
+
+                #[verifier::external_body]
+                #[cfg(target_arch = "aarch64")]
+                pub fn read_timer(&self) -> u64 {
+                    let val: u64;
+                    unsafe {
+                        core::arch::asm!(
+                            "mrs {0}, cntvct_el0",
+                            out(reg) val,
+                        );
+                    }
+                    val
+                }
+
+                #[verifier::external_body]
+                #[cfg(not(target_arch = "aarch64"))]
+                pub fn read_timer(&self) -> u64 {
+                    0
+                }
+            }
         }
     }
 
@@ -142,6 +244,96 @@ pub mod aarch64 {
                 }
                 core::ptr::write_volatile(ptr, byte as u32);
             }
+        }
+    }
+
+    #[derive(Debug)]
+    pub struct Gic {
+        pub gicd_base: usize,
+        pub gicc_base: usize,
+    }
+
+    impl Gic {
+        pub fn new(gicd_base: usize, gicc_base: usize) -> Self {
+            Gic { gicd_base, gicc_base }
+        }
+
+        pub fn enable(&mut self, irq: u32) {
+            let ptr = (self.gicd_base + 0x100 + ((irq / 32) * 4) as usize) as *mut u32;
+            unsafe {
+                core::ptr::write_volatile(ptr, 1 << (irq % 32));
+            }
+        }
+
+        pub fn ack(&mut self) -> u32 {
+            let ptr = (self.gicc_base + 0x0C) as *mut u32;
+            unsafe {
+                core::ptr::read_volatile(ptr)
+            }
+        }
+
+        pub fn eoi(&mut self, irq: u32) {
+            let ptr = (self.gicc_base + 0x10) as *mut u32;
+            unsafe {
+                core::ptr::write_volatile(ptr, irq);
+            }
+        }
+    }
+
+    pub struct GenericTimer;
+
+    impl Default for GenericTimer {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    impl GenericTimer {
+        pub fn new() -> Self {
+            GenericTimer {}
+        }
+
+        #[cfg(target_arch = "aarch64")]
+        pub fn enable(&mut self) {
+            unsafe {
+                core::arch::asm!(
+                    "msr cntv_ctl_el0, {0}",
+                    in(reg) 1u64,
+                );
+            }
+        }
+
+        #[cfg(not(target_arch = "aarch64"))]
+        pub fn enable(&mut self) {}
+
+        #[cfg(target_arch = "aarch64")]
+        pub fn set_timer(&mut self, ticks: u64) {
+            unsafe {
+                core::arch::asm!(
+                    "msr cntv_tval_el0, {0}",
+                    in(reg) ticks,
+                );
+            }
+        }
+
+        #[cfg(not(target_arch = "aarch64"))]
+        pub fn set_timer(&mut self, _ticks: u64) {}
+
+        #[cfg(target_arch = "aarch64")]
+        pub fn read_timer(&self) -> u64 {
+            let val: u64;
+            unsafe {
+                core::arch::asm!(
+                    "mrs {0}, cntvct_el0",
+                    out(reg) val,
+                );
+            }
+            val
+        }
+
+        #[cfg(not(target_arch = "aarch64"))]
+        pub fn read_timer(&self) -> u64 {
+            0
         }
     }
 }
