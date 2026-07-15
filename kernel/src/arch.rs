@@ -255,7 +255,10 @@ pub mod aarch64 {
 
     impl Gic {
         pub fn new(gicd_base: usize, gicc_base: usize) -> Self {
-            Gic { gicd_base, gicc_base }
+            Gic {
+                gicd_base,
+                gicc_base,
+            }
         }
 
         pub fn enable(&mut self, irq: u32) {
@@ -267,9 +270,7 @@ pub mod aarch64 {
 
         pub fn ack(&mut self) -> u32 {
             let ptr = (self.gicc_base + 0x0C) as *mut u32;
-            unsafe {
-                core::ptr::read_volatile(ptr)
-            }
+            unsafe { core::ptr::read_volatile(ptr) }
         }
 
         pub fn eoi(&mut self, irq: u32) {
