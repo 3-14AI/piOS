@@ -113,4 +113,4 @@
 - [x] **WP-072: AArch64 - Прерывания (GIC) и Таймер.** Реализовать поддержку Generic Interrupt Controller и ARM Generic Timer для AArch64.
 - [ ] **WP-073: AArch64 - Поддержка Raspberry Pi 4 (BSP).** Разработать Board Support Package для загрузки ОС на реальном устройстве Raspberry Pi 4 (SD-карта, GPIO, базовый UART).
 - [x] **WP-074: Портирование на RISC-V (RV64) - Базовая загрузка.** Настроить тулчейн и написать код инициализации, поддержку SBI (Supervisor Binary Interface) и UART для архитектуры RISC-V 64-bit.
-- [ ] **WP-075: RISC-V (RV64) - Прерывания (PLIC) и MMU (Sv39).** Реализовать контроллер прерываний PLIC и управление страницами Sv39 для полноценной работы ядра на RISC-V.
+- [x] **WP-075: RISC-V (RV64) - Прерывания (PLIC) и MMU (Sv39).** Реализовать контроллер прерываний PLIC и управление страницами Sv39 для полноценной работы ядра на RISC-V.

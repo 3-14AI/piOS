@@ -200,8 +200,75 @@ verus! {
                     }
                 }
             }
+
+            pub struct Plic {
+                pub base_addr: usize,
+            }
+
+            impl Plic {
+                pub fn new(base_addr: usize) -> (p: Self)
+                    ensures p.base_addr == base_addr
+                {
+                    Plic { base_addr }
+                }
+
+                #[verifier::external_body]
+                pub fn set_priority(&mut self, irq: u32, priority: u32) {
+                    let ptr = (self.base_addr + (irq * 4) as usize) as *mut u32;
+                    unsafe {
+                        core::ptr::write_volatile(ptr, priority);
+                    }
+                }
+
+                #[verifier::external_body]
+                pub fn enable(&mut self, hart: usize, irq: u32) {
+                    let ptr = (self.base_addr + 0x2000 + (hart * 0x80) + ((irq / 32) * 4) as usize) as *mut u32;
+                    unsafe {
+                        core::ptr::write_volatile(ptr, core::ptr::read_volatile(ptr) | (1 << (irq % 32)));
+                    }
+                }
+
+                #[verifier::external_body]
+                pub fn claim(&mut self, hart: usize) -> u32 {
+                    let ptr = (self.base_addr + 0x200004 + (hart * 0x1000)) as *mut u32;
+                    unsafe {
+                        core::ptr::read_volatile(ptr)
+                    }
+                }
+
+                #[verifier::external_body]
+                pub fn complete(&mut self, hart: usize, irq: u32) {
+                    let ptr = (self.base_addr + 0x200004 + (hart * 0x1000)) as *mut u32;
+                    unsafe {
+                        core::ptr::write_volatile(ptr, irq);
+                    }
+                }
+            }
+
+            pub struct Sv39Mmu;
+
+            impl Sv39Mmu {
+                pub fn new() -> (s: Self) {
+                    Sv39Mmu {}
+                }
+
+                #[verifier::external_body]
+                #[cfg(target_arch = "riscv64")]
+                pub fn enable(&mut self, root_page_table: usize) {
+                    let satp = (8u64 << 60) | ((root_page_table as u64) >> 12);
+                    unsafe {
+                        core::arch::asm!("csrw satp, {0}", in(reg) satp);
+                        core::arch::asm!("sfence.vma");
+                    }
+                }
+
+                #[verifier::external_body]
+                #[cfg(not(target_arch = "riscv64"))]
+                pub fn enable(&mut self, _root_page_table: usize) {}
+            }
         }
     }
+
 }
 
 #[cfg(not(feature = "verus"))]
@@ -377,11 +444,76 @@ pub mod riscv64 {
             }
         }
     }
+
+    #[derive(Debug)]
+    pub struct Plic {
+        pub base_addr: usize,
+    }
+
+    impl Plic {
+        pub fn new(base_addr: usize) -> Self {
+            Plic { base_addr }
+        }
+
+        pub fn set_priority(&mut self, irq: u32, priority: u32) {
+            let ptr = (self.base_addr + (irq * 4) as usize) as *mut u32;
+            unsafe {
+                core::ptr::write_volatile(ptr, priority);
+            }
+        }
+
+        pub fn enable(&mut self, hart: usize, irq: u32) {
+            let ptr =
+                (self.base_addr + 0x2000 + (hart * 0x80) + ((irq / 32) * 4) as usize) as *mut u32;
+            unsafe {
+                core::ptr::write_volatile(ptr, core::ptr::read_volatile(ptr) | (1 << (irq % 32)));
+            }
+        }
+
+        pub fn claim(&mut self, hart: usize) -> u32 {
+            let ptr = (self.base_addr + 0x200004 + (hart * 0x1000)) as *mut u32;
+            unsafe { core::ptr::read_volatile(ptr) }
+        }
+
+        pub fn complete(&mut self, hart: usize, irq: u32) {
+            let ptr = (self.base_addr + 0x200004 + (hart * 0x1000)) as *mut u32;
+            unsafe {
+                core::ptr::write_volatile(ptr, irq);
+            }
+        }
+    }
+
+    pub struct Sv39Mmu;
+
+    impl Default for Sv39Mmu {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    impl Sv39Mmu {
+        pub fn new() -> Self {
+            Sv39Mmu {}
+        }
+
+        #[cfg(target_arch = "riscv64")]
+        pub fn enable(&mut self, root_page_table: usize) {
+            let satp = (8u64 << 60) | ((root_page_table as u64) >> 12);
+            unsafe {
+                core::arch::asm!("csrw satp, {0}", in(reg) satp);
+                core::arch::asm!("sfence.vma");
+            }
+        }
+
+        #[cfg(not(target_arch = "riscv64"))]
+        pub fn enable(&mut self, _root_page_table: usize) {}
+    }
 }
 
 #[cfg(not(feature = "verus"))]
 #[cfg(test)]
 mod tests {
+    extern crate alloc;
     use super::*;
 
     #[test]
@@ -424,5 +556,39 @@ mod tests {
     fn test_riscv64_sbi() {
         // Just call it, on non-riscv64 it's a no-op
         super::riscv64::Sbi::console_putchar(b'R' as usize);
+    }
+
+    #[test]
+    fn test_riscv64_plic() {
+        let mut plic_mem = alloc::vec![0u32; 0x200100];
+        let base_addr = plic_mem.as_mut_ptr() as usize;
+        let mut plic = super::riscv64::Plic::new(base_addr);
+
+        assert_eq!(plic.base_addr, base_addr);
+
+        // test set_priority
+        plic.set_priority(1, 7);
+        assert_eq!(plic_mem[1], 7);
+
+        // test enable
+        plic.enable(0, 1);
+        let enable_offset = (0x2000 / 4) as usize; // Word offset
+        assert_eq!(plic_mem[enable_offset], 1 << 1);
+
+        // test claim
+        let claim_offset = (0x200004 / 4) as usize; // Word offset
+        plic_mem[claim_offset] = 5;
+        assert_eq!(plic.claim(0), 5);
+
+        // test complete
+        plic.complete(0, 5);
+        assert_eq!(plic_mem[claim_offset], 5);
+    }
+
+    #[test]
+    fn test_riscv64_sv39() {
+        let mut mmu = super::riscv64::Sv39Mmu::new();
+        mmu.enable(0x1000);
+        let _def_mmu = super::riscv64::Sv39Mmu::default();
     }
 }
