@@ -463,7 +463,8 @@ pub mod riscv64 {
         }
 
         pub fn enable(&mut self, hart: usize, irq: u32) {
-            let ptr = (self.base_addr + 0x2000 + (hart * 0x80) + ((irq / 32) * 4) as usize) as *mut u32;
+            let ptr =
+                (self.base_addr + 0x2000 + (hart * 0x80) + ((irq / 32) * 4) as usize) as *mut u32;
             unsafe {
                 core::ptr::write_volatile(ptr, core::ptr::read_volatile(ptr) | (1 << (irq % 32)));
             }
@@ -471,9 +472,7 @@ pub mod riscv64 {
 
         pub fn claim(&mut self, hart: usize) -> u32 {
             let ptr = (self.base_addr + 0x200004 + (hart * 0x1000)) as *mut u32;
-            unsafe {
-                core::ptr::read_volatile(ptr)
-            }
+            unsafe { core::ptr::read_volatile(ptr) }
         }
 
         pub fn complete(&mut self, hart: usize, irq: u32) {
