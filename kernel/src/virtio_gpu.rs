@@ -402,7 +402,6 @@ mod tests {
         assert_eq!(drv.control_queue.avail.ring[0], 2);
     }
 
-
     #[test]
     fn test_enqueue_3d_command() {
         let mut drv = VirtioGpuDriver::new(4);
