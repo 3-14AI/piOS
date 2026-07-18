@@ -39,7 +39,7 @@ verus! {
         }
 
         pub fn attach_device(&mut self, port: u8, speed: UsbSpeed) -> (success: bool)
-            requires self.initialized == true, port < self.root_hub.num_ports
+            requires old(self).initialized == true, port < old(self).root_hub.num_ports
             ensures success == true // Simplified for mock
         {
             // Device attachment mapping logic goes here
