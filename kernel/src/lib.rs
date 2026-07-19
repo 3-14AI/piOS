@@ -45,6 +45,8 @@ pub mod virtio_gpu;
 #[cfg(feature = "verus")]
 pub mod acpi;
 #[cfg(feature = "verus")]
+pub mod ahci;
+#[cfg(feature = "verus")]
 pub mod gpu;
 #[cfg(feature = "verus")]
 pub mod input;
@@ -124,6 +126,8 @@ pub mod virtio_gpu;
 
 #[cfg(not(feature = "verus"))]
 pub mod acpi;
+#[cfg(not(feature = "verus"))]
+pub mod ahci;
 #[cfg(not(feature = "verus"))]
 pub mod gpu;
 #[cfg(not(feature = "verus"))]
