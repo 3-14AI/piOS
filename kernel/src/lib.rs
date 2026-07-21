@@ -62,6 +62,8 @@ pub mod usb;
 pub mod usb_hub;
 
 #[cfg(feature = "verus")]
+pub mod ehci;
+#[cfg(feature = "verus")]
 pub mod wifi;
 #[cfg(feature = "verus")]
 pub mod xhci;
@@ -143,6 +145,8 @@ pub mod usb;
 #[cfg(not(feature = "verus"))]
 pub mod usb_hub;
 
+#[cfg(not(feature = "verus"))]
+pub mod ehci;
 #[cfg(not(feature = "verus"))]
 pub mod wifi;
 #[cfg(not(feature = "verus"))]
