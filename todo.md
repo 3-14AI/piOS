@@ -1,116 +1,27 @@
-# План разработки piOS (TODO)
+# piOS (Self-Evolving AI-Native OS) - Global TODO
 
-Этот файл содержит полный список задач по разработке операционной системы piOS, объединенный из всех фаз.
+This file tracks the overarching goals and next phases for piOS, moving from a fully implemented architectural scaffolding to a functional, bootable operating system with a native AI feedback loop.
 
-## Фаза 0: Инициализация и Структура
+## Phase 7: Bootable ISO and Real Hardware Testing
+- [ ] **WP-076: Build System for Bootable Image.** Create an automated script (`tools/mkimage.sh`) that compiles the UEFI bootloader, kernel, and an initial ramdisk (initrd) containing WASM components, outputting a bootable `.iso` or `.img`.
+- [ ] **WP-077: Initial Ramdisk (initrd) implementation.** Implement parsing of a basic initramfs in the kernel to load critical drivers before the root VFS is mounted.
+- [ ] **WP-078: Bare-Metal x86-64 Execution.** Boot the generated ISO on a real physical x86-64 machine. Debug and fix any CPU feature mismatches, UEFI handoff issues, or ACPI parsing panics.
+- [ ] **WP-079: Hardware-backed NVMe & USB.** Verify that the NVMe and USB XHCI drivers successfully enumerate and interact with physical storage and input devices on a real machine (not QEMU).
 
-1.  **[x] [Phase 0] WP-000: Инициализация Репозитория.** Инициализировать git repository, создать `.gitignore` (исключая артефакты), настроить корневой `Cargo.toml` с `[workspace]`, определить профили сборки.
-2.  **[x] [Phase 0] WP-000.1: Структура Директорий.** Создать логическую структуру папок: `kernel` (arch, memory, process, drivers), `userland` (drivers, services, applications), `tools` (verus-runner, builder), `libs` (pios-common, pios-api), `docs`.
-3.  **[x] [Phase 0] WP-000.2: Окружение Разработки.** Подготовить среду: создать `Dockerfile` или `.devcontainer`, установить зависимости (`qemu-system-x86_64`, `ovmf`, `llvm-tools-preview`), настроить скрипты для установки Verus.
-4.  **[x] [Phase 0] WP-000.3: Система Сборки.** Настроить `cargo-make` или `justfile` для команд (build, run, verify), интегрировать `bootloader`/`uefi-rs` для создания EFI-образа, настроить скрипты конвертации Rust -> WASM.
+## Phase 8: Core Userland and System Applications
+- [ ] **WP-080: Libc/WASI compatibility layer.** Ensure `wasi-libc` fully supports the kernel's WASI-core implementation, allowing standard C/C++ and Rust programs (compiled to `wasm32-wasip1`) to run without modification.
+- [ ] **WP-081: Package Manager Implementation.** Build the command-line interface for the `package_manager` service to fetch, install, and resolve dependencies for WASM apps from a remote repository.
+- [ ] **WP-082: Minimal Coreutils.** Implement basic system utilities (`ls`, `cat`, `mkdir`, `rm`, `ps`, `kill`) as WASM components.
+- [ ] **WP-083: Advanced NL-Shell (Natural Language Shell).** Upgrade the `NL-Shell` to correctly parse complex commands, pipe data between WASM instances, and effectively utilize the `sys_intent` semantic layer.
 
-## Фаза 1: Формально верифицированное микроядро
+## Phase 9: AI Autopoiesis & Verus Self-Verification
+- [ ] **WP-084: On-Device LLM (WASI-NN Execution).** Integrate a lightweight local model (e.g., Llama.cpp or Mistral via WASI-NN) that can run entirely within the piOS userland using the VirtIO-GPU driver.
+- [ ] **WP-085: Semantic System Logs.** Implement the vector database logger, converting kernel panic and warning logs into embeddings for the AI to query when debugging itself.
+- [ ] **WP-086: The Self-Coding Loop (Driver Synthesis).** Demonstrate a closed-loop scenario: System detects unknown USB device -> LLM writes a basic Rust driver -> Verus (running in WASM) proves memory safety -> Driver is compiled via Cranelift WASM backend -> Driver is hot-loaded.
+- [ ] **WP-087: SMT Solver Integration.** Successfully port and execute an SMT solver (like Z3 or CVC5) in the WASM userland to support the on-device Verus verifier.
 
-5.  **[x] [Phase 1] WP-001: Настройка среды Verus и UEFI Boot Stub.** Настроить тулчейн (Rust nightly + Verus), разработать загрузочный "стаб" на `uefi-rs` (переход в Long Mode), формализовать контракт передачи управления и карты памяти в Verus.
-6.  **[x] [Phase 1] WP-002: Верифицированный аллокатор физических страниц (PMM).** Реализовать аллокатор (bitmap/stack), создать абстрактную модель "Множество свободных страниц" в Verus, доказать инвариант уникального владения страницей.
-7.  **[x] [Phase 1] WP-003: Формальная спецификация таблиц страниц.** Написать "Призрачный код" (Ghost code) в Verus, описывающий рекурсивную структуру таблиц страниц (x86-64), определить предикат `valid_mapping`.
-8.  **[x] [Phase 1] WP-004: Верифицированный манипулятор таблиц (Mapper).** Реализовать функции `map`/`unmap`/`protect`. Доказать, что реализация уточняет спецификацию из WP-003, и доказать отсутствие TLB-incoherency.
-9.  **[x] [Phase 1] WP-005: Ядерный аллокатор кучи (Verified Slab Allocator).** Реализовать `GlobalAlloc` для ядра. Доказать отсутствие переполнения буфера и корректность метаданных блоков, корректность арифметики указателей.
-10. **[x] [Phase 1] WP-006: Верифицированный Спинлок (Spinlock).** Реализовать примитив синхронизации. Использовать токены Verus для моделирования права на захват, доказать отсутствие дедлоков и соблюдение порядка захвата.
-11. **[x] [Phase 1] WP-007: Абстракция "Поток" (Thread) и Переключение контекста.** Реализовать структуру TCB и переключение стеков. Доказать сохранение инвариантов регистров и корректность переходов состояний потоков (Running -> Ready -> Suspended).
-12. **[x] [Phase 1] WP-008: Формально верифицированный Планировщик.** Реализовать алгоритм (Round-Robin/Priority). Доказать свойства "Живучести" (Liveness) и "Безопасности" (Safety) управления потоками.
-13. **[x] [Phase 1] WP-009: Механизм IPC (Message Passing).** Реализовать синхронную передачу сообщений (Rendezvous). Доказать атомарность передачи владения данными (Linear Types logic) для исключения гонок данных.
-14. **[x] [Phase 1] WP-010: Драйвер контроллера прерываний (APIC/GIC).** Настроить маршрутизацию прерываний. Моделировать контроллер как State Machine, доказать корректность маскирования/демаскирования (Ack/EOI).
-
-## Verus verification fix phase
-
-55. **[x] [Verus Fix] WP-051: Исправление инвариантов Ticket Lock.** Проанализировать и доказать инварианты `TicketLock` в `kernel/src/sync.rs`, обеспечивающие честность (fairness) и отсутствие состояний гонки.
-56. **[x] [Verus Fix] WP-052: Развертывание массивов планировщика.** Разрешить ошибки верификации инвариантов массивов в `kernel/src/scheduler.rs` (возможно, путем явного развертывания циклов инициализации или использования `assert forall`).
-57. **[x] [Verus Fix] WP-053: Удаление игнорирования ошибок CI.** Убрать костыль `|| true` из шага `Verify Kernel with Verus` (`./tools/verify_kernel.sh`) в файле конфигурации CI (`.github/workflows/ci.yml`), чтобы пайплайн падал при наличии ошибок верификации. (Других подобных костылей в CI найдено не было).
-
-## Фаза 2: WebAssembly User Space и Драйверы
-
-15. **[x] [Phase 2] WP-011: Портирование WASM Runtime (no_std).** Адаптировать `wasmi` или `wasmtime` для работы без std, заменить аллокации на ядерный `GlobalAlloc`.
-16. **[x] [Phase 2] WP-012: Верификация песочницы памяти WASM.** Доказать в Verus, что операции `memory.read/write` никогда не выходят за пределы `WasmMemory` ("клей" между рантаймом и памятью).
-17. **[x] [Phase 2] WP-013: Реализация WASI-Core (Syscalls).** Реализовать `wasi-io`, `wasi-filesystem` поверх IPC ядра. Проверить соответствие спецификации WASI и валидность прав доступа.
-18. **[x] [Phase 2] WP-014: Динамический Линковщик Компонентов.** Реализовать механизм загрузки и связывания WASM-компонентов (Component Model) для подключения драйверов.
-19. **[x] [Phase 2] WP-015: Система Капабилити (Capabilities System).** Реализовать таблицу ресурсов и доступ через типизированные хендлы. Доказать невозможность подделки хендла.
-20. **[x] [Phase 2] WP-016: Драйвер VirtIO-Blk (WASM).** Реализовать драйвер блочного устройства (Rust -> WASM). Доказать корректность работы с Virtqueue.
-21. **[x] [Phase 2] WP-017: Драйвер VirtIO-Net (WASM).** Реализовать сетевой драйвер. Доказать отсутствие утечек памяти при передаче пакетов.
-22. **[x] [Phase 2] WP-018: PCI Bus Enumerator.** Реализовать сканирование шины PCI и загрузку соответствующих WASM-драйверов. Верифицировать парсинг конфигурации.
-23. **[x] [Phase 2] WP-019: Абстракция DMA (Safe DMA).** Реализовать безопасный интерфейс для DMA. Доказать, что регион DMA закреплен (pinned) во время I/O.
-24. **[x] [Phase 2] WP-020: Виртуальная Файловая Система (VFS).** Объединить различные ФС. Верифицировать отсутствие циклов в графе директорий и корректность блокировок.
-
-## Фаза 3: Интеграция AI-Native Подсистем
-
-25. **[x] [Phase 3] WP-021: Реализация хоста WASI-NN.** Реализовать спецификацию `wasi-nn` в ядре (мост к тензорным вычислениям). Унифицировать API инференса.
-26. **[x] [Phase 3] WP-022: Встроенное Векторное Хранилище.** Реализовать легковесную векторную БД как системный сервис для хранения логов, конфигов и истории в виде эмбеддингов.
-27. **[x] [Phase 3] WP-023: Менеджер Контекстного Окна.** Разработать подсистему управления контекстом LLM (paging for context) с подгрузкой из векторного хранилища.
-28. **[x] [Phase 3] WP-024: Драйвер VirtIO-GPU (2D/3D).** Реализовать поддержку графического ускорения. Проверить корректность очередей команд GPU.
-29. **[x] [Phase 3] WP-025: Интеграция Inference Runtime.** Встроить движок инференса (Candle/Mistral.rs) в слой сервисов ядра (no_std оптимизация).
-30. **[x] [Phase 3] WP-026: Системный вызов "Намерение" (sys_intent).** Реализовать syscall `sys_intent` и интеграцию SLM для трансляции интента в цепочку вызовов WASI.
-31. **[x] [Phase 3] WP-027: Семантический Поиск Файлов.** Заменить традиционный поиск на семантический, используя векторную БД и индексацию нейросетью.
-32. **[x] [Phase 3] WP-028: Протокол Agent-to-Agent (A2A).** Разработать стандарт межпроцессного взаимодействия для ИИ-агентов (договоренности о приоритетах).
-33. **[x] [Phase 3] WP-029: Интеграция Model Context Protocol (MCP).** Реализовать стандарт MCP для подключения к внешним источникам данных и инструментам.
-34. **[x] [Phase 3] WP-030: Слой Управления и Ограничений (Guardrails).** Реализовать фильтр действий ИИ. Доказать (Verus), что ИИ не может нарушить низкоуровневые политики безопасности (ACL).
-
-## Фаза 4: Архитектура Самодописывания (Autopoiesis)
-
-35. **[x] [Phase 4] WP-031: WASM Compiler Backend (Cranelift).** Портировать Cranelift/Winch как WASM-компонент для компиляции IR в машинный код внутри ОС.
-36. **[x] [Phase 4] WP-032: Rust Frontend (DSL to MIR).** Реализовать упрощенный фронтенд Rust/DSL для генерации ИИ кода в MIR или WASM.
-37. **[x] [Phase 4] WP-033: Сервис Автоматической Верификации.** Интегрировать SMT-солвер (Z3) в ОС для верификации генерируемого кода перед запуском.
-38. **[x] [Phase 4] WP-034: Промпт-инжиниринг для Генерации Кода.** Создать системные промпты и RAG для обучения LLM писать код, совместимый с Verus.
-39. **[x] [Phase 4] WP-035: Механизм Горячей Замены (Hot-Reload).** Реализовать логику безопасной замены компонентов с миграцией состояния. Доказать функцию миграции.
-40. **[x] [Phase 4] WP-036: Телеметрия и Петля Обратной Связи.** Реализовать мониторинг производительности для подачи данных агенту "Оптимизатор".
-41. **[x] [Phase 4] WP-037: Пайплайн Генерации Драйверов.** Реализовать сценарий обнаружения устройства, поиска спецификации, генерации драйвера, верификации и загрузки.
-42. **[x] [Phase 4] WP-038: Логика Самокоррекции.** Реализовать цикл "Retry": ошибки верификации скармливаются обратно LLM для исправления.
-43. **[x] [Phase 4] WP-039: Синтез Регрессионных Тестов.** Разработать фреймворк для параллельной генерации кода, доказательств и тестов (Co-generation).
-44. **[x] [Phase 4] WP-040: Blue-Green Обновление Ядра.** Реализовать механизм параллельного запуска компонентов (shadow mode) для сравнения поведения.
-
-## Фаза 5: Пользовательский Опыт
-
-45. **[x] [Phase 5] WP-041: Сетевой Стек User-Space (Smoltcp).** Портировать `smoltcp` в WASM-компонент. Верифицировать переходы состояний TCP.
-46. **[x] [Phase 5] WP-042: Композитор Окон (WGPU Compositor).** Создать оконный менеджер на базе `wgpu`. Обеспечить безопасность памяти.
-47. **[x] [Phase 5] WP-043: Рендеринг Текста и Ввод.** Интегрировать `ab_glyph`, связать ввод с семантическим поиском.
-48. **[x] [Phase 5] WP-044: Натурально-языковая Оболочка (NL-SH).** Реализовать командную строку, понимающую естественный язык и преобразующую его в API ядра.
-49. **[x] [Phase 5] WP-045: Интеграция GUI Фреймворка (Slint).** Портировать `Slint` для работы поверх композитора. Реализовать "Генеративный UI".
-50. **[x] [Phase 5] WP-046: Криптографический Сервис (wasi-crypto).** Реализовать криптографию, верифицировать constant-time алгоритмы.
-51. **[x] [Phase 5] WP-047: Secure Boot Chain Extension.** Расширить загрузку проверкой цифровых подписей WASM-компонентов.
-52. **[x] [Phase 5] WP-048: Многопользовательская Система Прав.** Реализовать UID/GID через Capabilities, обеспечить соблюдение границ ИИ-агентами.
-53. **[x] [Phase 5] WP-049: Системная Наблюдаемость.** Внедрить трейсинг (OpenTelemetry) в ядро для визуализации решений ИИ и планировщика.
-54. **[x] [Phase 5] WP-050: Финальная стабилизация и Документация.** Провести стресс-тестирование, стабилизировать доказательства Verus, написать документацию.
-
-- [x] **Fix CI issues with test-mkimage job**
-  The newly added `test-mkimage` job in CI might need further tweaks if `mtools` or `parted` behave differently in the runner environment, or if caching of the kernel build artifacts is required between jobs.
-
-
-## Фаза 6: Расширенная аппаратная поддержка и многоплатформенность
-
-### Поддержка видеокарт (GPU)
-- [x] **WP-055: Инфраструктура драйверов видеокарт (DRM/KMS).** Разработать базовую абстракцию подсистемы Direct Rendering Manager и Kernel Mode Setting для управления дисплеями и графическими буферами.
-- [x] **WP-056: Универсальный драйвер Framebuffer (VESA/GOP).** Реализовать базовый драйвер для вывода графики через UEFI GOP или VESA для обеспечения работы графики до загрузки специализированных драйверов.
-- [x] **WP-057: Драйвер Intel GPU (i915 - базовый 2D/вывод).** Разработать начальную поддержку интегрированной графики Intel для инициализации дисплея и управления буферами кадров (без 3D-ускорения).
-- [x] **WP-058: Драйвер AMD GPU (amdgpu - базовый 2D/вывод).** Разработать начальную поддержку видеокарт AMD для базового управления дисплеем.
-- [x] **WP-059: Драйвер VirtIO-GPU (расширенный 3D).** Доработать существующий VirtIO-GPU (WP-024) для поддержки аппаратного ускорения 3D-графики через Virgl.
-
-### Поддержка USB-контроллеров
-- [x] **WP-060: Ядерная подсистема USB Core.** Разработать базовую архитектуру USB-стека: абстракции устройств, хабов, эндпоинтов и передач данных (URB).
-- [x] **WP-061: Драйвер контроллера xHCI (USB 3.0+).** Реализовать драйвер хост-контроллера eXtensible Host Controller Interface для поддержки современных USB-портов.
-- [x] **WP-062: Драйвер контроллера EHCI (USB 2.0).** Реализовать поддержку Enhanced Host Controller Interface для обеспечения совместимости со старым оборудованием.
-- [x] **WP-063: Драйвер класса USB Hub.** Разработать драйвер для поддержки USB-концентраторов, обеспечивающий обнаружение подключения/отключения устройств в реальном времени.
-
-### Поддержка устройств ввода-вывода (I/O)
-- [x] **WP-064: Драйвер класса USB HID (клавиатуры/мыши).** Реализовать поддержку Human Interface Devices по USB для подключения стандартных мышей и клавиатур.
-- [ ] **WP-065: Подсистема ввода (Input Subsystem/evdev).** Создать унифицированный интерфейс обработки событий ввода (нажатия клавиш, движение мыши, тачпады) аналогично Linux evdev.
-- [x] **WP-066: Драйвер AHCI (SATA/HDD/SSD).** Разработать драйвер Advanced Host Controller Interface для работы с SATA-накопителями и интегрировать его с блочным слоем ядра.
-- [x] **WP-067: Драйвер NVMe (PCIe SSD).** Реализовать поддержку протокола NVMe для работы с высокоскоростными PCIe-накопителями и интегрировать с блочным слоем.
-- [x] **WP-068: Подсистема Аудио (ALSA-like API).** Создать базовую звуковую архитектуру: абстракции PCM, микшеров и аудиопотоков.
-- [ ] **WP-069: Драйвер Intel HDA (High Definition Audio).** Реализовать поддержку стандартного аудио-контроллера для вывода звука на большинстве ПК.
-
-### Поддержка различных процессорных архитектур (Многоплатформенность)
-- [x] **WP-070: Абстракция аппаратно-зависимого слоя (HAL/Arch).** Рефакторинг ядра: выделение архитектурно-зависимого кода (MMU, прерывания, контекст) в отдельный слой (crate `kernel/src/arch`).
-- [x] **WP-071: Портирование на AArch64 (ARM64) - Базовая загрузка.** Настроить тулчейн, написать загрузочный код и настроить UART/MMU для архитектуры AArch64 (QEMU virt).
-- [x] **WP-072: AArch64 - Прерывания (GIC) и Таймер.** Реализовать поддержку Generic Interrupt Controller и ARM Generic Timer для AArch64.
-- [ ] **WP-073: AArch64 - Поддержка Raspberry Pi 4 (BSP).** Разработать Board Support Package для загрузки ОС на реальном устройстве Raspberry Pi 4 (SD-карта, GPIO, базовый UART).
-- [x] **WP-074: Портирование на RISC-V (RV64) - Базовая загрузка.** Настроить тулчейн и написать код инициализации, поддержку SBI (Supervisor Binary Interface) и UART для архитектуры RISC-V 64-bit.
-- [x] **WP-075: RISC-V (RV64) - Прерывания (PLIC) и MMU (Sv39).** Реализовать контроллер прерываний PLIC и управление страницами Sv39 для полноценной работы ядра на RISC-V.
+## Phase 10: GUI, Compositor and Daily-Driver Polish
+- [ ] **WP-088: WGPU Compositor and Wayland-like protocol.** Mature the `wgpu_compositor` to handle multiple overlapping application windows, input routing, and damage tracking.
+- [ ] **WP-089: Generative UI (Slint).** Implement a dynamic desktop environment using Slint where the AI can generate or modify UI layouts based on user context.
+- [ ] **WP-090: Networking & Web.** Implement a basic DNS resolver and HTTP client in userland, eventually paving the way for a WASM-based web browser.
+- [ ] **WP-091: User Documentation & Installer.** Write a comprehensive user guide, and create a live-USB GUI installer that formats disks, sets up secure boot, and installs piOS.

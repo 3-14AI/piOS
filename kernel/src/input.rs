@@ -65,6 +65,46 @@ verus! {
             urb.endpoint_addr == self.endpoint_addr && urb.actual_length > 0
         }
     }
+
+    pub enum EventType {
+        Sync,
+        Key,
+        Rel,
+        Abs,
+    }
+
+    pub struct InputEvent {
+        pub event_type: EventType,
+        pub code: u16,
+        pub value: i32,
+    }
+
+    impl InputEvent {
+        pub fn new(event_type: EventType, code: u16, value: i32) -> (e: Self)
+            ensures
+                e.event_type == event_type,
+                e.code == code,
+                e.value == value
+        {
+            InputEvent {
+                event_type,
+                code,
+                value,
+            }
+        }
+    }
+
+    pub struct InputSubsystem {
+        pub active: bool,
+    }
+
+    impl InputSubsystem {
+        pub fn new() -> (i: Self)
+            ensures i.active == true
+        {
+            InputSubsystem { active: true }
+        }
+    }
 }
 
 #[cfg(not(feature = "verus"))]
@@ -138,6 +178,53 @@ impl Default for HidInputDriver {
 }
 
 #[cfg(not(feature = "verus"))]
+#[derive(Debug, PartialEq, Eq)]
+pub enum EventType {
+    Sync,
+    Key,
+    Rel,
+    Abs,
+}
+
+#[cfg(not(feature = "verus"))]
+#[derive(Debug)]
+pub struct InputEvent {
+    pub event_type: EventType,
+    pub code: u16,
+    pub value: i32,
+}
+
+#[cfg(not(feature = "verus"))]
+impl InputEvent {
+    pub fn new(event_type: EventType, code: u16, value: i32) -> Self {
+        InputEvent {
+            event_type,
+            code,
+            value,
+        }
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+pub struct InputSubsystem {
+    pub active: bool,
+}
+
+#[cfg(not(feature = "verus"))]
+impl InputSubsystem {
+    pub fn new() -> Self {
+        InputSubsystem { active: true }
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+impl Default for InputSubsystem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -166,5 +253,19 @@ mod tests {
 
         urb.actual_length = 0;
         assert_eq!(drv.handle_urb(&urb), false);
+    }
+
+    #[test]
+    fn test_input_subsystem() {
+        let event = InputEvent::new(EventType::Key, 1, 1);
+        assert_eq!(event.event_type, EventType::Key);
+        assert_eq!(event.code, 1);
+        assert_eq!(event.value, 1);
+
+        let subsys = InputSubsystem::new();
+        assert_eq!(subsys.active, true);
+
+        let subsys_def = InputSubsystem::default();
+        assert_eq!(subsys_def.active, true);
     }
 }
