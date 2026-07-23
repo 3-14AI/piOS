@@ -404,6 +404,43 @@ pub mod aarch64 {
             0
         }
     }
+
+    pub struct RaspberryPi4Bsp;
+
+    impl RaspberryPi4Bsp {
+        pub fn new() -> Self {
+            RaspberryPi4Bsp {}
+        }
+
+        pub fn init_uart_pins(&self, mmio_base: usize) {
+            // Mock initialization of UART pins via GPIO registers for BCM2711 (Raspberry Pi 4)
+            let gpfsel1 = (mmio_base + 0x200004) as *mut u32; // GPFSEL1
+            let gpio_pup_pdn_cntrl_reg0 = (mmio_base + 0x2000E4) as *mut u32; // GPIO_PUP_PDN_CNTRL_REG0
+
+            unsafe {
+                // Set GPIO 14, 15 to Alt Function 5 (TXD0, RXD0)
+                let mut sel = core::ptr::read_volatile(gpfsel1);
+                sel &= !(7 << 12);
+                sel |= 2 << 12; // GPIO 14
+                sel &= !(7 << 15);
+                sel |= 2 << 15; // GPIO 15
+                core::ptr::write_volatile(gpfsel1, sel);
+
+                // Disable pull up/down for GPIO 14 and 15 (BCM2711)
+                // Each GPIO uses 2 bits in the register: 00 = No resistor
+                let mut pup_pdn = core::ptr::read_volatile(gpio_pup_pdn_cntrl_reg0);
+                pup_pdn &= !(3 << 28); // Clear bits 28-29 (GPIO 14)
+                pup_pdn &= !(3 << 30); // Clear bits 30-31 (GPIO 15)
+                core::ptr::write_volatile(gpio_pup_pdn_cntrl_reg0, pup_pdn);
+            }
+        }
+    }
+
+    impl Default for RaspberryPi4Bsp {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
 }
 
 #[cfg(not(feature = "verus"))]
@@ -538,6 +575,33 @@ mod tests {
 
         uart.write_byte(b'A');
         assert_eq!(mmio_region[0], b'A' as u32);
+    }
+
+    #[test]
+    fn test_rpi4_init_uart() {
+        let mut mmio_region = alloc::vec![0u32; 0x200100];
+        let base_addr = mmio_region.as_mut_ptr() as usize;
+
+        let gpfsel1_idx = 0x200004 / 4;
+        let gpio_pup_pdn_idx = 0x2000E4 / 4;
+
+        mmio_region[gpfsel1_idx] = 0xFFFFFFFF; // Set all bits to 1 initially to test clearing
+        mmio_region[gpio_pup_pdn_idx] = 0xFFFFFFFF; // Set to 1s to test clearing
+
+        let bsp = super::aarch64::RaspberryPi4Bsp::new();
+        bsp.init_uart_pins(base_addr);
+
+        // Verify GPFSEL1 was modified correctly for GPIO 14 and 15
+        let sel = mmio_region[gpfsel1_idx];
+        assert_eq!(sel & (7 << 12), 2 << 12);
+        assert_eq!(sel & (7 << 15), 2 << 15);
+
+        // Verify GPIO_PUP_PDN_CNTRL_REG0 state (bits 28-31 cleared)
+        let pup_pdn = mmio_region[gpio_pup_pdn_idx];
+        assert_eq!(pup_pdn & (3 << 28), 0);
+        assert_eq!(pup_pdn & (3 << 30), 0);
+
+        let _bsp_def = super::aarch64::RaspberryPi4Bsp::default();
     }
 
     #[test]
