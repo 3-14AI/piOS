@@ -5,6 +5,20 @@ set -e
 echo "Building kernel..."
 ./tools/build_kernel.sh
 
+# Build hello_world WASM app
+echo "Building hello_world WASM app..."
+cargo build -p hello_world --target wasm32-wasip1 --release
+
+# Create initrd
+echo "Creating initrd..."
+INITRD_DIR="target/initrd"
+INITRD_IMG="target/initrd.img"
+mkdir -p "$INITRD_DIR"
+cp target/wasm32-wasip1/release/hello_world.wasm "$INITRD_DIR/"
+cd "$INITRD_DIR"
+find . | cpio -o -H newc > "../initrd.img"
+cd ../..
+
 # Configuration
 IMAGE_NAME="target/disk.img"
 IMAGE_SIZE_MB=64
@@ -31,5 +45,8 @@ mmd -i "${IMAGE_NAME}@@${ESP_OFFSET_BYTES}" ::/EFI/BOOT
 
 echo "Copying kernel.efi to BOOTX64.EFI..."
 mcopy -i "${IMAGE_NAME}@@${ESP_OFFSET_BYTES}" "$KERNEL_EFI" ::/EFI/BOOT/BOOTX64.EFI
+
+echo "Copying initrd.img to ESP..."
+mcopy -i "${IMAGE_NAME}@@${ESP_OFFSET_BYTES}" "$INITRD_IMG" ::/initrd.img
 
 echo "Bootable image created successfully at $IMAGE_NAME"

@@ -7,5 +7,6 @@ edition = "2021"
 pios-api = { path = "../../../libs/pios-api" }
 
 [lib]
+crate-type = ["cdylib"]
 name = "hello_world"
 path = "src/lib.rs"

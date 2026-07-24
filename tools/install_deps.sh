@@ -5,13 +5,14 @@ echo "Installing dependencies..."
 
 if command -v apt-get &> /dev/null; then
     sudo apt-get update
-    sudo apt-get install -y qemu-system-x86 ovmf llvm clang lld curl git build-essential pkg-config libfontconfig1-dev mtools parted dosfstools
+    sudo apt-get install -y qemu-system-x86 ovmf llvm clang lld curl git build-essential pkg-config libfontconfig1-dev mtools parted dosfstools cpio
 else
     echo "Warning: apt-get not found. Please ensure qemu-system-x86_64, ovmf, llvm, clang are installed."
 fi
 
 echo "Installing rust components..."
 rustup component add llvm-tools-preview rust-src
+rustup target add wasm32-wasip1
 
 if ! command -v just &> /dev/null; then
     echo "Installing just..."
