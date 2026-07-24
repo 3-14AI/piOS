@@ -21,4 +21,10 @@ if ! mdir -i "${IMAGE_NAME}@@${ESP_OFFSET_BYTES}" -/ :: | grep -q "BOOTX64"; the
     exit 1
 fi
 
+echo "Verifying initrd.img exists in the image..."
+if ! mdir -i "${IMAGE_NAME}@@${ESP_OFFSET_BYTES}" -/ :: | grep -qi "initrd.*img"; then
+    echo "Error: initrd.img not found in the image."
+    exit 1
+fi
+
 echo "Image verification tests passed!"

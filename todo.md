@@ -3,7 +3,7 @@
 This file tracks the overarching goals and next phases for piOS, moving from a fully implemented architectural scaffolding to a functional, bootable operating system with a native AI feedback loop.
 
 ## Phase 7: Bootable ISO and Real Hardware Testing
-- [ ] **WP-076: Build System for Bootable Image.** Create an automated script (`tools/mkimage.sh`) that compiles the UEFI bootloader, kernel, and an initial ramdisk (initrd) containing WASM components, outputting a bootable `.iso` or `.img`.
+- [x] **WP-076: Build System for Bootable Image.** Create an automated script (`tools/mkimage.sh`) that compiles the UEFI bootloader, kernel, and an initial ramdisk (initrd) containing WASM components, outputting a bootable `.iso` or `.img`.
 - [ ] **WP-077: Initial Ramdisk (initrd) implementation.** Implement parsing of a basic initramfs in the kernel to load critical drivers before the root VFS is mounted.
 - [ ] **WP-078: Bare-Metal x86-64 Execution.** Boot the generated ISO on a real physical x86-64 machine. Debug and fix any CPU feature mismatches, UEFI handoff issues, or ACPI parsing panics.
 - [ ] **WP-079: Hardware-backed NVMe & USB.** Verify that the NVMe and USB XHCI drivers successfully enumerate and interact with physical storage and input devices on a real machine (not QEMU).
