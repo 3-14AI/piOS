@@ -24,6 +24,7 @@ verus! {
     }
 
     #[verifier::external_body]
+    #[allow(clippy::needless_range_loop, clippy::manual_range_contains)]
     pub fn parse_initramfs(addr: usize, size: usize) {
         let mut current = addr as *const u8;
         let end = (addr + size) as *const u8;

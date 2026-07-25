@@ -13,7 +13,7 @@ qemu-system-x86_64 \
     -m 512M \
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_VARS_4M.fd \
-    -cdrom target/pios.iso \
+    -drive format=raw,file=target/disk.img \
     -serial file:qemu_iso.log \
     -display none \
     -device isa-debug-exit,iobase=0xf4,iosize=0x04 &

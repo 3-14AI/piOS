@@ -44,7 +44,7 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
                             .get_info::<uefi::proto::media::file::FileInfo>(&mut info_buf)
                         {
                             let size = info.file_size() as usize;
-                            let pages = (size + 4095) / 4096;
+                            let pages = size.div_ceil(4096);
                             if let Ok(addr) = bs.allocate_pages(
                                 uefi::table::boot::AllocateType::AnyPages,
                                 uefi::table::boot::MemoryType::LOADER_DATA,
