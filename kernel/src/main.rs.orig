@@ -1,0 +1,175 @@
+#![no_std]
+#![no_main]
+#![allow(clippy::empty_loop)]
+
+mod panic;
+
+#[cfg(target_arch = "x86_64")]
+use uefi::prelude::*;
+#[cfg(target_arch = "x86_64")]
+use uefi::table::boot::{MemoryDescriptor, MemoryType};
+
+// We use the library crate 'kernel' for shared definitions and verified code.
+use kernel::boot;
+use kernel::verifier;
+
+#[cfg(target_arch = "x86_64")]
+#[entry]
+#[cfg(not(tarpaulin))]
+fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
+    if uefi::helpers::init(&mut system_table).is_err() {
+        loop {}
+    }
+    log::info!("Hello from piOS Boot Stub!");
+
+    // 0. Load initrd
+    let mut initrd_addr = 0;
+    let mut initrd_size = 0;
+
+    let bs = system_table.boot_services();
+    if let Ok(fs_handle) = bs.get_handle_for_protocol::<uefi::proto::media::fs::SimpleFileSystem>()
+    {
+        if let Ok(mut fs) =
+            bs.open_protocol_exclusive::<uefi::proto::media::fs::SimpleFileSystem>(fs_handle)
+        {
+            if let Ok(mut root) = fs.open_volume() {
+                use uefi::proto::media::file::File;
+                if let Ok(file) = root.open(
+                    uefi::cstr16!("initrd.img"),
+                    uefi::proto::media::file::FileMode::Read,
+                    uefi::proto::media::file::FileAttribute::empty(),
+                ) {
+                    if let Some(mut regular_file) = file.into_regular_file() {
+                        let mut info_buf = [0u8; 128];
+                        if let Ok(info) = regular_file
+                            .get_info::<uefi::proto::media::file::FileInfo>(&mut info_buf)
+                        {
+                            let size = info.file_size() as usize;
+                            let pages = size.div_ceil(4096);
+                            if let Ok(addr) = bs.allocate_pages(
+                                uefi::table::boot::AllocateType::AnyPages,
+                                uefi::table::boot::MemoryType::LOADER_DATA,
+                                pages,
+                            ) {
+                                let buf = unsafe {
+                                    core::slice::from_raw_parts_mut(addr as *mut u8, size)
+                                };
+                                if regular_file.read(buf).is_ok() {
+                                    initrd_addr = addr as usize;
+                                    initrd_size = size;
+                                    write_serial("Loaded initrd.img\n");
+                                    log::info!("Loaded initrd.img: {} bytes at {:#x}", size, addr);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if initrd_size == 0 {
+        write_serial("Could not load initrd.img\n");
+        log::warn!("Could not load initrd.img");
+    }
+
+    // 1. Exit Boot Services
+    // Note: In uefi-rs 0.28+, exit_boot_services helper handles allocation.
+    // It returns (SystemTable<Runtime>, MemoryMap<'static>).
+    let (_system_table_runtime, memory_map) =
+        system_table.exit_boot_services(MemoryType::LOADER_DATA);
+
+    // 2. Construct BootInfo
+    let entries_len = memory_map.entries().len();
+    if entries_len == 0 {
+        // Should not happen as we are running code
+        loop {}
+    }
+
+    // Get pointer to first element
+    let first = memory_map.entries().next().unwrap() as *const MemoryDescriptor;
+    let base_ptr = first as *const u8;
+
+    // Calculate stride if possible, or assume packed if len=1
+    let stride = if entries_len > 1 {
+        let second = memory_map.entries().nth(1).unwrap() as *const MemoryDescriptor;
+        (second as usize) - (first as usize)
+    } else {
+        core::mem::size_of::<MemoryDescriptor>()
+    };
+
+    // We cast to *mut u8 because BootInfo expects mutable pointer (it owns the map now).
+    // The memory is leaked by uefi helper so it is static 'static.
+    let boot_info = boot::BootInfo {
+        memory_map: base_ptr as *mut u8,
+        memory_map_len: entries_len,
+        descriptor_size: stride,
+        descriptor_version: 1, // Assume version 1 as uefi-rs abstracts it away
+        initrd_addr,
+        initrd_size,
+    };
+
+    // 3. Pass control to verified kernel
+    verifier::kernel_main(&boot_info);
+
+    // 4. Run simple tests and signal QEMU to exit
+    run_qemu_tests();
+
+    // 5. Spin
+    loop {}
+}
+
+#[cfg(target_arch = "x86_64")]
+#[cfg(not(tarpaulin))]
+fn outb(port: u16, val: u8) {
+    unsafe {
+        core::arch::asm!("out dx, al", in("dx") port, in("al") val);
+    }
+}
+
+#[cfg(target_arch = "x86_64")]
+#[cfg(not(tarpaulin))]
+fn write_serial(s: &str) {
+    let port = 0x3F8; // COM1
+    for b in s.bytes() {
+        unsafe {
+            // Wait for line status register to be ready
+            while {
+                let mut lsr: u8;
+                core::arch::asm!("in al, dx", out("al") lsr, in("dx") port + 5);
+                (lsr & 0x20) == 0
+            } {}
+        }
+        outb(port, b);
+    }
+}
+
+#[cfg(target_arch = "x86_64")]
+#[cfg(not(tarpaulin))]
+fn run_qemu_tests() {
+    write_serial("\nRunning QEMU Integration Tests...\n");
+    // TODO: add real tests here
+    write_serial("[ok] Kernel booted successfully\n");
+
+    // Shutdown via isa-debug-exit
+    outb(0xf4, 0x10);
+}
+
+#[cfg(any(target_arch = "riscv64", target_arch = "riscv32"))]
+#[no_mangle]
+#[cfg(not(tarpaulin))]
+pub extern "C" fn _start() -> ! {
+    let boot_info = boot::BootInfo {
+        memory_map: core::ptr::null_mut(),
+        memory_map_len: 0,
+        descriptor_size: 0,
+        descriptor_version: 0,
+        initrd_addr: 0,
+        initrd_size: 0,
+    };
+
+    // Pass control to verified kernel
+    verifier::kernel_main(&boot_info);
+
+    loop {}
+}
