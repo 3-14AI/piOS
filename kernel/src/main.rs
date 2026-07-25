@@ -15,6 +15,7 @@ use kernel::verifier;
 
 #[cfg(target_arch = "x86_64")]
 #[entry]
+#[cfg(not(tarpaulin_include))]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     if uefi::helpers::init(&mut system_table).is_err() {
         loop {}
@@ -119,6 +120,7 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 }
 
 #[cfg(target_arch = "x86_64")]
+#[cfg(not(tarpaulin_include))]
 fn outb(port: u16, val: u8) {
     unsafe {
         core::arch::asm!("out dx, al", in("dx") port, in("al") val);
@@ -126,6 +128,7 @@ fn outb(port: u16, val: u8) {
 }
 
 #[cfg(target_arch = "x86_64")]
+#[cfg(not(tarpaulin_include))]
 fn write_serial(s: &str) {
     let port = 0x3F8; // COM1
     for b in s.bytes() {
@@ -142,6 +145,7 @@ fn write_serial(s: &str) {
 }
 
 #[cfg(target_arch = "x86_64")]
+#[cfg(not(tarpaulin_include))]
 fn run_qemu_tests() {
     write_serial("\nRunning QEMU Integration Tests...\n");
     // TODO: add real tests here
@@ -153,6 +157,7 @@ fn run_qemu_tests() {
 
 #[cfg(any(target_arch = "riscv64", target_arch = "riscv32"))]
 #[no_mangle]
+#[cfg(not(tarpaulin_include))]
 pub extern "C" fn _start() -> ! {
     let boot_info = boot::BootInfo {
         memory_map: core::ptr::null_mut(),

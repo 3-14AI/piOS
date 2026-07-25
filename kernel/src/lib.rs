@@ -340,3 +340,18 @@ pub mod telemetry;
 
 #[cfg(not(feature = "verus"))]
 pub mod telemetry;
+
+#[cfg(not(feature = "verus"))]
+#[cfg(test)]
+mod initrd_tests {
+    use super::*;
+    #[test]
+    fn test_parse_initramfs() {
+        let buf = [0u8; 110];
+        verifier::parse_initramfs(buf.as_ptr() as usize, 0);
+    }
+    #[test]
+    fn test_add_vfs_entry_stub() {
+        verifier::add_vfs_entry_stub(core::ptr::null(), core::ptr::null(), 0);
+    }
+}
