@@ -101,14 +101,131 @@ pub mod boot {
         pub memory_map_len: usize,
         pub descriptor_size: usize,
         pub descriptor_version: u32,
+        pub initrd_addr: usize,
+        pub initrd_size: usize,
     }
 }
 
 #[cfg(not(feature = "verus"))]
 pub mod verifier {
-    pub fn kernel_main(_boot_info: &crate::boot::BootInfo) {
+    pub fn kernel_main(boot_info: &crate::boot::BootInfo) {
         // No-op for non-verus build
+        if boot_info.initrd_size > 0 && boot_info.initrd_addr > 0 {
+            parse_initramfs(boot_info.initrd_addr, boot_info.initrd_size);
+        }
     }
+
+    pub fn parse_initramfs(addr: usize, size: usize) {
+        let mut current = addr as *const u8;
+        let end = (addr + size) as *const u8;
+
+        unsafe {
+            while current.add(110) <= end {
+                // Check magic "070701"
+                let mut magic_ok = true;
+                let magic = b"070701";
+                for i in 0..6 {
+                    if *current.add(i) != magic[i] {
+                        magic_ok = false;
+                        break;
+                    }
+                }
+                if !magic_ok {
+                    break;
+                }
+
+                // Parse namesize (8 hex chars starting at offset 94)
+                let mut namesize: usize = 0;
+                for i in 0..8 {
+                    let c = *current.add(94 + i);
+                    let val = if c >= b'0' && c <= b'9' {
+                        c - b'0'
+                    } else if c >= b'A' && c <= b'F' {
+                        c - b'A' + 10
+                    } else if c >= b'a' && c <= b'f' {
+                        c - b'a' + 10
+                    } else {
+                        0
+                    };
+                    namesize = (namesize << 4) | (val as usize);
+                }
+
+                // Parse filesize (8 hex chars starting at offset 54)
+                let mut filesize: usize = 0;
+                for i in 0..8 {
+                    let c = *current.add(54 + i);
+                    let val = if c >= b'0' && c <= b'9' {
+                        c - b'0'
+                    } else if c >= b'A' && c <= b'F' {
+                        c - b'A' + 10
+                    } else if c >= b'a' && c <= b'f' {
+                        c - b'a' + 10
+                    } else {
+                        0
+                    };
+                    filesize = (filesize << 4) | (val as usize);
+                }
+
+                let name_ptr = current.add(110);
+
+                // Check TRAILER!!!
+                if namesize == 11 {
+                    let trailer = b"TRAILER!!!\0";
+                    let mut is_trailer = true;
+                    for i in 0..11 {
+                        if *name_ptr.add(i) != trailer[i] {
+                            is_trailer = false;
+                            break;
+                        }
+                    }
+                    if is_trailer {
+                        break;
+                    }
+                }
+
+                let name_padding = (4 - ((110 + namesize) % 4)) % 4;
+                let file_ptr = name_ptr.add(namesize + name_padding);
+
+                let file_padding = (4 - (filesize % 4)) % 4;
+                let next_current = file_ptr.add(filesize + file_padding);
+
+                if next_current > end {
+                    break;
+                }
+
+                // Check if name matches condition
+                let mut add_entry = false;
+                if filesize > 0 {
+                    add_entry = true;
+                }
+                // Simple check for "init" prefix or ".so" suffix
+                if namesize >= 4 {
+                    if *name_ptr == b'i'
+                        && *name_ptr.add(1) == b'n'
+                        && *name_ptr.add(2) == b'i'
+                        && *name_ptr.add(3) == b't'
+                    {
+                        add_entry = true;
+                    }
+                    if *name_ptr.add(namesize - 4) == b'.'
+                        && *name_ptr.add(namesize - 3) == b's'
+                        && *name_ptr.add(namesize - 2) == b'o'
+                        && *name_ptr.add(namesize - 1) == 0
+                    {
+                        add_entry = true;
+                    }
+                }
+
+                if add_entry {
+                    add_vfs_entry_stub(name_ptr, file_ptr, filesize);
+                }
+
+                current = next_current;
+            }
+        }
+    }
+
+    pub fn add_vfs_entry_stub(_name: *const u8, _data: *const u8, _size: usize) {}
 }
 
 #[cfg(not(feature = "verus"))]
@@ -170,6 +287,8 @@ mod tests {
             memory_map_len: 0,
             descriptor_size: 0,
             descriptor_version: 0,
+            initrd_addr: 0,
+            initrd_size: 0,
         };
         assert_eq!(_info.memory_map_len, 0);
 
@@ -191,6 +310,8 @@ mod tests {
             memory_map_len: 0,
             descriptor_size: 0,
             descriptor_version: 0,
+            initrd_addr: 0,
+            initrd_size: 0,
         };
         verifier::kernel_main(&info);
     }

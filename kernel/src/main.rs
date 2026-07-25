@@ -21,6 +21,57 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     }
     log::info!("Hello from piOS Boot Stub!");
 
+    // 0. Load initrd
+    let mut initrd_addr = 0;
+    let mut initrd_size = 0;
+
+    let bs = system_table.boot_services();
+    if let Ok(fs_handle) = bs.get_handle_for_protocol::<uefi::proto::media::fs::SimpleFileSystem>()
+    {
+        if let Ok(mut fs) =
+            bs.open_protocol_exclusive::<uefi::proto::media::fs::SimpleFileSystem>(fs_handle)
+        {
+            if let Ok(mut root) = fs.open_volume() {
+                use uefi::proto::media::file::File;
+                if let Ok(file) = root.open(
+                    uefi::cstr16!("initrd.img"),
+                    uefi::proto::media::file::FileMode::Read,
+                    uefi::proto::media::file::FileAttribute::empty(),
+                ) {
+                    if let Some(mut regular_file) = file.into_regular_file() {
+                        let mut info_buf = [0u8; 128];
+                        if let Ok(info) = regular_file
+                            .get_info::<uefi::proto::media::file::FileInfo>(&mut info_buf)
+                        {
+                            let size = info.file_size() as usize;
+                            let pages = (size + 4095) / 4096;
+                            if let Ok(addr) = bs.allocate_pages(
+                                uefi::table::boot::AllocateType::AnyPages,
+                                uefi::table::boot::MemoryType::LOADER_DATA,
+                                pages,
+                            ) {
+                                let buf = unsafe {
+                                    core::slice::from_raw_parts_mut(addr as *mut u8, size)
+                                };
+                                if regular_file.read(buf).is_ok() {
+                                    initrd_addr = addr as usize;
+                                    initrd_size = size;
+                                    write_serial("Loaded initrd.img\n");
+                                    log::info!("Loaded initrd.img: {} bytes at {:#x}", size, addr);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if initrd_size == 0 {
+        write_serial("Could not load initrd.img\n");
+        log::warn!("Could not load initrd.img");
+    }
+
     // 1. Exit Boot Services
     // Note: In uefi-rs 0.28+, exit_boot_services helper handles allocation.
     // It returns (SystemTable<Runtime>, MemoryMap<'static>).
@@ -53,6 +104,8 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
         memory_map_len: entries_len,
         descriptor_size: stride,
         descriptor_version: 1, // Assume version 1 as uefi-rs abstracts it away
+        initrd_addr,
+        initrd_size,
     };
 
     // 3. Pass control to verified kernel
@@ -106,6 +159,8 @@ pub extern "C" fn _start() -> ! {
         memory_map_len: 0,
         descriptor_size: 0,
         descriptor_version: 0,
+        initrd_addr: 0,
+        initrd_size: 0,
     };
 
     // Pass control to verified kernel

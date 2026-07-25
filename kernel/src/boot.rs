@@ -19,6 +19,8 @@ pub struct BootInfo {
     pub memory_map_len: usize,
     pub descriptor_size: usize,
     pub descriptor_version: u32,
+    pub initrd_addr: usize,
+    pub initrd_size: usize,
 }
 
 }
