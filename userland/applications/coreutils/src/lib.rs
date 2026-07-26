@@ -2,34 +2,34 @@
 #![allow(clippy::empty_loop)]
 
 extern crate alloc;
-#[cfg(test)]
+
+#[cfg(not(target_arch = "wasm32"))]
 extern crate std;
 
 use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;
-use alloc::vec;
 use alloc::vec::Vec;
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 use core::alloc::{GlobalAlloc, Layout};
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 struct SimpleAllocator {
     heap: core::cell::UnsafeCell<[u8; 65536]>,
     bump_ptr: core::cell::UnsafeCell<usize>,
 }
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 unsafe impl Sync for SimpleAllocator {}
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 unsafe impl GlobalAlloc for SimpleAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let bump_ptr = self.bump_ptr.get();
@@ -48,17 +48,17 @@ unsafe impl GlobalAlloc for SimpleAllocator {
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {} // Memory leak by design
 }
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 #[global_allocator]
 static ALLOCATOR: SimpleAllocator = SimpleAllocator {
     heap: core::cell::UnsafeCell::new([0; 65536]),
     bump_ptr: core::cell::UnsafeCell::new(0),
 };
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 #[no_mangle]
 pub extern "C" fn main() -> i32 {
-    let args_vec = vec!["ls".to_string()];
+    let args_vec = alloc::vec!["ls".to_string()];
 
     match run(args_vec) {
         Ok(_) => 0,
@@ -126,49 +126,49 @@ mod tests {
 
     #[test]
     fn test_ls() {
-        let args = vec!["ls".to_string()];
+        let args = alloc::vec!["ls".to_string()];
         assert_eq!(run(args).unwrap(), ".\n..");
     }
 
     #[test]
     fn test_cat() {
-        let args = vec!["cat".to_string(), "file.txt".to_string()];
+        let args = alloc::vec!["cat".to_string(), "file.txt".to_string()];
         assert_eq!(run(args).unwrap(), "Content of file.txt");
     }
 
     #[test]
     fn test_cat_missing_operand() {
-        let args = vec!["cat".to_string()];
+        let args = alloc::vec!["cat".to_string()];
         assert!(run(args).is_err());
     }
 
     #[test]
     fn test_mkdir() {
-        let args = vec!["mkdir".to_string(), "new_dir".to_string()];
+        let args = alloc::vec!["mkdir".to_string(), "new_dir".to_string()];
         assert_eq!(run(args).unwrap(), "Created directory new_dir");
     }
 
     #[test]
     fn test_rm() {
-        let args = vec!["rm".to_string(), "file.txt".to_string()];
+        let args = alloc::vec!["rm".to_string(), "file.txt".to_string()];
         assert_eq!(run(args).unwrap(), "Removed file.txt");
     }
 
     #[test]
     fn test_ps() {
-        let args = vec!["ps".to_string()];
+        let args = alloc::vec!["ps".to_string()];
         assert_eq!(run(args).unwrap(), "PID TTY TIME CMD\n1 ? 00:00:00 init");
     }
 
     #[test]
     fn test_kill() {
-        let args = vec!["kill".to_string(), "1".to_string()];
+        let args = alloc::vec!["kill".to_string(), "1".to_string()];
         assert_eq!(run(args).unwrap(), "Killed process 1");
     }
 
     #[test]
     fn test_unknown_command() {
-        let args = vec!["unknown".to_string()];
+        let args = alloc::vec!["unknown".to_string()];
         assert!(run(args).is_err());
     }
 }

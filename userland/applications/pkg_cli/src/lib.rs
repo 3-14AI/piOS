@@ -2,34 +2,34 @@
 #![allow(clippy::empty_loop)]
 
 extern crate alloc;
-#[cfg(test)]
+
+#[cfg(not(target_arch = "wasm32"))]
 extern crate std;
 
 use alloc::string::String;
 use alloc::string::ToString;
-use alloc::vec;
 use alloc::vec::Vec;
 use package_manager::{Package, PackageManager, Repository};
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 use core::alloc::{GlobalAlloc, Layout};
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 struct SimpleAllocator {
     heap: core::cell::UnsafeCell<[u8; 65536]>,
     bump_ptr: core::cell::UnsafeCell<usize>,
 }
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 unsafe impl Sync for SimpleAllocator {}
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 unsafe impl GlobalAlloc for SimpleAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let bump_ptr = self.bump_ptr.get();
@@ -48,17 +48,17 @@ unsafe impl GlobalAlloc for SimpleAllocator {
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {} // Memory leak by design
 }
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 #[global_allocator]
 static ALLOCATOR: SimpleAllocator = SimpleAllocator {
     heap: core::cell::UnsafeCell::new([0; 65536]),
     bump_ptr: core::cell::UnsafeCell::new(0),
 };
 
-#[cfg(not(test))]
+#[cfg(target_arch = "wasm32")]
 #[no_mangle]
 pub extern "C" fn main() -> i32 {
-    let args_vec = vec!["install".to_string(), "hello_world".to_string()]; // fallback
+    let args_vec = alloc::vec!["install".to_string(), "hello_world".to_string()]; // fallback
 
     match run(args_vec) {
         Ok(_) => 0,
@@ -77,20 +77,20 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
     repo.add_package(Package {
         name: "hello_world".to_string(),
         version: "1.0.0".to_string(),
-        dependencies: vec![],
-        wasm_blob: vec![],
+        dependencies: alloc::vec![],
+        wasm_blob: alloc::vec![],
     });
     repo.add_package(Package {
         name: "coreutils".to_string(),
         version: "0.1.0".to_string(),
-        dependencies: vec![],
-        wasm_blob: vec![],
+        dependencies: alloc::vec![],
+        wasm_blob: alloc::vec![],
     });
     repo.add_package(Package {
         name: "nl_sh".to_string(),
         version: "0.1.0".to_string(),
-        dependencies: vec!["coreutils".to_string()],
-        wasm_blob: vec![],
+        dependencies: alloc::vec!["coreutils".to_string()],
+        wasm_blob: alloc::vec![],
     });
 
     let mut pm = PackageManager::new(repo);
@@ -114,8 +114,8 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
             pm.repo.add_package(Package {
                 name: "new_remote_pkg".to_string(),
                 version: "1.0.0".to_string(),
-                dependencies: vec![],
-                wasm_blob: vec![],
+                dependencies: alloc::vec![],
+                wasm_blob: alloc::vec![],
             });
             Ok(())
         }
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn test_cli_no_args() {
-        let args = vec![];
+        let args = alloc::vec![];
         let result = run(args);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "No command provided");
@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     fn test_cli_unknown_command() {
-        let args = vec!["unknown".to_string()];
+        let args = alloc::vec!["unknown".to_string()];
         let result = run(args);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Unknown command");
@@ -162,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_cli_install_missing_pkg_name() {
-        let args = vec!["install".to_string()];
+        let args = alloc::vec!["install".to_string()];
         let result = run(args);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Missing package name");
@@ -170,14 +170,14 @@ mod tests {
 
     #[test]
     fn test_cli_install_success() {
-        let args = vec!["install".to_string(), "hello_world".to_string()];
+        let args = alloc::vec!["install".to_string(), "hello_world".to_string()];
         let result = run(args);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_cli_install_failure() {
-        let args = vec!["install".to_string(), "missing_pkg".to_string()];
+        let args = alloc::vec!["install".to_string(), "missing_pkg".to_string()];
         let result = run(args);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("not found"));
@@ -185,14 +185,14 @@ mod tests {
 
     #[test]
     fn test_cli_update() {
-        let args = vec!["update".to_string()];
+        let args = alloc::vec!["update".to_string()];
         let result = run(args);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_cli_search_missing_term() {
-        let args = vec!["search".to_string()];
+        let args = alloc::vec!["search".to_string()];
         let result = run(args);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Missing search term");
@@ -200,14 +200,14 @@ mod tests {
 
     #[test]
     fn test_cli_search_success() {
-        let args = vec!["search".to_string(), "core".to_string()];
+        let args = alloc::vec!["search".to_string(), "core".to_string()];
         let result = run(args);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_cli_search_failure() {
-        let args = vec!["search".to_string(), "nonexistent".to_string()];
+        let args = alloc::vec!["search".to_string(), "nonexistent".to_string()];
         let result = run(args);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Package not found");
