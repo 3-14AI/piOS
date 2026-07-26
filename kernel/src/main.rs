@@ -16,7 +16,7 @@ use kernel::verifier;
 #[cfg(target_arch = "x86_64")]
 #[entry]
 #[cfg(not(tarpaulin_include))]
-fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
+fn efi_main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     if uefi::helpers::init(&mut system_table).is_err() {
         loop {}
     }
@@ -172,4 +172,9 @@ pub extern "C" fn _start() -> ! {
     verifier::kernel_main(&boot_info);
 
     loop {}
+}
+
+#[no_mangle]
+pub extern "C" fn main(_argc: isize, _argv: *const *const u8) -> isize {
+    0
 }
