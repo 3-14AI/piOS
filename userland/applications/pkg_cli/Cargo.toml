@@ -11,9 +11,3 @@ package_manager = { path = "../../services/package_manager" }
 name = "pkg_cli"
 path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
-
-[profile.release]
-panic = "abort"
-
-[profile.dev]
-panic = "abort"

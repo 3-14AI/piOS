@@ -2,6 +2,8 @@
 #![allow(clippy::empty_loop)]
 
 extern crate alloc;
+#[cfg(test)]
+extern crate std;
 
 use alloc::string::String;
 use alloc::string::ToString;
