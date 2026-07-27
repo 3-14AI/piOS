@@ -131,7 +131,10 @@ pub fn fd_read(
         None => {
             caller.data_mut().fds[fd_usize] = Some(channel);
             let written_bytes = 0u32.to_le_bytes();
-            if memory.write(&mut caller, nread_ptr as usize, &written_bytes).is_err() {
+            if memory
+                .write(&mut caller, nread_ptr as usize, &written_bytes)
+                .is_err()
+            {
                 return WASI_ERRNO_BADF;
             }
             return WASI_ERRNO_SUCCESS;
@@ -163,7 +166,10 @@ pub fn fd_read(
         let len = u32::from_le_bytes(len_buf) as usize;
 
         let to_copy = core::cmp::min(len, data.len() - data_offset);
-        if memory.write(&mut caller, ptr, &data[data_offset..data_offset + to_copy]).is_err() {
+        if memory
+            .write(&mut caller, ptr, &data[data_offset..data_offset + to_copy])
+            .is_err()
+        {
             return WASI_ERRNO_BADF;
         }
 
@@ -172,7 +178,10 @@ pub fn fd_read(
     }
 
     let written_bytes = (total_read as u32).to_le_bytes();
-    if memory.write(&mut caller, nread_ptr as usize, &written_bytes).is_err() {
+    if memory
+        .write(&mut caller, nread_ptr as usize, &written_bytes)
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
 
@@ -201,10 +210,16 @@ pub fn environ_sizes_get(
         Some(m) => m,
         None => return WASI_ERRNO_BADF,
     };
-    if memory.write(&mut caller, environ_count as usize, &0u32.to_le_bytes()).is_err() {
+    if memory
+        .write(&mut caller, environ_count as usize, &0u32.to_le_bytes())
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
-    if memory.write(&mut caller, environ_buf_size as usize, &0u32.to_le_bytes()).is_err() {
+    if memory
+        .write(&mut caller, environ_buf_size as usize, &0u32.to_le_bytes())
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
     WASI_ERRNO_SUCCESS
@@ -214,19 +229,21 @@ pub fn args_get(_caller: Caller<'_, WasiCtx>, _argv: i32, _argv_buf: i32) -> i32
     WASI_ERRNO_SUCCESS
 }
 
-pub fn args_sizes_get(
-    mut caller: Caller<'_, WasiCtx>,
-    argc: i32,
-    argv_buf_size: i32,
-) -> i32 {
+pub fn args_sizes_get(mut caller: Caller<'_, WasiCtx>, argc: i32, argv_buf_size: i32) -> i32 {
     let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
         Some(m) => m,
         None => return WASI_ERRNO_BADF,
     };
-    if memory.write(&mut caller, argc as usize, &0u32.to_le_bytes()).is_err() {
+    if memory
+        .write(&mut caller, argc as usize, &0u32.to_le_bytes())
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
-    if memory.write(&mut caller, argv_buf_size as usize, &0u32.to_le_bytes()).is_err() {
+    if memory
+        .write(&mut caller, argv_buf_size as usize, &0u32.to_le_bytes())
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
     WASI_ERRNO_SUCCESS
