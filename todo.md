@@ -12,7 +12,7 @@ This file tracks the overarching goals and next phases for piOS, moving from a f
 - [x] **WP-080: Libc/WASI compatibility layer.** Ensure `wasi-libc` fully supports the kernel's WASI-core implementation, allowing standard C/C++ and Rust programs (compiled to `wasm32-wasip1`) to run without modification.
 - [x] **WP-081: Package Manager Implementation.** Build the command-line interface for the `package_manager` service to fetch, install, and resolve dependencies for WASM apps from a remote repository.
 - [x] **WP-082: Minimal Coreutils.** Implement basic system utilities (`ls`, `cat`, `mkdir`, `rm`, `ps`, `kill`) as WASM components.
-- [ ] **WP-083: Advanced NL-Shell (Natural Language Shell).** Upgrade the `NL-Shell` to correctly parse complex commands, pipe data between WASM instances, and effectively utilize the `sys_intent` semantic layer.
+- [x] **WP-083: Advanced NL-Shell (Natural Language Shell).** Upgrade the `NL-Shell` to correctly parse complex commands, pipe data between WASM instances, and effectively utilize the `sys_intent` semantic layer.
 
 ## Phase 9: AI Autopoiesis & Verus Self-Verification
 - [ ] **WP-084: On-Device LLM (WASI-NN Execution).** Integrate a lightweight local model (e.g., Llama.cpp or Mistral via WASI-NN) that can run entirely within the piOS userland using the VirtIO-GPU driver.
