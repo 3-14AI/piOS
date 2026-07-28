@@ -354,11 +354,16 @@ mod tests {
             panic!("Expected simple pipe chain");
         }
 
-        let ast2 = shell.parse_command("echo \"hello world\" 'single quote'").unwrap();
+        let ast2 = shell
+            .parse_command("echo \"hello world\" 'single quote'")
+            .unwrap();
         if let AstNode::Simple(pipe) = ast2 {
             assert_eq!(pipe.commands.len(), 1);
             assert_eq!(pipe.commands[0].program, "echo");
-            assert_eq!(pipe.commands[0].args, alloc::vec!["hello world", "single quote"]);
+            assert_eq!(
+                pipe.commands[0].args,
+                alloc::vec!["hello world", "single quote"]
+            );
         } else {
             panic!("Expected simple pipe chain");
         }
