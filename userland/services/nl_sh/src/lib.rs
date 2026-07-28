@@ -5,6 +5,8 @@ use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use inference_runtime::{InferenceEngine, Model, Tensor};
+use pios_api::a2a::priority::AgentPriority;
+use pios_api::a2a::protocol::{A2AMessage, MessageType};
 use vector_db::{VectorDb, VectorRecord};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -170,28 +172,69 @@ impl NlShell {
         let mut commands = Vec::new();
 
         for pipe in pipes {
-            let mut tokens: Vec<&str> = pipe.split_whitespace().collect();
+            let mut tokens: Vec<String> = Vec::new();
+            let mut current_token = String::new();
+            let mut in_single_quote = false;
+            let mut in_double_quote = false;
+            let mut escaped = false;
+
+            for c in pipe.chars() {
+                if escaped {
+                    current_token.push(c);
+                    escaped = false;
+                    continue;
+                }
+
+                match c {
+                    '\\' => {
+                        escaped = true;
+                    }
+                    '\'' if !in_double_quote => {
+                        in_single_quote = !in_single_quote;
+                    }
+                    '"' if !in_single_quote => {
+                        in_double_quote = !in_double_quote;
+                    }
+                    ' ' | '\t' | '\n' if !in_single_quote && !in_double_quote => {
+                        if !current_token.is_empty() {
+                            tokens.push(current_token);
+                            current_token = String::new();
+                        }
+                    }
+                    _ => {
+                        current_token.push(c);
+                    }
+                }
+            }
+            if !current_token.is_empty() {
+                tokens.push(current_token);
+            }
+
             if tokens.is_empty() {
                 continue;
             }
 
             let mut redirect = None;
-            if tokens.len() > 2 && tokens[tokens.len() - 2] == ">" {
-                redirect = Some(Redirect::Out(tokens[tokens.len() - 1].to_string()));
-                tokens.pop();
-                tokens.pop();
-            } else if tokens.len() > 2 && tokens[tokens.len() - 2] == ">>" {
-                redirect = Some(Redirect::Append(tokens[tokens.len() - 1].to_string()));
-                tokens.pop();
-                tokens.pop();
-            } else if tokens.len() > 2 && tokens[tokens.len() - 2] == "<" {
-                redirect = Some(Redirect::In(tokens[tokens.len() - 1].to_string()));
-                tokens.pop();
-                tokens.pop();
+            if tokens.len() >= 2 {
+                let len = tokens.len();
+                if tokens[len - 2] == ">" {
+                    redirect = Some(Redirect::Out(tokens.pop().unwrap()));
+                    tokens.pop(); // remove ">"
+                } else if tokens[len - 2] == ">>" {
+                    redirect = Some(Redirect::Append(tokens.pop().unwrap()));
+                    tokens.pop(); // remove ">>"
+                } else if tokens[len - 2] == "<" {
+                    redirect = Some(Redirect::In(tokens.pop().unwrap()));
+                    tokens.pop(); // remove "<"
+                }
             }
 
-            let program = tokens.remove(0).to_string();
-            let args = tokens.into_iter().map(|s| s.to_string()).collect();
+            if tokens.is_empty() {
+                continue;
+            }
+
+            let program = tokens.remove(0);
+            let args = tokens;
 
             commands.push(CommandNode {
                 program,
@@ -213,22 +256,31 @@ impl NlShell {
         if let Some(cmd) = intent {
             // Here the semantic layer generated a command string to run
             let ast = self.parse_command(&cmd)?;
-            self.execute_mock_ast(&ast)
+            self.execute_ast(&ast)
         } else {
             Err("Could not understand intent")
         }
     }
 
-    pub fn execute_mock_ast(&self, ast: &AstNode) -> Result<String, &'static str> {
+    pub fn execute_ast(&self, ast: &AstNode) -> Result<String, &'static str> {
         match ast {
             AstNode::Simple(pipe_chain) => {
                 let mut data_pipe = String::new();
                 for cmd in &pipe_chain.commands {
-                    // Simulate piping output of one command as input to another
+                    // Simulate piping output of one command as input to another using A2A
+                    let payload_str = alloc::format!("{} {:?}", cmd.program, cmd.args);
+                    let a2a_msg = A2AMessage::new(
+                        0, // Sender ID (NL-Shell)
+                        1, // Receiver ID (target instance)
+                        MessageType::Command,
+                        AgentPriority::Normal,
+                        payload_str.as_bytes(),
+                    );
+
                     data_pipe = alloc::format!(
-                        "Executed {} with args {:?} [Input: {}]",
-                        cmd.program,
-                        cmd.args,
+                        "Dispatched A2A Message: {:?} (Payload string: {}) [Previous Output Piped: {}]",
+                        a2a_msg,
+                        payload_str,
                         data_pipe
                     );
                     if let Some(ref r) = cmd.redirect {
@@ -238,16 +290,16 @@ impl NlShell {
                 Ok(data_pipe)
             }
             AstNode::And(left, right) => {
-                let left_res = self.execute_mock_ast(left)?;
-                let right_res = self.execute_mock_ast(right)?;
+                let left_res = self.execute_ast(left)?;
+                let right_res = self.execute_ast(right)?;
                 Ok(alloc::format!("{} AND {}", left_res, right_res))
             }
             AstNode::Or(left, right) => {
-                let left_res = self.execute_mock_ast(left);
+                let left_res = self.execute_ast(left);
                 if left_res.is_ok() {
                     left_res
                 } else {
-                    self.execute_mock_ast(right)
+                    self.execute_ast(right)
                 }
             }
         }
@@ -301,6 +353,20 @@ mod tests {
         } else {
             panic!("Expected simple pipe chain");
         }
+
+        let ast2 = shell
+            .parse_command("echo \"hello world\" 'single quote'")
+            .unwrap();
+        if let AstNode::Simple(pipe) = ast2 {
+            assert_eq!(pipe.commands.len(), 1);
+            assert_eq!(pipe.commands[0].program, "echo");
+            assert_eq!(
+                pipe.commands[0].args,
+                alloc::vec!["hello world", "single quote"]
+            );
+        } else {
+            panic!("Expected simple pipe chain");
+        }
     }
 
     #[test]
@@ -320,13 +386,14 @@ mod tests {
     }
 
     #[test]
-    fn test_execute_mock_ast() {
+    fn test_execute_ast() {
         let shell = NlShell::new().unwrap();
         let ast = shell.parse_command("cat text.txt | grep a").unwrap();
-        let res = shell.execute_mock_ast(&ast).unwrap();
-        assert!(res.contains("Executed cat"));
-        assert!(res.contains("Executed grep"));
-        assert!(res.contains("[Input: Executed cat"));
+        let res = shell.execute_ast(&ast).unwrap();
+        assert!(res.contains("Dispatched A2A Message"));
+        assert!(res.contains("cat"));
+        assert!(res.contains("grep"));
+        assert!(res.contains("[Previous Output Piped"));
     }
 
     #[test]
@@ -338,8 +405,9 @@ mod tests {
             .unwrap();
 
         let res = shell.sys_intent("list processes and grep sys").unwrap();
-        assert!(res.contains("Executed ls"));
-        assert!(res.contains("Executed grep"));
+        assert!(res.contains("Dispatched A2A Message"));
+        assert!(res.contains("ls"));
+        assert!(res.contains("grep"));
     }
 }
 
