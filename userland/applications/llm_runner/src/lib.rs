@@ -3,20 +3,28 @@
 
 extern crate alloc;
 
+#[cfg(not(target_arch = "wasm32"))]
+extern crate std;
+
+#[cfg(target_arch = "wasm32")]
 use core::alloc::{GlobalAlloc, Layout};
 
+#[cfg(target_arch = "wasm32")]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
+#[cfg(target_arch = "wasm32")]
 struct SimpleAllocator {
     heap: core::cell::UnsafeCell<[u8; 65536]>,
     bump_ptr: core::cell::UnsafeCell<usize>,
 }
 
+#[cfg(target_arch = "wasm32")]
 unsafe impl Sync for SimpleAllocator {}
 
+#[cfg(target_arch = "wasm32")]
 unsafe impl GlobalAlloc for SimpleAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let bump_ptr = self.bump_ptr.get();
@@ -35,6 +43,7 @@ unsafe impl GlobalAlloc for SimpleAllocator {
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {} // Memory leak by design
 }
 
+#[cfg(target_arch = "wasm32")]
 #[global_allocator]
 static ALLOCATOR: SimpleAllocator = SimpleAllocator {
     heap: core::cell::UnsafeCell::new([0; 65536]),
@@ -63,6 +72,7 @@ extern "C" {
     ) -> i32;
 }
 
+#[cfg(target_arch = "wasm32")]
 #[no_mangle]
 pub extern "C" fn main() -> i32 {
     let mut graph: u32 = 0;
