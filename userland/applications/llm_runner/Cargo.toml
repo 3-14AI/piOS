@@ -1,0 +1,12 @@
+[package]
+name = "llm_runner"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pios-api = { path = "../../../libs/pios-api" }
+
+[lib]
+name = "llm_runner"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
