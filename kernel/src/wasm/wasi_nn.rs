@@ -11,10 +11,10 @@ pub const WASI_NN_ERRNO_UNSUPPORTED_OPERATION: i32 = 6;
 pub const WASI_NN_ERRNO_TOO_LARGE: i32 = 7;
 pub const WASI_NN_ERRNO_NOT_FOUND: i32 = 8;
 
-use alloc::vec::Vec;
-use inference_runtime::{InferenceEngine, Tensor};
 #[cfg(not(feature = "verus"))]
 use crate::virtio_gpu::VirtioGpuDriver;
+use alloc::vec::Vec;
+use inference_runtime::{InferenceEngine, Tensor};
 
 #[cfg(not(feature = "verus"))]
 pub struct WasiNnCtx {

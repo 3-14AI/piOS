@@ -3,10 +3,8 @@
 
 extern crate alloc;
 
-
 use core::alloc::{GlobalAlloc, Layout};
 
-#[cfg(target_arch = "wasm32")]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
@@ -43,7 +41,6 @@ static ALLOCATOR: SimpleAllocator = SimpleAllocator {
     bump_ptr: core::cell::UnsafeCell::new(0),
 };
 
-
 #[link(wasm_import_module = "wasi_ephemeral_nn")]
 extern "C" {
     pub fn load(
@@ -72,35 +69,27 @@ pub extern "C" fn main() -> i32 {
     let name = b"mistral_model";
 
     // Load model
-    let res = unsafe {
-        load_by_name(name.as_ptr(), name.len() as i32, &mut graph as *mut u32)
-    };
+    let res = unsafe { load_by_name(name.as_ptr(), name.len() as i32, &mut graph as *mut u32) };
     if res != 0 {
         return res;
     }
 
     // Init execution context
     let mut context: u32 = 0;
-    let res = unsafe {
-        init_execution_context(graph, &mut context as *mut u32)
-    };
+    let res = unsafe { init_execution_context(graph, &mut context as *mut u32) };
     if res != 0 {
         return res;
     }
 
     // Set input
     let dummy_input = [0u8; 10];
-    let res = unsafe {
-        set_input(context, 0, dummy_input.as_ptr())
-    };
+    let res = unsafe { set_input(context, 0, dummy_input.as_ptr()) };
     if res != 0 {
         return res;
     }
 
     // Compute
-    let res = unsafe {
-        compute(context)
-    };
+    let res = unsafe { compute(context) };
     if res != 0 {
         return res;
     }
