@@ -1,15 +1,15 @@
-#[cfg(not(feature = "verus"))]
+#[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
 extern crate std;
 
 use alloc::string::String;
 use alloc::vec::Vec;
 
-#[cfg(not(feature = "verus"))]
+#[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
 use shadowsocks::{
     config::{ServerAddr, ServerConfig},
     relay::socks5::Address,
 };
-#[cfg(not(feature = "verus"))]
+#[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
 use shadowsocks_service::{
     config::{Config, ConfigType, LocalConfig, ServerInstanceConfig},
     local::context::ServiceContext,
@@ -17,9 +17,9 @@ use shadowsocks_service::{
     local::socks::server::SocksBuilder,
     server::ServerBuilder,
 };
-#[cfg(not(feature = "verus"))]
+#[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
 use std::sync::Arc;
-#[cfg(not(feature = "verus"))]
+#[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
 use tokio::runtime::Runtime;
 
 pub struct VpnConfig {
@@ -37,7 +37,7 @@ impl VpnConfig {
         }
     }
 
-    #[cfg(not(feature = "verus"))]
+    #[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
     pub fn to_server_config(&self) -> ServerConfig {
         ServerConfig::new(
             ServerAddr::DomainName(self.server_addr.clone(), self.server_port),
@@ -57,7 +57,7 @@ impl ShadowsocksClient {
         Self { config }
     }
 
-    #[cfg(not(feature = "verus"))]
+    #[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
     pub async fn run(&self) {
         let server_config = self.config.to_server_config();
 
@@ -89,7 +89,7 @@ impl ShadowsocksServer {
         Self { config }
     }
 
-    #[cfg(not(feature = "verus"))]
+    #[cfg(all(not(feature = "verus"), not(target_arch = "wasm32")))]
     pub async fn run(&self) {
         let server_config = self.config.to_server_config();
 

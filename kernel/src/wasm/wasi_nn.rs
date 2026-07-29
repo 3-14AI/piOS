@@ -11,9 +11,18 @@ pub const WASI_NN_ERRNO_UNSUPPORTED_OPERATION: i32 = 6;
 pub const WASI_NN_ERRNO_TOO_LARGE: i32 = 7;
 pub const WASI_NN_ERRNO_NOT_FOUND: i32 = 8;
 
+#[cfg(not(feature = "verus"))]
+use crate::virtio_gpu::VirtioGpuDriver;
 use alloc::vec::Vec;
 use inference_runtime::{InferenceEngine, Tensor};
 
+#[cfg(not(feature = "verus"))]
+pub struct WasiNnCtx {
+    pub engine: InferenceEngine,
+    pub gpu: VirtioGpuDriver,
+}
+
+#[cfg(feature = "verus")]
 pub struct WasiNnCtx {
     pub engine: InferenceEngine,
 }
@@ -25,6 +34,17 @@ impl Default for WasiNnCtx {
 }
 
 impl WasiNnCtx {
+    #[cfg(not(feature = "verus"))]
+    pub fn new() -> Self {
+        let mut gpu = VirtioGpuDriver::new(16);
+        gpu.enable_virgl();
+        Self {
+            engine: InferenceEngine::new(),
+            gpu,
+        }
+    }
+
+    #[cfg(feature = "verus")]
     pub fn new() -> Self {
         Self {
             engine: InferenceEngine::new(),
@@ -161,6 +181,11 @@ pub fn set_input(
 }
 
 pub fn compute(mut caller: Caller<'_, crate::wasm::wasi::WasiCtx>, context: i32) -> i32 {
+    #[cfg(not(feature = "verus"))]
+    {
+        let _ = caller.data_mut().nn_ctx.gpu.enqueue_3d_command(1);
+    }
+
     if caller
         .data_mut()
         .nn_ctx

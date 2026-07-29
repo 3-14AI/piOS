@@ -20,7 +20,8 @@ members = [
     "userland/applications/hello_world",
     "userland/applications/pkg_cli",
     "userland/services/installer",
-    "userland/applications/coreutils"
+    "userland/applications/coreutils",
+    "userland/applications/llm_runner"
 ]
 exclude = [
     "tools/verus"
