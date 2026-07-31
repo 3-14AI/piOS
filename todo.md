@@ -16,7 +16,7 @@ This file tracks the overarching goals and next phases for piOS, moving from a f
 
 ## Phase 9: AI Autopoiesis & Verus Self-Verification
 - [x] **WP-084: On-Device LLM (WASI-NN Execution).** Integrate a lightweight local model (e.g., Llama.cpp or Mistral via WASI-NN) that can run entirely within the piOS userland using the VirtIO-GPU driver.
-- [ ] **WP-085: Semantic System Logs.** Implement the vector database logger, converting kernel panic and warning logs into embeddings for the AI to query when debugging itself.
+- [x] **WP-085: Semantic System Logs.** Implement the vector database logger, converting kernel panic and warning logs into embeddings for the AI to query when debugging itself.
 - [ ] **WP-086: The Self-Coding Loop (Driver Synthesis).** Demonstrate a closed-loop scenario: System detects unknown USB device -> LLM writes a basic Rust driver -> Verus (running in WASM) proves memory safety -> Driver is compiled via Cranelift WASM backend -> Driver is hot-loaded.
 - [ ] **WP-087: SMT Solver Integration.** Successfully port and execute an SMT solver (like Z3 or CVC5) in the WASM userland to support the on-device Verus verifier.
 

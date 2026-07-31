@@ -5390,6 +5390,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "semantic_logger"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+ "log",
+ "vector_db",
+]
+
+[[package]]
 name = "semver"
 version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
