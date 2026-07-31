@@ -21,7 +21,8 @@ members = [
     "userland/applications/pkg_cli",
     "userland/services/installer",
     "userland/applications/coreutils",
-    "userland/applications/llm_runner"
+    "userland/applications/llm_runner",
+    "userland/services/semantic_logger"
 ]
 exclude = [
     "tools/verus"

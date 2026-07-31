@@ -1,0 +1,12 @@
+[package]
+name = "semantic_logger"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vector_db = { path = "../../../libs/vector_db" }
+inference_runtime = { path = "../../../libs/inference_runtime" }
+log = "0.4.20"
+
+[lib]
+crate-type = ["cdylib"]
