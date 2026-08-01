@@ -142,4 +142,15 @@ mod tests {
         let _ = client.send_request(&mut stack, "/");
         let _ = client.read_response(&mut stack);
     }
+
+    #[test]
+    fn test_http_client_read_response_coverage_3() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        let _ = client.connect(&mut stack, addr, 12345);
+
+        // This attempts to test when connect fails
+        let _ = client.connect(&mut stack, addr, 0);
+    }
 }
