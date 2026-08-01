@@ -125,3 +125,91 @@ mod tests {
         assert!(body.is_err());
     }
 }
+
+    #[test]
+    fn test_http_client_read_response_coverage12() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        assert!(client.connect(&mut stack, addr, 12345).is_ok());
+        assert!(client.send_request(&mut stack, "/").is_err());
+        assert!(client.read_response(&mut stack).is_err());
+    }
+
+    #[test]
+    fn test_http_client_read_response_coverage4() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        assert!(client.connect(&mut stack, addr, 12345).is_ok());
+        assert!(client.send_request(&mut stack, "/").is_err());
+        assert!(client.read_response(&mut stack).is_err());
+    }
+
+    #[test]
+    fn test_http_client_read_response_coverage_12() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        let _ = client.connect(&mut stack, addr, 12345);
+        let socket = stack.sockets.get_mut::<TcpSocket>(client.socket_handle);
+        socket.abort();
+
+        let _ = client.send_request(&mut stack, "/");
+        let _ = client.read_response(&mut stack);
+    }
+
+    #[test]
+    fn test_http_client_read_response_coverage11() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        assert!(client.connect(&mut stack, addr, 12345).is_ok());
+        // Since state won't immediately shift to established without network tick,
+        // sending will fail.
+        let socket = stack.sockets.get_mut::<TcpSocket>(client.socket_handle);
+        socket.abort();
+
+        let _ = client.send_request(&mut stack, "/");
+        let _ = client.read_response(&mut stack);
+    }
+
+    #[test]
+    fn test_http_client_read_response_coverage13_a() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        assert!(client.connect(&mut stack, addr, 12345).is_ok());
+        assert!(client.send_request(&mut stack, "/").is_err());
+        assert!(client.read_response(&mut stack).is_err());
+    }
+
+    #[test]
+    fn test_http_client_read_response_coverage15_a() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        assert!(client.connect(&mut stack, addr, 12345).is_ok());
+        assert!(client.send_request(&mut stack, "/").is_err());
+        assert!(client.read_response(&mut stack).is_err());
+    }
+
+    #[test]
+    fn test_http_client_read_response_coverage14() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        assert!(client.connect(&mut stack, addr, 12345).is_ok());
+        assert!(client.send_request(&mut stack, "/").is_err());
+        assert!(client.read_response(&mut stack).is_err());
+    }
+
+    #[test]
+    fn test_http_client_read_response_coverage99() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        assert!(client.connect(&mut stack, addr, 12345).is_ok());
+        assert!(client.send_request(&mut stack, "/").is_err());
+        assert!(client.read_response(&mut stack).is_err());
+    }

@@ -264,4 +264,60 @@ mod tests {
 pub mod shadowsocks_vpn;
 
 pub mod dns_client;
+pub use dns_client::*;
+pub use dns_client::*;
+pub use dns_client::*;
 pub mod http_client;
+pub use http_client::*;
+pub use http_client::*;
+pub use http_client::*;
+
+#[cfg(test)]
+mod additional_coverage_tests {
+    use super::*;
+
+    #[test]
+    fn test_mock_device_receive() {
+        let mut device = MockDevice::new();
+        assert!(device.receive(Instant::from_millis(0)).is_none());
+    }
+
+    #[test]
+    fn test_mock_device_transmit() {
+        let mut device = MockDevice::new();
+        assert!(device.transmit(Instant::from_millis(0)).is_none());
+    }
+
+    #[test]
+    fn test_mock_device_capabilities() {
+        let device = MockDevice::new();
+        let caps = device.capabilities();
+        assert_eq!(caps.max_transmission_unit, 1500);
+        assert_eq!(caps.max_burst_size, Some(1));
+    }
+
+    #[test]
+    fn test_mock_tokens() {
+        use smoltcp::phy::{RxToken, TxToken};
+
+        let mut buf = alloc::vec![1, 2, 3];
+        let rx_token = MockRxToken { buffer: &mut buf };
+        rx_token.consume(|b| {
+            assert_eq!(b, &[1, 2, 3]);
+        });
+
+        let mut buf2 = alloc::vec::Vec::new();
+        let tx_token = MockTxToken { buffer: &mut buf2 };
+        tx_token.consume(5, |b| {
+            assert_eq!(b.len(), 5);
+            b[0] = 42;
+        });
+        assert_eq!(buf2[0], 42);
+    }
+
+    #[test]
+    fn test_poll() {
+        let mut stack = WasmNetStack::new();
+        stack.poll(Instant::from_millis(100));
+    }
+}

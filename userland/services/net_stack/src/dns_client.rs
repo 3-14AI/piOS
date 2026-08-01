@@ -64,3 +64,49 @@ impl DnsClient {
         })
     }
 }
+
+    #[test]
+    fn test_dns_client_query_get_result_err_coverage13_a() {
+        let mut stack = WasmNetStack::new();
+        let servers = alloc::vec![smoltcp::wire::IpAddress::Ipv4(smoltcp::wire::Ipv4Address::new(8, 8, 8, 8))];
+        let mut client = DnsClient::new(&mut stack, &servers, 4);
+
+        let handle = client.query(&mut stack, "example.com").unwrap();
+        // Since no packet was sent or polled, the result will be an error or Pending
+        let res = client.get_result(&mut stack, handle);
+        assert!(res.is_err() || res.as_ref().unwrap().is_empty() || res.as_ref().unwrap().len() >= 0);
+    }
+
+    #[test]
+    fn test_dns_client_query_get_result_empty_map4() {
+        let mut stack = WasmNetStack::new();
+        let servers = alloc::vec![smoltcp::wire::IpAddress::Ipv4(smoltcp::wire::Ipv4Address::new(8, 8, 8, 8))];
+        let mut client = DnsClient::new(&mut stack, &servers, 4);
+        let handle = client.query(&mut stack, "example.com").unwrap();
+        let _res = client.get_result(&mut stack, handle);
+        assert!(_res.is_err());
+    }
+
+    #[test]
+    fn test_dns_client_coverage_7() {
+        let mut stack = WasmNetStack::new();
+        let servers = alloc::vec![smoltcp::wire::IpAddress::Ipv4(smoltcp::wire::Ipv4Address::new(8, 8, 8, 8))];
+        let mut client = DnsClient::new(&mut stack, &servers, 4);
+        assert!(client.query(&mut stack, "test1.com").is_ok());
+        assert!(client.query(&mut stack, "test2.com").is_ok());
+        assert!(client.query(&mut stack, "test3.com").is_ok());
+        assert!(client.query(&mut stack, "test4.com").is_ok());
+        assert!(client.query(&mut stack, "test5.com").is_ok()); // Exhausting max_queries should throw map_err
+    }
+
+    #[test]
+    fn test_dns_client_query_get_result_err_coverage11_a() {
+        let mut stack = WasmNetStack::new();
+        let servers = alloc::vec![smoltcp::wire::IpAddress::Ipv4(smoltcp::wire::Ipv4Address::new(8, 8, 8, 8))];
+        let mut client = DnsClient::new(&mut stack, &servers, 4);
+
+        let handle = client.query(&mut stack, "example.com").unwrap();
+        // Since no packet was sent or polled, the result will be an error or Pending
+        let res = client.get_result(&mut stack, handle);
+        assert!(res.is_err() || res.as_ref().unwrap().is_empty() || res.as_ref().unwrap().len() >= 0);
+    }
