@@ -23,5 +23,5 @@ This file tracks the overarching goals and next phases for piOS, moving from a f
 ## Phase 10: GUI, Compositor and Daily-Driver Polish
 - [ ] **WP-088: WGPU Compositor and Wayland-like protocol.** Mature the `wgpu_compositor` to handle multiple overlapping application windows, input routing, and damage tracking.
 - [ ] **WP-089: Generative UI (Slint).** Implement a dynamic desktop environment using Slint where the AI can generate or modify UI layouts based on user context.
-- [ ] **WP-090: Networking & Web.** Implement a basic DNS resolver and HTTP client in userland, eventually paving the way for a WASM-based web browser.
+- [x] **WP-090: Networking & Web.** Implement a basic DNS resolver and HTTP client in userland, eventually paving the way for a WASM-based web browser.
 - [ ] **WP-091: User Documentation & Installer.** Write a comprehensive user guide, and create a live-USB GUI installer that formats disks, sets up secure boot, and installs piOS.

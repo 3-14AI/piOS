@@ -262,3 +262,6 @@ mod tests {
     }
 }
 pub mod shadowsocks_vpn;
+
+pub mod dns_client;
+pub mod http_client;
