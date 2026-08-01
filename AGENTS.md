@@ -14,3 +14,8 @@
 1. **Фокус на реальном железе и загрузке:** Базовая архитектура и скаффолдинг завершены. Приоритетом является создание загрузочного образа (ISO), выполнение на реальном железе и отладка драйверов (NVMe, USB, GPU).
 2. **Замыкание петли Autopoiesis:** Реализуйте и стабилизируйте инструменты для самонаписания ОС (Cranelift/Winch WASM backend, WASI-NN inference, on-device Verus).
 3. **Развитие Userland:** Создавайте полноценные WASM-приложения (coreutils, package manager) и развивайте графический интерфейс (wgpu_compositor, Slint).
+
+## Test Coverage Constraints (Tarpaulin)
+1. GitHub CI uses `cargo tarpaulin` to enforce strict code coverage limits (e.g. `87%` for the entire workspace).
+2. If `cargo tarpaulin` fails locally due to coverage dropping below the threshold after you add new code, **DO NOT** attempt to bypass the check by writing duplicate or empty tests.
+3. Instead, either write extensive real mock tests to hit the target coverage, or adjust the `--fail-under` flag in `.github/workflows/ci.yml` temporarily if approved.
