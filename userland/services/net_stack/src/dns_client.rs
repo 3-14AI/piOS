@@ -1,10 +1,10 @@
 extern crate alloc;
 
-use alloc::vec::Vec;
-use smoltcp::iface::{SocketHandle, Context};
-use smoltcp::socket::dns::{Socket as DnsSocket, QueryHandle, GetQueryResultError, DnsQuery};
-use smoltcp::wire::{IpAddress, DnsQueryType};
 use crate::WasmNetStack;
+use alloc::vec::Vec;
+use smoltcp::iface::{Context, SocketHandle};
+use smoltcp::socket::dns::{DnsQuery, GetQueryResultError, QueryHandle, Socket as DnsSocket};
+use smoltcp::wire::{DnsQueryType, IpAddress};
 
 pub struct DnsClient {
     socket_handle: SocketHandle,
@@ -25,7 +25,8 @@ impl DnsClient {
         for addr in servers {
             servers_vec.push(*addr);
         }
-        let static_servers: &'static [IpAddress] = alloc::boxed::Box::leak(servers_vec.into_boxed_slice());
+        let static_servers: &'static [IpAddress] =
+            alloc::boxed::Box::leak(servers_vec.into_boxed_slice());
 
         let mut queries = Vec::new();
         for _ in 0..max_queries {
@@ -37,12 +38,22 @@ impl DnsClient {
         Self { socket_handle }
     }
 
-    pub fn query(&mut self, stack: &mut WasmNetStack, name: &str) -> Result<QueryHandle, &'static str> {
+    pub fn query(
+        &mut self,
+        stack: &mut WasmNetStack,
+        name: &str,
+    ) -> Result<QueryHandle, &'static str> {
         let socket = stack.sockets.get_mut::<DnsSocket>(self.socket_handle);
-        socket.start_query(stack.interface.context(), name, DnsQueryType::A).map_err(|_| "Failed to start DNS query")
+        socket
+            .start_query(stack.interface.context(), name, DnsQueryType::A)
+            .map_err(|_| "Failed to start DNS query")
     }
 
-    pub fn get_result(&mut self, stack: &mut WasmNetStack, handle: QueryHandle) -> Result<Vec<IpAddress>, GetQueryResultError> {
+    pub fn get_result(
+        &mut self,
+        stack: &mut WasmNetStack,
+        handle: QueryHandle,
+    ) -> Result<Vec<IpAddress>, GetQueryResultError> {
         let socket = stack.sockets.get_mut::<DnsSocket>(self.socket_handle);
         socket.get_query_result(handle).map(|addrs| {
             let mut res = Vec::new();

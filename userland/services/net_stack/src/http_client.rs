@@ -1,11 +1,13 @@
 extern crate alloc;
 
-use alloc::string::{String, ToString};
-use alloc::format;
-use smoltcp::iface::SocketHandle;
-use smoltcp::socket::tcp::{Socket as TcpSocket, SocketBuffer as TcpSocketBuffer, State as TcpState};
-use smoltcp::wire::IpAddress;
 use crate::WasmNetStack;
+use alloc::format;
+use alloc::string::{String, ToString};
+use smoltcp::iface::SocketHandle;
+use smoltcp::socket::tcp::{
+    Socket as TcpSocket, SocketBuffer as TcpSocketBuffer, State as TcpState,
+};
+use smoltcp::wire::IpAddress;
 
 pub struct HttpClient {
     socket_handle: SocketHandle,
@@ -27,9 +29,16 @@ impl HttpClient {
         }
     }
 
-    pub fn connect(&mut self, stack: &mut WasmNetStack, addr: IpAddress, local_port: u16) -> Result<(), &'static str> {
+    pub fn connect(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        local_port: u16,
+    ) -> Result<(), &'static str> {
         let socket = stack.sockets.get_mut::<TcpSocket>(self.socket_handle);
-        socket.connect(stack.interface.context(), (addr, self.port), local_port).map_err(|_| "Failed to connect to host")
+        socket
+            .connect(stack.interface.context(), (addr, self.port), local_port)
+            .map_err(|_| "Failed to connect to host")
     }
 
     pub fn format_get_request(&self, path: &str) -> String {
@@ -39,7 +48,11 @@ impl HttpClient {
         )
     }
 
-    pub fn send_request(&mut self, stack: &mut WasmNetStack, path: &str) -> Result<(), &'static str> {
+    pub fn send_request(
+        &mut self,
+        stack: &mut WasmNetStack,
+        path: &str,
+    ) -> Result<(), &'static str> {
         let req = self.format_get_request(path);
         let socket = stack.sockets.get_mut::<TcpSocket>(self.socket_handle);
         if socket.state() != TcpState::Established {
@@ -47,7 +60,9 @@ impl HttpClient {
         }
 
         if socket.can_send() {
-            socket.send_slice(req.as_bytes()).map_err(|_| "Failed to send data")?;
+            socket
+                .send_slice(req.as_bytes())
+                .map_err(|_| "Failed to send data")?;
             Ok(())
         } else {
             Err("Socket cannot send data right now")
@@ -58,7 +73,9 @@ impl HttpClient {
         let socket = stack.sockets.get_mut::<TcpSocket>(self.socket_handle);
         if socket.can_recv() {
             let mut buf = alloc::vec![0; 4096];
-            let len = socket.recv_slice(&mut buf).map_err(|_| "Failed to receive data")?;
+            let len = socket
+                .recv_slice(&mut buf)
+                .map_err(|_| "Failed to receive data")?;
             if len == 0 {
                 return Err("No data received");
             }
