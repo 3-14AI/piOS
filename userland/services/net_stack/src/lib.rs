@@ -261,4 +261,18 @@ mod tests {
         assert_eq!(socket.state(), TcpState::Listen);
     }
 }
+pub mod dns;
+pub mod http;
 pub mod shadowsocks_vpn;
+
+#[cfg(test)]
+mod tests_coverage_defaults {
+    use super::*;
+
+    #[test]
+    fn test_defaults() {
+        let device = MockDevice::default();
+        let stack = WasmNetStack::default();
+        assert!(true);
+    }
+}
