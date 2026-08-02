@@ -3,20 +3,16 @@ use smoltcp::wire::DnsQueryType;
 use alloc::vec::Vec;
 
 pub struct DnsResolver {
-    servers: Vec<smoltcp::wire::IpAddress>,
+    servers: &'static [smoltcp::wire::IpAddress],
 }
 
 impl DnsResolver {
-    pub fn new(servers: Vec<smoltcp::wire::IpAddress>) -> Self {
+    pub fn new(servers: &'static [smoltcp::wire::IpAddress]) -> Self {
         Self { servers }
     }
 
     pub fn create_socket(&self) -> DnsSocket<'static> {
-        let mut servers_vec = Vec::new();
-        servers_vec.extend(self.servers.iter().cloned());
-        let servers: &'static mut [smoltcp::wire::IpAddress] =
-            alloc::boxed::Box::leak(servers_vec.into_boxed_slice());
-        DnsSocket::new(servers, alloc::vec![])
+        DnsSocket::new(self.servers, alloc::vec![])
     }
 
     pub fn query(
@@ -85,8 +81,8 @@ mod tests {
 
     #[test]
     fn test_dns_resolver_socket_and_query() {
-        let servers = alloc::vec![IpAddress::Ipv4(Ipv4Address::new(8, 8, 8, 8))];
-        let resolver = DnsResolver::new(servers);
+        static SERVERS: [IpAddress; 1] = [IpAddress::Ipv4(Ipv4Address::new(8, 8, 8, 8))];
+        let resolver = DnsResolver::new(&SERVERS);
         let mut socket = resolver.create_socket();
 
         let mut device = MinimalDevice {

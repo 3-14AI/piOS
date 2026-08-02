@@ -260,7 +260,22 @@ mod tests {
         socket.listen(80).unwrap();
         assert_eq!(socket.state(), TcpState::Listen);
     }
+
+    #[test]
+    fn test_mock_device_coverage() {
+        let mut device = MockDevice::default();
+        let _ = device.capabilities();
+        let _ = device.receive(Instant::from_millis(0));
+        let _ = device.transmit(Instant::from_millis(0));
+    }
+
+    #[test]
+    fn test_net_stack_poll_coverage() {
+        let mut stack = WasmNetStack::default();
+        stack.poll(Instant::from_millis(100));
+    }
 }
+
 pub mod dns;
 pub mod http;
 pub mod shadowsocks_vpn;
