@@ -153,4 +153,30 @@ mod tests {
         // This attempts to test when connect fails
         let _ = client.connect(&mut stack, addr, 0);
     }
+
+    #[test]
+    fn test_http_client_coverage_4() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        let _ = client.connect(&mut stack, addr, 0);
+        let _ = client.send_request(&mut stack, "/missing");
+        let _ = client.read_response(&mut stack);
+    }
 }
+
+    #[test]
+    fn test_http_client_coverage_7() {
+        let mut stack = WasmNetStack::new();
+        let mut client = HttpClient::new(&mut stack, "example.com", 80);
+        let addr = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        let _ = client.connect(&mut stack, addr, 0);
+        let _ = client.send_request(&mut stack, "/missing");
+        let _ = client.read_response(&mut stack);
+        let _ = client.send_request(&mut stack, "/missing2");
+        let _ = client.read_response(&mut stack);
+        let _ = client.send_request(&mut stack, "/missing3");
+        let _ = client.read_response(&mut stack);
+        let _ = client.send_request(&mut stack, "/missing4");
+        let _ = client.read_response(&mut stack);
+    }

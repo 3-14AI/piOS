@@ -275,8 +275,8 @@ mod tests {
         stack.poll(Instant::from_millis(100));
     }
 }
-pub mod shadowsocks_vpn;
 pub mod dns_client;
 pub mod http_client;
+pub mod shadowsocks_vpn;
 pub use dns_client::*;
 pub use http_client::*;

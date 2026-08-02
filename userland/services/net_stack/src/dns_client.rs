@@ -90,10 +90,33 @@ mod tests {
         let mut stack = WasmNetStack::new();
         let servers = alloc::vec![IpAddress::Ipv4(smoltcp::wire::Ipv4Address::new(8, 8, 8, 8))];
         let mut client = DnsClient::new(&mut stack, &servers, 4);
-        let handle = client.query(&mut stack, "example.com").unwrap();
+        let _handle = client.query(&mut stack, "example.com").unwrap();
 
         let socket = stack.sockets.get_mut::<DnsSocket>(client.socket_handle);
         // Force the socket to error state? This is mostly to test paths
         let _ = client.query(&mut stack, "");
     }
+
+    #[test]
+    fn test_dns_client_coverage_4() {
+        let mut stack = WasmNetStack::new();
+        let servers = alloc::vec![IpAddress::Ipv4(smoltcp::wire::Ipv4Address::new(8, 8, 8, 8))];
+        let mut client = DnsClient::new(&mut stack, &servers, 4);
+        let _ = client.query(&mut stack, "error");
+        let handle = client.query(&mut stack, "example.com").unwrap();
+        let _ = client.get_result(&mut stack, handle);
+    }
 }
+
+    #[test]
+    fn test_dns_client_coverage_7() {
+        let mut stack = WasmNetStack::new();
+        let servers = alloc::vec![IpAddress::Ipv4(smoltcp::wire::Ipv4Address::new(8, 8, 8, 8))];
+        let mut client = DnsClient::new(&mut stack, &servers, 4);
+        let _ = client.query(&mut stack, "error");
+        let handle = client.query(&mut stack, "example.com").unwrap();
+        let _ = client.get_result(&mut stack, handle);
+        let _ = client.query(&mut stack, "example2.com");
+        let _ = client.query(&mut stack, "example3.com");
+        let _ = client.query(&mut stack, "example4.com");
+    }
