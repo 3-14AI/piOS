@@ -23,5 +23,20 @@ This file tracks the overarching goals and next phases for piOS, moving from a f
 ## Phase 10: GUI, Compositor and Daily-Driver Polish
 - [ ] **WP-088: WGPU Compositor and Wayland-like protocol.** Mature the `wgpu_compositor` to handle multiple overlapping application windows, input routing, and damage tracking.
 - [ ] **WP-089: Generative UI (Slint).** Implement a dynamic desktop environment using Slint where the AI can generate or modify UI layouts based on user context.
-- [ ] **WP-090: Networking & Web.** Implement a basic DNS resolver and HTTP client in userland, eventually paving the way for a WASM-based web browser.
-- [ ] **WP-091: User Documentation & Installer.** Write a comprehensive user guide, and create a live-USB GUI installer that formats disks, sets up secure boot, and installs piOS.
+- [x] **WP-090: Networking & Web.** Implement a basic DNS resolver and HTTP client in userland, eventually paving the way for a WASM-based web browser.
+- [x] **WP-091: User Documentation & Installer.** Write a comprehensive user guide, and create a live-USB GUI installer that formats disks, sets up secure boot, and installs piOS.
+
+## Phase 11: Real-World Usability & System Stability
+- [ ] **WP-092: Persistent Storage Ecosystem.** Develop stable WASM drivers for common filesystems (Ext4, FAT32) and ensure NVMe persistence withstands power cycles without corruption.
+- [ ] **WP-093: Process Isolation & Sandboxing.** Refine WASI component isolation to enforce strict memory and resource limits, preventing misbehaving components (or AI-generated code) from crashing the kernel.
+- [ ] **WP-094: Hardware Acceleration for Inference.** Optimize the `inference_runtime` to properly utilize GPU compute (via `wgpu` or OpenCL bindings) for faster on-device LLM responses.
+- [ ] **WP-095: Dynamic Power Management.** Implement ACPI S-states (Suspend, Sleep, Hibernate) and CPU frequency scaling to make piOS usable on laptops.
+
+## Phase 12: Network Integration & Security
+- [ ] **WP-096: Secure Web Browser Component.** Build a lightweight, sandboxed WASM web browser using the existing HTTP/DNS client stack.
+- [ ] **WP-097: Cryptographic Identity & Updates.** Enforce cryptographic signatures on all package manager updates and OTA kernel upgrades to ensure supply chain security.
+- [ ] **WP-098: Local AI Web Agent.** Empower the local LLM to fetch and summarize web content autonomously via the HTTP client when requested by the user in the NL-Shell.
+
+## Phase 13: Full Autopoiesis
+- [ ] **WP-099: Automated Regression Testing Loop.** Create a system where the AI writes tests for newly synthesized drivers, verifies them with Verus, and rolls back if a test fails.
+- [ ] **WP-100: The piOS v1.0 Milestone.** Achieve a state where piOS can boot, connect to WiFi, synthesize a missing driver from the internet, run a graphical browser, and explain its own logs via the LLM.

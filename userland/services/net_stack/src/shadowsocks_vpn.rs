@@ -120,7 +120,7 @@ mod tests {
         let handle = tokio::spawn(async move {
             client.run().await;
         });
-        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        tokio::time::sleep(core::time::Duration::from_millis(100)).await;
         handle.abort();
     }
 
