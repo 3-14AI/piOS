@@ -84,7 +84,10 @@ pub struct PowerManagement {
 #[cfg(not(feature = "verus"))]
 impl PowerManagement {
     pub fn new() -> Self {
-        PowerManagement { state: SState::S0Working, cpu_freq_mhz: 2000 }
+        PowerManagement {
+            state: SState::S0Working,
+            cpu_freq_mhz: 2000,
+        }
     }
 
     pub fn set_state(&mut self, state: SState) {

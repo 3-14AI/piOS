@@ -1,9 +1,0 @@
-Update todo.md and implement Distributed AI Compute (WP-101)
-
-This commit completes several older items in `todo.md` (WP-086, WP-096,
-WP-098, WP-099, WP-100) and implements the first task for piOS 2.0:
-WP-101: Distributed AI Compute. A mock protocol is added to the network stack
-(`userland/services/net_stack/src/distributed_compute.rs`), providing
-capabilities to discover peers and share inference workloads.
-
-It also updates `todo.md` with new Phase 14 items.

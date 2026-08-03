@@ -1,8 +1,0 @@
-Implement Distributed AI Compute (WP-101)
-
-This commit introduces a mock protocol for distributed computing across
-piOS instances. It adds a `DistributedComputeClient` to the network stack
-(`userland/services/net_stack/src/distributed_compute.rs`), providing
-capabilities to discover peers and share inference workloads.
-
-Relevant tasks in `todo.md` (WP-101) have been marked as completed.

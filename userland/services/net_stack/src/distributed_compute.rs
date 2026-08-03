@@ -1,9 +1,11 @@
 extern crate alloc;
+use crate::WasmNetStack;
 use alloc::string::String;
 use alloc::vec::Vec;
-use crate::WasmNetStack;
 use smoltcp::iface::SocketHandle;
-use smoltcp::socket::tcp::{Socket as TcpSocket, SocketBuffer as TcpSocketBuffer, State as TcpState};
+use smoltcp::socket::tcp::{
+    Socket as TcpSocket, SocketBuffer as TcpSocketBuffer, State as TcpState,
+};
 use smoltcp::wire::IpAddress;
 
 pub struct DistributedComputeClient {
@@ -19,19 +21,31 @@ impl DistributedComputeClient {
         Self { socket_handle }
     }
 
-    pub fn discover(&mut self, stack: &mut WasmNetStack, addr: IpAddress, port: u16) -> Result<(), &'static str> {
+    pub fn discover(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        port: u16,
+    ) -> Result<(), &'static str> {
         let socket = stack.sockets.get_mut::<TcpSocket>(self.socket_handle);
-        socket.connect(stack.interface.context(), (addr, port), port + 1)
+        socket
+            .connect(stack.interface.context(), (addr, port), port + 1)
             .map_err(|_| "Failed to discover peer")
     }
 
-    pub fn send_workload(&mut self, stack: &mut WasmNetStack, workload: &[u8]) -> Result<(), &'static str> {
+    pub fn send_workload(
+        &mut self,
+        stack: &mut WasmNetStack,
+        workload: &[u8],
+    ) -> Result<(), &'static str> {
         let socket = stack.sockets.get_mut::<TcpSocket>(self.socket_handle);
         if socket.state() != TcpState::Established {
             return Err("Not connected to peer");
         }
         if socket.can_send() {
-            socket.send_slice(workload).map_err(|_| "Failed to send workload")?;
+            socket
+                .send_slice(workload)
+                .map_err(|_| "Failed to send workload")?;
             Ok(())
         } else {
             Err("Cannot send workload right now")
@@ -42,7 +56,9 @@ impl DistributedComputeClient {
         let socket = stack.sockets.get_mut::<TcpSocket>(self.socket_handle);
         if socket.can_recv() {
             let mut buf = alloc::vec![0; 4096];
-            let len = socket.recv_slice(&mut buf).map_err(|_| "Failed to receive result")?;
+            let len = socket
+                .recv_slice(&mut buf)
+                .map_err(|_| "Failed to receive result")?;
             if len == 0 {
                 return Err("No data received");
             }
