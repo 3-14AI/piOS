@@ -50,4 +50,10 @@ mod tests {
     fn test_verify_simple_bounds() {
         assert!(verify_simple_bounds());
     }
+
+    #[test]
+    #[cfg(not(feature = "std"))]
+    fn test_verify_simple_bounds_no_std() {
+        assert!(!verify_simple_bounds());
+    }
 }

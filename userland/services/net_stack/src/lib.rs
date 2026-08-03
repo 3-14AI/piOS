@@ -280,3 +280,5 @@ pub mod http_client;
 pub mod shadowsocks_vpn;
 pub use dns_client::*;
 pub use http_client::*;
+pub mod distributed_compute;
+pub use distributed_compute::*;
