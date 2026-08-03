@@ -1,0 +1,2 @@
+#!/bin/bash
+sed -i 's/engine: Engine::default(),/let mut config = wasmi::Config::default();\n            #[cfg(target_arch = "x86_64")]\n            config.wasm_tail_call(true);\n            #[cfg(target_arch = "aarch64")]\n            config.wasm_tail_call(true);\n            #[cfg(target_arch = "riscv64")]\n            config.wasm_tail_call(false);\n            let engine = Engine::new(\&config);\n            engine/g' kernel/src/wasm/linker.rs

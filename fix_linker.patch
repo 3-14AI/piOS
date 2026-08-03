@@ -1,0 +1,22 @@
+--- kernel/src/wasm/linker.rs	2023-10-10 10:10:10.000000000 +0000
++++ kernel/src/wasm/linker.rs	2023-10-10 10:10:10.000000000 +0000
+@@ -23,17 +23,15 @@
+
+ impl WasmComponentLinker {
+     pub fn new() -> Self {
+-        Self {
+-            let mut config = wasmi::Config::default();
++        let mut config = wasmi::Config::default();
+         #[cfg(target_arch = "x86_64")]
+         config.wasm_simd(true);
+         #[cfg(target_arch = "aarch64")]
+         config.wasm_simd(true);
+         #[cfg(target_arch = "riscv64")]
+         config.wasm_simd(false);
+         let engine = Engine::new(&config);
+         Self { engine, modules: BTreeMap::new() }
+-            modules: BTreeMap::new(),
+-        }
+     }
+
+     pub fn add_module(&mut self, name: &str, wasm_bytes: &[u8]) -> Result<(), wasmi::Error> {
