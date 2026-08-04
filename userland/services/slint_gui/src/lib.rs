@@ -22,7 +22,7 @@ impl GenerativeUI {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::cell::RefCell;
+
     use std::rc::Rc;
 
     // Slint needs a minimal platform in no_std/test environments if standard event loop isn't used.

@@ -264,3 +264,43 @@ mod tests {
         );
     }
 }
+
+pub mod cranelift_backend;
+
+#[cfg(test)]
+mod backend_tests {
+    use super::*;
+    use alloc::boxed::Box;
+    use alloc::vec;
+    use cranelift_backend::CraneliftBackend;
+
+    #[test]
+    fn test_cranelift_backend_init() {
+        let backend = CraneliftBackend::new("x86_64");
+        assert!(backend.is_ok());
+
+        let backend_invalid = CraneliftBackend::new("invalid_arch");
+        assert!(backend_invalid.is_err());
+    }
+
+    #[test]
+    fn test_cranelift_compile_mir() {
+        let function = ast::Function {
+            name: "add".into(),
+            params: vec!["a".into(), "b".into()],
+            body: vec![ast::Stmt::Return(ast::Expr::Add(
+                Box::new(ast::Expr::Var("a".into())),
+                Box::new(ast::Expr::Var("b".into())),
+            ))],
+        };
+        let module = ast::Module {
+            functions: vec![function],
+        };
+        let mir = compile_to_mir(&module).unwrap();
+
+        let backend = CraneliftBackend::new("x86_64").unwrap();
+        let compiled = backend.compile_module(&mir);
+        assert!(compiled.is_ok());
+        assert_eq!(compiled.unwrap().len(), 1);
+    }
+}

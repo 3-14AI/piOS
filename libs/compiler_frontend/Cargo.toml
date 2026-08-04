@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+cranelift-codegen = "0.106.0"
+cranelift-frontend = "0.106.0"
+cranelift-module = "0.106.0"
+cranelift-native = "0.106.0"
+target-lexicon = "0.12.14"
 
 [lints]
 workspace = true
