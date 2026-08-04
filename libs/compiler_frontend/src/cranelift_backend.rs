@@ -2,7 +2,7 @@ use crate::mir::{MirInst, MirModule, MirOp};
 use alloc::string::String;
 use alloc::sync::Arc;
 use alloc::vec::Vec;
-use cranelift_codegen::entity::EntityRef;
+
 use cranelift_codegen::settings::Configurable;
 use cranelift_codegen::{
     ir::{types, AbiParam, InstBuilder, Signature, UserFuncName},
@@ -85,14 +85,14 @@ impl CraneliftBackend {
 
                 // Define local variables
                 for i in 0..func.locals_count {
-                    let var = Variable::new(i);
+                    let var = Variable::from_u32(i as u32);
                     builder.declare_var(var, types::I64);
                 }
 
                 // Map function params to locals
                 for i in 0..func.param_count {
                     let val = builder.block_params(entry_block)[i];
-                    let var = Variable::new(i);
+                    let var = Variable::from_u32(i as u32);
                     builder.def_var(var, val);
                 }
 
@@ -102,22 +102,22 @@ impl CraneliftBackend {
                             let val = match op {
                                 MirOp::Const(v) => builder.ins().iconst(types::I64, *v),
                                 MirOp::Load(src) => {
-                                    let var = Variable::new(*src);
+                                    let var = Variable::from_u32(*src as u32);
                                     builder.use_var(var)
                                 }
                                 MirOp::Add(lhs, rhs) => {
-                                    let lhs_val = builder.use_var(Variable::new(*lhs));
-                                    let rhs_val = builder.use_var(Variable::new(*rhs));
+                                    let lhs_val = builder.use_var(Variable::from_u32(*lhs as u32));
+                                    let rhs_val = builder.use_var(Variable::from_u32(*rhs as u32));
                                     builder.ins().iadd(lhs_val, rhs_val)
                                 }
                                 MirOp::Sub(lhs, rhs) => {
-                                    let lhs_val = builder.use_var(Variable::new(*lhs));
-                                    let rhs_val = builder.use_var(Variable::new(*rhs));
+                                    let lhs_val = builder.use_var(Variable::from_u32(*lhs as u32));
+                                    let rhs_val = builder.use_var(Variable::from_u32(*rhs as u32));
                                     builder.ins().isub(lhs_val, rhs_val)
                                 }
                                 MirOp::Mul(lhs, rhs) => {
-                                    let lhs_val = builder.use_var(Variable::new(*lhs));
-                                    let rhs_val = builder.use_var(Variable::new(*rhs));
+                                    let lhs_val = builder.use_var(Variable::from_u32(*lhs as u32));
+                                    let rhs_val = builder.use_var(Variable::from_u32(*rhs as u32));
                                     builder.ins().imul(lhs_val, rhs_val)
                                 }
                                 MirOp::Call(_, _) => {
@@ -125,10 +125,10 @@ impl CraneliftBackend {
                                     builder.ins().iconst(types::I64, 0)
                                 }
                             };
-                            builder.def_var(Variable::new(*dest), val);
+                            builder.def_var(Variable::from_u32(*dest as u32), val);
                         }
                         MirInst::Return { src } => {
-                            let val = builder.use_var(Variable::new(*src));
+                            let val = builder.use_var(Variable::from_u32(*src as u32));
                             builder.ins().return_(&[val]);
                         }
                         MirInst::Nop => {}

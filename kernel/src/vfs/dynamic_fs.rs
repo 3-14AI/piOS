@@ -1,9 +1,9 @@
 extern crate alloc;
 
+use crate::vfs::Vfs;
+use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
-use alloc::collections::BTreeMap;
-use crate::vfs::Vfs;
 
 pub struct UsagePattern {
     pub average_file_size: usize,
@@ -70,7 +70,7 @@ mod tests {
                 average_file_size: 1024 * 1024,
                 read_write_ratio: 0.8,
                 directory_depth: 3,
-            }
+            },
         );
 
         let layout = generator.generate_optimal_layout();
