@@ -895,6 +895,13 @@ dependencies = [
 [[package]]
 name = "compiler_frontend"
 version = "0.1.0"
+dependencies = [
+ "cranelift-codegen",
+ "cranelift-frontend",
+ "cranelift-module",
+ "cranelift-native",
+ "target-lexicon",
+]
 
 [[package]]
 name = "concurrent-queue"
