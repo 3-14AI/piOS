@@ -270,16 +270,14 @@ pub mod cranelift_backend;
 #[cfg(test)]
 mod backend_tests {
     use super::*;
-    use cranelift_backend::CraneliftBackend;
     use alloc::boxed::Box;
     use alloc::vec;
+    use cranelift_backend::CraneliftBackend;
 
     #[test]
     fn test_cranelift_backend_init() {
         let backend = CraneliftBackend::new("x86_64");
         assert!(backend.is_ok());
-
-
 
         let backend_invalid = CraneliftBackend::new("invalid_arch");
         assert!(backend_invalid.is_err());

@@ -43,8 +43,8 @@ This file tracks the overarching goals and next phases for piOS, moving from a f
 
 ## Phase 14: Evolving towards a Global AI OS (piOS 2.0)
 - [x] **WP-101: Distributed AI Compute.** Implement a protocol for piOS instances to discover each other over the network and share inference workloads.
-- [ ] **WP-102: Hardware-Agnostic LLM Compilation.** Modify the Cranelift WASM backend to automatically compile models to optimized WASM based on the target architecture.
-- [ ] **WP-103: Dynamic File System Generation.** Allow the AI to dynamically generate optimal file system structures based on user usage patterns and hardware capabilities.
+- [x] **WP-102: Hardware-Agnostic LLM Compilation.** Modify the Cranelift WASM backend to automatically compile models to optimized WASM based on the target architecture.
+- [x] **WP-103: Dynamic File System Generation.** Allow the AI to dynamically generate optimal file system structures based on user usage patterns and hardware capabilities.
 - [ ] **WP-104: Natural Language Kernel Profiling.** Build a profiler where the user can ask the system to "find why my system is slow" and the AI analyzes flamegraphs and DTrace logs.
 - [ ] **WP-105: Automated Vulnerability Patching.** Integrate a loop where the system monitors its own network traffic for anomalies, synthesizes security patches, proves their safety, and live-patches the kernel.
 - [ ] **WP-106: Zero-Knowledge Proofs for Verus.** Add ZKP generation to Verus so a driver can prove to the kernel that it is verified without the kernel having to rerun the solver.

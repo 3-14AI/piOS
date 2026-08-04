@@ -406,3 +406,6 @@ pub mod ext4;
 pub mod fat32;
 #[cfg(not(feature = "verus"))]
 pub mod zfs;
+
+#[cfg(not(feature = "verus"))]
+pub mod dynamic_fs;

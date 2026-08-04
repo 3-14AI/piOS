@@ -1,6 +1,9 @@
 use crate::mir::{MirInst, MirModule, MirOp};
 use alloc::string::String;
+use alloc::sync::Arc;
 use alloc::vec::Vec;
+use cranelift_codegen::entity::EntityRef;
+use cranelift_codegen::settings::Configurable;
 use cranelift_codegen::{
     ir::{types, AbiParam, InstBuilder, Signature, UserFuncName},
     isa::{CallConv, TargetIsa},
@@ -8,9 +11,6 @@ use cranelift_codegen::{
 };
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext, Variable};
 use target_lexicon::Architecture;
-use cranelift_codegen::entity::EntityRef;
-use cranelift_codegen::settings::Configurable;
-use alloc::sync::Arc;
 
 #[derive(Debug)]
 pub enum CompileError {
@@ -19,7 +19,7 @@ pub enum CompileError {
 }
 
 pub struct CraneliftBackend {
-    isa: Arc<dyn TargetIsa>,
+    pub isa: Arc<dyn TargetIsa>,
 }
 
 impl CraneliftBackend {
@@ -29,11 +29,7 @@ impl CraneliftBackend {
             "aarch64" => Architecture::Aarch64(target_lexicon::Aarch64Architecture::Aarch64),
             "riscv64" => Architecture::Riscv64(target_lexicon::Riscv64Architecture::Riscv64gc),
             "wasm32" => Architecture::Wasm32,
-            _ => {
-                return Err(CompileError::UnsupportedArchitecture(
-                    target_arch.into(),
-                ))
-            }
+            _ => return Err(CompileError::UnsupportedArchitecture(target_arch.into())),
         };
 
         let mut flag_builder = settings::builder();
@@ -57,7 +53,10 @@ impl CraneliftBackend {
         Ok(Self { isa })
     }
 
-    pub fn compile_module(&self, module: &MirModule) -> Result<Vec<cranelift_codegen::ir::Function>, CompileError> {
+    pub fn compile_module(
+        &self,
+        module: &MirModule,
+    ) -> Result<Vec<cranelift_codegen::ir::Function>, CompileError> {
         let mut compiled_funcs = Vec::new();
 
         for (func_idx, func) in module.functions.iter().enumerate() {
