@@ -164,7 +164,7 @@ mod tests {
     fn test_wasm_runtime_creation() {
         let _runtime = WasmRuntime::new();
         let _default_runtime = WasmRuntime::default();
-        assert!(true);
+        // assert!(true);
     }
 
     #[test]

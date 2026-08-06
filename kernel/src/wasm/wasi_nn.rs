@@ -256,7 +256,7 @@ mod tests {
     fn test_wasi_nn_ctx_init() {
         let _ctx = WasiNnCtx::new();
         let _default_ctx = WasiNnCtx::default();
-        assert!(true); // In tests, the engine internal state starts clean
+        // assert!(true);
     }
 
     #[test]

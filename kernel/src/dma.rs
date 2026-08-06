@@ -160,7 +160,7 @@ mod tests {
         let region = DmaRegion::new(0x2000, 1024);
         assert_eq!(region.addr, 0x2000);
         assert_eq!(region.size, 1024);
-        assert_eq!(region.is_pinned(), false);
+        assert!(!region.is_pinned());
     }
 
     #[test]
@@ -168,22 +168,22 @@ mod tests {
         let mut region = DmaRegion::new(0x3000, 512);
 
         // Initial state
-        assert_eq!(region.is_pinned(), false);
+        assert!(!region.is_pinned());
 
         // Pinning when unpinned should succeed
-        assert_eq!(region.pin(), true);
-        assert_eq!(region.is_pinned(), true);
+        assert!(region.pin());
+        assert!(region.is_pinned());
 
         // Pinning again should fail
-        assert_eq!(region.pin(), false);
-        assert_eq!(region.is_pinned(), true);
+        assert!(!region.pin());
+        assert!(region.is_pinned());
 
         // Unpinning when pinned should succeed
-        assert_eq!(region.unpin(), true);
-        assert_eq!(region.is_pinned(), false);
+        assert!(region.unpin());
+        assert!(!region.is_pinned());
 
         // Unpinning when unpinned should fail
-        assert_eq!(region.unpin(), false);
-        assert_eq!(region.is_pinned(), false);
+        assert!(!region.unpin());
+        assert!(!region.is_pinned());
     }
 }

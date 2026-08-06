@@ -232,27 +232,27 @@ mod tests {
     #[test]
     fn test_input_driver() {
         let drv = HidInputDriver::new();
-        assert_eq!(drv.initialized, true);
+        assert!(drv.initialized);
         let drv_def = HidInputDriver::default();
-        assert_eq!(drv_def.initialized, true);
+        assert!(drv_def.initialized);
     }
 
     #[test]
     fn test_usb_hid_driver() {
         let drv = UsbHidDriver::new(1);
         assert_eq!(drv.endpoint_addr, 1);
-        assert_eq!(drv.initialized, true);
+        assert!(drv.initialized);
 
         let mut urb = crate::usb::Urb::new(1, 0x2000, 8);
         urb.actual_length = 8;
-        assert_eq!(drv.handle_urb(&urb), true);
+        assert!(drv.handle_urb(&urb));
 
         let mut bad_urb = crate::usb::Urb::new(2, 0x2000, 8);
         bad_urb.actual_length = 8;
-        assert_eq!(drv.handle_urb(&bad_urb), false);
+        assert!(!drv.handle_urb(&bad_urb));
 
         urb.actual_length = 0;
-        assert_eq!(drv.handle_urb(&urb), false);
+        assert!(!drv.handle_urb(&urb));
     }
 
     #[test]
@@ -263,9 +263,9 @@ mod tests {
         assert_eq!(event.value, 1);
 
         let subsys = InputSubsystem::new();
-        assert_eq!(subsys.active, true);
+        assert!(subsys.active);
 
         let subsys_def = InputSubsystem::default();
-        assert_eq!(subsys_def.active, true);
+        assert!(subsys_def.active);
     }
 }

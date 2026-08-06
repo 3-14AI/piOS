@@ -169,9 +169,9 @@ mod tests {
     #[test]
     fn test_sound_driver() {
         let drv = HdaSoundDriver::new();
-        assert_eq!(drv.initialized, true);
+        assert!(drv.initialized);
         let drv_def = HdaSoundDriver::default();
-        assert_eq!(drv_def.initialized, true);
+        assert!(drv_def.initialized);
     }
 
     #[test]
@@ -187,7 +187,7 @@ mod tests {
         let stream = PcmStream::new(44100, 2);
         assert_eq!(stream.sample_rate, 44100);
         assert_eq!(stream.channels, 2);
-        assert_eq!(stream.state.is_playing, false);
+        assert!(!stream.state.is_playing);
     }
 
     #[test]

@@ -141,7 +141,7 @@ mod tests {
     fn test_wasm_component_linker_creation() {
         let _linker = WasmComponentLinker::new();
         let _default_linker = WasmComponentLinker::default();
-        assert!(true);
+        // assert!(true);
     }
 
     #[test]

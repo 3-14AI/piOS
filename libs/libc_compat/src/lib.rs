@@ -125,6 +125,7 @@ pub mod tests_impl {
     use core::ffi::{c_char, c_void};
     use core::ptr;
 
+    #[allow(clippy::missing_safety_doc)]
     pub unsafe fn strlen(s: *const c_char) -> usize {
         let mut len = 0;
         if !s.is_null() {
@@ -135,6 +136,7 @@ pub mod tests_impl {
         len
     }
 
+    #[allow(clippy::missing_safety_doc)]
     pub unsafe fn strcpy(dest: *mut c_char, src: *const c_char) -> *mut c_char {
         if dest.is_null() || src.is_null() {
             return dest;
@@ -148,6 +150,7 @@ pub mod tests_impl {
         dest
     }
 
+    #[allow(clippy::missing_safety_doc)]
     pub unsafe fn memcpy(dest: *mut c_void, src: *const c_void, n: usize) -> *mut c_void {
         if dest.is_null() || src.is_null() {
             return dest;
@@ -156,6 +159,7 @@ pub mod tests_impl {
         dest
     }
 
+    #[allow(clippy::missing_safety_doc)]
     pub unsafe fn memset(s: *mut c_void, c: i32, n: usize) -> *mut c_void {
         if s.is_null() {
             return s;
@@ -173,7 +177,7 @@ mod tests {
     #[test]
     fn test_strlen() {
         unsafe {
-            let s = b"hello\0".as_ptr() as *const c_char;
+            let s = c"hello".to_bytes_with_nul().as_ptr() as *const c_char;
             assert_eq!(strlen(s), 5);
         }
     }
@@ -181,10 +185,10 @@ mod tests {
     #[test]
     fn test_strcpy() {
         unsafe {
-            let src = b"test\0".as_ptr() as *const c_char;
+            let src = c"test".to_bytes_with_nul().as_ptr() as *const c_char;
             let mut dest = [0u8; 10];
             strcpy(dest.as_mut_ptr() as *mut c_char, src);
-            assert_eq!(&dest[..5], b"test\0");
+            assert_eq!(&dest[..5], c"test".to_bytes_with_nul());
         }
     }
 

@@ -38,6 +38,6 @@ mod tests {
     #[test]
     fn test_acpi_parsing() {
         let tables = AcpiTables::parse();
-        assert_eq!(tables.valid, true);
+        assert!(tables.valid);
     }
 }

@@ -87,21 +87,21 @@ mod tests {
     #[test]
     fn test_hub_initialization() {
         let drv = UsbHubDriver::new(4);
-        assert_eq!(drv.initialized, true);
+        assert!(drv.initialized);
         assert_eq!(drv.root_hub.num_ports, 4);
-        assert_eq!(drv.root_hub.is_root, true);
+        assert!(drv.root_hub.is_root);
     }
 
     #[test]
     fn test_hub_poll() {
         let drv = UsbHubDriver::new(4);
-        assert_eq!(drv.poll_ports(), true);
+        assert!(drv.poll_ports());
     }
 
     #[test]
     fn test_attach_device() {
         let mut drv = UsbHubDriver::new(4);
-        assert_eq!(drv.attach_device(1, UsbSpeed::Super), true);
-        assert_eq!(drv.attach_device(5, UsbSpeed::Super), false);
+        assert!(drv.attach_device(1, UsbSpeed::Super));
+        assert!(!drv.attach_device(5, UsbSpeed::Super));
     }
 }

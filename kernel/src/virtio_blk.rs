@@ -377,10 +377,10 @@ mod tests {
         assert_eq!(drv.capacity, 100);
 
         // Out of bounds sector
-        assert_eq!(drv.read_sector(200, 1), false);
+        assert!(!drv.read_sector(200, 1));
 
         // Valid sector
-        assert_eq!(drv.read_sector(10, 1), true);
+        assert!(drv.read_sector(10, 1));
         assert_eq!(drv.queue.avail.idx, 1);
         assert_eq!(drv.queue.avail.ring[0], 1);
     }

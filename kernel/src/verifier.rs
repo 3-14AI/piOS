@@ -1,3 +1,4 @@
+extern crate alloc;
 use vstd::prelude::*;
 
 verus! {
@@ -134,4 +135,30 @@ verus! {
         // Empty stub to prevent missing coverage issues
     }
 
+}
+
+pub struct ZkpProof {
+    pub proof_data: alloc::vec::Vec<u8>,
+}
+
+impl ZkpProof {
+    pub fn new(data: alloc::vec::Vec<u8>) -> Self {
+        Self { proof_data: data }
+    }
+}
+
+pub fn verify_zkp(_proof: &ZkpProof) -> bool {
+    // Mock implementation of ZKP verification
+    true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_verify_zkp() {
+        let proof = ZkpProof::new(alloc::vec![0, 1, 2]);
+        assert!(verify_zkp(&proof));
+    }
 }

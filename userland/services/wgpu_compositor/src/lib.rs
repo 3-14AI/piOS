@@ -275,3 +275,5 @@ mod tests {
         assert!(renderer_result.is_err()); // Ensure it catches invalid font
     }
 }
+pub mod wm_3d;
+pub use wm_3d::*;

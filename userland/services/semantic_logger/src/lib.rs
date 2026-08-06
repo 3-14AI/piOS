@@ -249,10 +249,7 @@ mod tests {
         let logger_result = SemanticLogger::new();
         // Since inference engine loads a model, and in CI environments it might not exist or fail,
         // we just ensure it doesn't hard panic when initialized.
-        match logger_result {
-            Ok(_) => assert!(true),
-            Err(_) => assert!(true), // Allow test to pass if model is missing
-        }
+        if logger_result.is_ok() {}
     }
 
     #[test]
@@ -457,3 +454,5 @@ unsafe impl GlobalAlloc for SimpleAllocator {
 static ALLOCATOR: SimpleAllocator = SimpleAllocator {
     offset: AtomicUsize::new(0),
 };
+pub mod search;
+pub use search::*;

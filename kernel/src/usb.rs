@@ -282,7 +282,7 @@ mod tests {
         assert_eq!(dev.address, 2);
         assert_eq!(dev.port, 1);
         assert_eq!(dev.speed, UsbSpeed::Super);
-        assert_eq!(dev.connected, true);
+        assert!(dev.connected);
     }
 
     #[test]
@@ -290,14 +290,14 @@ mod tests {
         let hub = UsbHub::new(1, 4, true);
         assert_eq!(hub.address, 1);
         assert_eq!(hub.num_ports, 4);
-        assert_eq!(hub.is_root, true);
+        assert!(hub.is_root);
     }
 
     #[test]
     fn test_usb_driver() {
         let drv = UsbDriver::new();
-        assert_eq!(drv.initialized, true);
+        assert!(drv.initialized);
         let drv_def = UsbDriver::default();
-        assert_eq!(drv_def.initialized, true);
+        assert!(drv_def.initialized);
     }
 }

@@ -118,7 +118,7 @@ mod tests {
         let engine = InferenceEngine::new();
         assert_eq!(engine.loaded_models, 0);
         assert_eq!(engine.execution_contexts, 0);
-        assert_eq!(engine.has_input, false);
+        assert!(!engine.has_input);
     }
 
     #[test]
@@ -148,5 +148,32 @@ mod tests {
         let bytes_written = engine.get_output(ctx, 0, &mut out).unwrap();
         assert_eq!(bytes_written, 11);
         assert_eq!(&out[..11], b"mock_output");
+    }
+}
+
+pub struct VisionModel {
+    pub id: usize,
+    pub name: &'static str,
+}
+
+impl VisionModel {
+    pub fn new(id: usize, name: &'static str) -> Self {
+        Self { id, name }
+    }
+}
+
+pub fn image_to_tensor(_image_data: &[u8]) -> Result<Tensor, Error> {
+    // Mock image to tensor conversion
+    Ok(Tensor::new(alloc::vec![0; 100], alloc::vec![10, 10, 1]))
+}
+
+#[cfg(test)]
+mod vision_tests {
+    use super::*;
+
+    #[test]
+    fn test_image_to_tensor() {
+        let tensor = image_to_tensor(b"dummy_image").unwrap();
+        assert_eq!(tensor.dimensions, alloc::vec![10, 10, 1]);
     }
 }

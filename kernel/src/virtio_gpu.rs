@@ -372,7 +372,7 @@ mod tests {
         assert_eq!(drv.unacked_commands, 0);
 
         // Send a command
-        assert_eq!(drv.send_command(1), true);
+        assert!(drv.send_command(1));
         assert_eq!(drv.unacked_commands, 1);
         assert_eq!(drv.control_queue.avail.idx, 1);
 
@@ -396,7 +396,7 @@ mod tests {
         assert_eq!(drv.unacked_commands, 0);
 
         // Send a 2d command
-        assert_eq!(drv.enqueue_2d_command(2), true);
+        assert!(drv.enqueue_2d_command(2));
         assert_eq!(drv.unacked_commands, 1);
         assert_eq!(drv.control_queue.avail.idx, 1);
         assert_eq!(drv.control_queue.avail.ring[0], 2);
@@ -406,17 +406,17 @@ mod tests {
     fn test_enqueue_3d_command() {
         let mut drv = VirtioGpuDriver::new(4);
         assert_eq!(drv.unacked_commands, 0);
-        assert_eq!(drv.virgl_enabled, false);
+        assert!(!drv.virgl_enabled);
 
         // Try to send a 3d command without virgl
-        assert_eq!(drv.enqueue_3d_command(3), false);
+        assert!(!drv.enqueue_3d_command(3));
         assert_eq!(drv.unacked_commands, 0);
 
         drv.enable_virgl();
-        assert_eq!(drv.virgl_enabled, true);
+        assert!(drv.virgl_enabled);
 
         // Send a 3d command
-        assert_eq!(drv.enqueue_3d_command(3), true);
+        assert!(drv.enqueue_3d_command(3));
         assert_eq!(drv.unacked_commands, 1);
         assert_eq!(drv.control_queue.avail.idx, 1);
         assert_eq!(drv.control_queue.avail.ring[0], 3);
@@ -425,18 +425,18 @@ mod tests {
     #[test]
     fn test_virgl_features() {
         let mut drv = VirtioGpuDriver::new(4);
-        assert_eq!(drv.create_3d_context(1), false);
-        assert_eq!(drv.resource_create_3d(2), false);
+        assert!(!drv.create_3d_context(1));
+        assert!(!drv.resource_create_3d(2));
         assert_eq!(drv.num_3d_contexts, 0);
         assert_eq!(drv.num_3d_resources, 0);
 
         drv.enable_virgl();
-        assert_eq!(drv.virgl_enabled, true);
+        assert!(drv.virgl_enabled);
 
-        assert_eq!(drv.create_3d_context(1), true);
+        assert!(drv.create_3d_context(1));
         assert_eq!(drv.num_3d_contexts, 1);
 
-        assert_eq!(drv.resource_create_3d(2), true);
+        assert!(drv.resource_create_3d(2));
         assert_eq!(drv.num_3d_resources, 1);
     }
 }
