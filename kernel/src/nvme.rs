@@ -302,15 +302,15 @@ mod tests {
         let mut mmio_mock = [0u32; 1024];
         let base_addr = mmio_mock.as_mut_ptr() as usize;
 
-        assert_eq!(drv.init_device(base_addr), true);
+        assert!(drv.init_device(base_addr));
         assert_eq!(mmio_mock[0], 1);
 
         let mut buffer = [0u8; 512];
         let buffer_addr = buffer.as_mut_ptr() as usize;
-        assert_eq!(drv.read_sector(50, buffer_addr), true);
+        assert!(drv.read_sector(50, buffer_addr));
         assert_eq!(buffer[0], 0x55);
 
-        assert_eq!(drv.read_sector(2048, buffer_addr), false);
+        assert!(!drv.read_sector(2048, buffer_addr));
     }
 
     #[test]
@@ -321,7 +321,7 @@ mod tests {
 
         // Use through trait
         let bd: &mut dyn BlockDevice = &mut d;
-        assert_eq!(bd.read_sector(50, buffer_addr), true);
+        assert!(bd.read_sector(50, buffer_addr));
         assert_eq!(buffer[0], 0x55);
     }
 }

@@ -19,3 +19,8 @@
 1. GitHub CI uses `cargo tarpaulin` to enforce strict code coverage limits (e.g. `87%` for the entire workspace).
 2. If `cargo tarpaulin` fails locally due to coverage dropping below the threshold after you add new code, **DO NOT** attempt to bypass the check by writing duplicate or empty tests.
 3. Instead, either write extensive real mock tests to hit the target coverage, or adjust the `--fail-under` flag in `.github/workflows/ci.yml` temporarily if approved.
+
+## The Next Phase: Implementing Real Functionality
+1. **Transitioning from Mocks to Real Code**: The project has reached a point where most architectural components are in place as mock structures or stubs. The new primary goal is to implement functional code for these components.
+2. **Prioritize Boot and Hardware**: Start with making the OS bootable (ISO generation) and getting storage/input drivers to work on real hardware.
+3. **Continuous Testing on Real Infrastructure**: As mocks are removed, ensure that tests simulate real hardware interactions (e.g., using `[u32; N]` arrays for MMIO) rather than just toggling booleans.

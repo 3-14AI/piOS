@@ -364,7 +364,7 @@ mod tests {
     #[test]
     fn test_pci_port_manager_new() {
         let _ = PciPortManager::new();
-        let _ = PciPortManager::default();
+        let _ = PciPortManager;
     }
 
     #[test]
@@ -511,6 +511,7 @@ mod tests {
             s
         };
         let pub_key = [0xAA];
+        #[allow(clippy::type_complexity)]
         let drivers_data: &[(&str, u16, u16, &[u8], &[u8], &[u8])] = &[
             (
                 "virtio-net",

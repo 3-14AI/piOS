@@ -45,8 +45,8 @@ mod tests {
     #[test]
     fn test_wifi_driver() {
         let drv = WifiBluetoothDriver::new();
-        assert_eq!(drv.initialized, true);
+        assert!(drv.initialized);
         let drv_def = WifiBluetoothDriver::default();
-        assert_eq!(drv_def.initialized, true);
+        assert!(drv_def.initialized);
     }
 }

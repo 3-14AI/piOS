@@ -601,7 +601,7 @@ mod tests {
         assert_eq!(pup_pdn & (3 << 28), 0);
         assert_eq!(pup_pdn & (3 << 30), 0);
 
-        let _bsp_def = super::aarch64::RaspberryPi4Bsp::default();
+        let _bsp_def = super::aarch64::RaspberryPi4Bsp;
     }
 
     #[test]
@@ -653,6 +653,6 @@ mod tests {
     fn test_riscv64_sv39() {
         let mut mmu = super::riscv64::Sv39Mmu::new();
         mmu.enable(0x1000);
-        let _def_mmu = super::riscv64::Sv39Mmu::default();
+        let _def_mmu = super::riscv64::Sv39Mmu;
     }
 }

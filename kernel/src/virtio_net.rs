@@ -170,7 +170,7 @@ mod tests {
         assert_eq!(drv.unacked_tx_packets, 0);
 
         // Send a packet
-        assert_eq!(drv.send_packet(1), true);
+        assert!(drv.send_packet(1));
         assert_eq!(drv.unacked_tx_packets, 1);
         assert_eq!(drv.tx_queue.avail.idx, 1);
 

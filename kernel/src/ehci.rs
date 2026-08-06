@@ -96,10 +96,10 @@ mod tests {
         let mmio_base = registers.as_mut_ptr() as usize;
 
         let mut drv = EhciDriver::new(mmio_base);
-        assert_eq!(drv.initialized, false);
+        assert!(!drv.initialized);
 
-        assert_eq!(drv.init_device(), true);
-        assert_eq!(drv.initialized, true);
+        assert!(drv.init_device());
+        assert!(drv.initialized);
 
         // Verify that the command register was written (offset 0x20 is index 8)
         assert_eq!(registers[8], 1);

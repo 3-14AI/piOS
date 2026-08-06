@@ -155,22 +155,22 @@ mod tests {
     #[test]
     fn test_ahci_driver() {
         let mut d = AhciDriver::new(100);
-        assert_eq!(d.initialized, true);
+        assert!(d.initialized);
         assert_eq!(d.capacity, 100);
 
         // Use a local array as a mock for MMIO base address
         let mut mmio_mock = [0u32; 1024];
         let base_addr = mmio_mock.as_mut_ptr() as usize;
 
-        assert_eq!(d.init_device(base_addr), true);
+        assert!(d.init_device(base_addr));
         assert_eq!(mmio_mock[0], 1);
 
         let mut buffer = [0u8; 512];
         let buffer_addr = buffer.as_mut_ptr() as usize;
-        assert_eq!(d.read_sector(50, buffer_addr), true);
+        assert!(d.read_sector(50, buffer_addr));
         assert_eq!(buffer[0], 0xaa);
 
-        assert_eq!(d.read_sector(200, buffer_addr), false);
+        assert!(!d.read_sector(200, buffer_addr));
     }
 
     #[test]
@@ -181,7 +181,7 @@ mod tests {
 
         // Use through trait
         let bd: &mut dyn BlockDevice = &mut d;
-        assert_eq!(bd.read_sector(50, buffer_addr), true);
+        assert!(bd.read_sector(50, buffer_addr));
         assert_eq!(buffer[0], 0xaa);
     }
 }

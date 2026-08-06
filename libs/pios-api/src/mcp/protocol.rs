@@ -146,6 +146,6 @@ mod tests {
         assert_eq!(prompt.description, Some("A test prompt".to_string()));
         assert_eq!(prompt.arguments.len(), 1);
         assert_eq!(prompt.arguments[0].name, "arg1");
-        assert_eq!(prompt.arguments[0].required, true);
+        assert!(prompt.arguments[0].required);
     }
 }

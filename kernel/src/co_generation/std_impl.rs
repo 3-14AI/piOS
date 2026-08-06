@@ -43,16 +43,16 @@ mod tests {
     #[test]
     fn test_co_generation() {
         let mut framework = CoGenerationFramework::new();
-        assert_eq!(framework.is_running, false);
+        assert!(!framework.is_running);
         assert_eq!(framework.tests_generated, 0);
 
         framework.start();
-        assert_eq!(framework.is_running, true);
+        assert!(framework.is_running);
 
         framework.generate_test();
         assert_eq!(framework.tests_generated, 1);
 
         framework.stop();
-        assert_eq!(framework.is_running, false);
+        assert!(!framework.is_running);
     }
 }

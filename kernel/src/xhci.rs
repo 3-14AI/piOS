@@ -141,27 +141,27 @@ mod tests {
         assert_eq!(ring.capacity, 4);
         assert_eq!(ring.enqueue_ptr, 0);
         assert_eq!(ring.dequeue_ptr, 0);
-        assert_eq!(ring.cycle_state, true);
+        assert!(ring.cycle_state);
     }
 
     #[test]
     fn test_xhci_ring_enqueue() {
         let mut ring = XhciRing::new(4);
-        assert_eq!(ring.enqueue(), true);
+        assert!(ring.enqueue());
         assert_eq!(ring.enqueue_ptr, 1);
-        assert_eq!(ring.enqueue(), true);
+        assert!(ring.enqueue());
         assert_eq!(ring.enqueue_ptr, 2);
-        assert_eq!(ring.enqueue(), true);
+        assert!(ring.enqueue());
         assert_eq!(ring.enqueue_ptr, 3);
         // Next enqueue should wrap around and change cycle bit, but wait! it would hit dequeue_ptr = 0
-        assert_eq!(ring.enqueue(), false);
+        assert!(!ring.enqueue());
         assert_eq!(ring.enqueue_ptr, 3);
 
         // Let's increment dequeue_ptr to allow wrap around
         ring.dequeue_ptr = 1;
-        assert_eq!(ring.enqueue(), true);
+        assert!(ring.enqueue());
         assert_eq!(ring.enqueue_ptr, 0);
-        assert_eq!(ring.cycle_state, false);
+        assert!(!ring.cycle_state);
     }
 }
 
@@ -223,7 +223,7 @@ mod additional_tests {
     #[test]
     fn test_device_init() {
         let mut drv = XhciDriver::new(4);
-        assert_eq!(drv.init_device(1), true);
+        assert!(drv.init_device(1));
     }
 }
 
