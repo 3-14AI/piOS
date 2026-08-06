@@ -1,3 +1,4 @@
+extern crate alloc;
 use vstd::prelude::*;
 
 verus! {
