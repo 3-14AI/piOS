@@ -249,8 +249,7 @@ mod tests {
         let logger_result = SemanticLogger::new();
         // Since inference engine loads a model, and in CI environments it might not exist or fail,
         // we just ensure it doesn't hard panic when initialized.
-        if logger_result.is_ok() { }
-
+        if logger_result.is_ok() {}
     }
 
     #[test]
