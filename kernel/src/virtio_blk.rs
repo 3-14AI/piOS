@@ -440,7 +440,8 @@ mod tests {
 
         assert!(drv.init_device());
 
-        let mmio_u32_slice = unsafe { core::slice::from_raw_parts(mmio_mock.as_ptr() as *const u32, 2048) };
+        let mmio_u32_slice =
+            unsafe { core::slice::from_raw_parts(mmio_mock.as_ptr() as *const u32, 2048) };
         assert_eq!(mmio_u32_slice[0x70 / 4], 7); // 1 | 2 | 4
 
         // Queue details written to mmio

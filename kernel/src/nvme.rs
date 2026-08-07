@@ -265,10 +265,28 @@ impl NvmeDriver {
 
         for _ in 0..queue_capacity {
             sq_entries.push(NvmeSqEntry {
-                opcode: 0, flags: 0, command_id: 0, nsid: 0, rsvd2: 0, metadata_ptr: 0, prp1: 0, prp2: 0, cdw10: 0, cdw11: 0, cdw12: 0, cdw13: 0, cdw14: 0, cdw15: 0
+                opcode: 0,
+                flags: 0,
+                command_id: 0,
+                nsid: 0,
+                rsvd2: 0,
+                metadata_ptr: 0,
+                prp1: 0,
+                prp2: 0,
+                cdw10: 0,
+                cdw11: 0,
+                cdw12: 0,
+                cdw13: 0,
+                cdw14: 0,
+                cdw15: 0,
             });
             cq_entries.push(NvmeCqEntry {
-                cdw0: 0, rsvd1: 0, sq_head: 0, sq_id: 0, command_id: 0, status: 0
+                cdw0: 0,
+                rsvd1: 0,
+                sq_head: 0,
+                sq_id: 0,
+                command_id: 0,
+                status: 0,
             });
         }
 
@@ -395,7 +413,8 @@ mod tests {
 
         assert!(drv.init_device());
 
-        let mmio_u32_slice = unsafe { core::slice::from_raw_parts(mmio_mock.as_ptr() as *const u32, 2048) };
+        let mmio_u32_slice =
+            unsafe { core::slice::from_raw_parts(mmio_mock.as_ptr() as *const u32, 2048) };
         assert_eq!(mmio_u32_slice[0x14 / 4], 1);
 
         let aqa = mmio_u32_slice[0x24 / 4];
@@ -410,7 +429,10 @@ mod tests {
         assert_eq!(drv.sq_entries[0].prp1, buffer_addr as u64);
 
         let doorbell_offset = 0x1000 + (2 * 4);
-        assert_eq!(mmio_u32_slice[doorbell_offset / 4], drv.sub_queue.tail as u32);
+        assert_eq!(
+            mmio_u32_slice[doorbell_offset / 4],
+            drv.sub_queue.tail as u32
+        );
 
         assert!(!drv.read_sector(2048, buffer_addr));
     }
