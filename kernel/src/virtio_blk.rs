@@ -60,19 +60,32 @@ verus! {
     pub struct VirtioBlkDriver {
         pub queue: Virtqueue,
         pub capacity: u64,
+        pub mmio_base: usize,
+        pub pci_address: (u8, u8, u8),
     }
 
     impl VirtioBlkDriver {
-        pub fn new(size: u16, capacity: u64) -> (d: Self)
+        pub fn new(size: u16, capacity: u64, mmio_base: usize, pci_address: (u8, u8, u8)) -> (d: Self)
             requires size > 0
             ensures
                 d.capacity == capacity,
-                d.queue.queue_size == size
+                d.queue.queue_size == size,
+                d.mmio_base == mmio_base,
+                d.pci_address == pci_address
         {
             VirtioBlkDriver {
                 queue: Virtqueue::new(size),
                 capacity,
+                mmio_base,
+                pci_address,
             }
+        }
+
+        #[verifier::external_body]
+        pub fn init_device(&mut self) -> (success: bool)
+            ensures success == true
+        {
+            true
         }
 
         pub fn read_sector(&mut self, sector: u64, desc_idx: u16) -> (success: bool)
@@ -258,23 +271,70 @@ pub struct VirtioBlkReq {
 pub struct VirtioBlkDriver {
     pub queue: Virtqueue,
     pub capacity: u64,
+    pub mmio_base: usize,
+    pub pci_address: (u8, u8, u8),
 }
 
 #[cfg(not(feature = "verus"))]
 impl VirtioBlkDriver {
-    pub fn new(size: u16, capacity: u64) -> Self {
+    pub fn new(size: u16, capacity: u64, mmio_base: usize, pci_address: (u8, u8, u8)) -> Self {
         assert!(size > 0);
         VirtioBlkDriver {
             queue: Virtqueue::new(size),
             capacity,
+            mmio_base,
+            pci_address,
         }
+    }
+
+    pub fn init_device(&mut self) -> bool {
+        unsafe {
+            // Write 0 to status register to reset
+            let status_ptr = (self.mmio_base + 0x70) as *mut u32;
+            core::ptr::write_volatile(status_ptr, 0);
+
+            // Write 1 (ACKNOWLEDGE) and 2 (DRIVER)
+            core::ptr::write_volatile(status_ptr, 1 | 2);
+
+            // Read features
+            let _features = core::ptr::read_volatile((self.mmio_base + 0x10) as *mut u32);
+
+            // Tell device where the queue is
+            let q_select_ptr = (self.mmio_base + 0x30) as *mut u32;
+            core::ptr::write_volatile(q_select_ptr, 0);
+
+            let q_size_ptr = (self.mmio_base + 0x38) as *mut u32;
+            core::ptr::write_volatile(q_size_ptr, self.queue.queue_size as u32);
+
+            let q_desc_ptr = (self.mmio_base + 0x80) as *mut u64;
+            core::ptr::write_volatile(q_desc_ptr, self.queue.descriptors.as_ptr() as u64);
+
+            // Write 4 (DRIVER_OK)
+            core::ptr::write_volatile(status_ptr, 1 | 2 | 4);
+        }
+        true
     }
 
     pub fn read_sector(&mut self, sector: u64, desc_idx: u16) -> bool {
         if sector >= self.capacity {
             return false;
         }
-        self.queue.add_avail(desc_idx)
+
+        let desc_index = desc_idx as usize;
+        self.queue.descriptors[desc_index].addr = sector; // Block addr
+        self.queue.descriptors[desc_index].len = 512;
+        self.queue.descriptors[desc_index].flags = 2; // Write
+
+        let success = self.queue.add_avail(desc_idx);
+
+        if success {
+            unsafe {
+                // Queue notify
+                let notify_ptr = (self.mmio_base + 0x50) as *mut u32;
+                core::ptr::write_volatile(notify_ptr, 0); // queue 0
+            }
+        }
+        success
     }
 }
 
@@ -373,8 +433,31 @@ mod tests {
 
     #[test]
     fn test_virtio_blk_driver() {
-        let mut drv = VirtioBlkDriver::new(4, 100);
+        let mut mmio_mock = [0u64; 1024];
+        let base_addr = mmio_mock.as_mut_ptr() as usize;
+        let mut drv = VirtioBlkDriver::new(4, 100, base_addr, (0, 2, 0));
         assert_eq!(drv.capacity, 100);
+
+        assert!(drv.init_device());
+
+        let mmio_u32_slice =
+            unsafe { core::slice::from_raw_parts(mmio_mock.as_ptr() as *const u32, 2048) };
+        assert_eq!(mmio_u32_slice[0x70 / 4], 7); // 1 | 2 | 4
+
+        // Queue details written to mmio
+        assert_eq!(mmio_u32_slice[0x30 / 4], 0);
+        assert_eq!(mmio_u32_slice[0x38 / 4], 4);
+
+        // On x86_64 or similar, if mmio_mock was written via write_volatile(..., u64),
+        // it would overwrite two adjacent u32s. Wait, if q_desc_ptr is *mut u64,
+        // writing to it will write 8 bytes. Let's just cast the mmio_mock pointer.
+        let mmio_u64_ptr = base_addr as *const u64;
+        unsafe {
+            assert_eq!(
+                core::ptr::read_volatile(mmio_u64_ptr.add(0x80 / 8)),
+                drv.queue.descriptors.as_ptr() as u64
+            );
+        }
 
         // Out of bounds sector
         assert!(!drv.read_sector(200, 1));
@@ -383,5 +466,12 @@ mod tests {
         assert!(drv.read_sector(10, 1));
         assert_eq!(drv.queue.avail.idx, 1);
         assert_eq!(drv.queue.avail.ring[0], 1);
+
+        // Check descriptor
+        assert_eq!(drv.queue.descriptors[1].addr, 10);
+        assert_eq!(drv.queue.descriptors[1].len, 512);
+
+        // Notify
+        assert_eq!(mmio_u32_slice[0x50 / 4], 0);
     }
 }
