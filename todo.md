@@ -5,7 +5,7 @@ Currently, piOS consists mostly of architectural scaffolding and mocks. To achie
 ## Phase 15: Hardware Enablement and Boot
 - [ ] **WP-111: Real Bootable Image Generation.** Fix `tools/mkimage.sh` to correctly compile the UEFI bootloader, kernel, and initrd, and output a valid `.iso` (e.g. using `xorriso`).
 - [ ] **WP-112: Bare-Metal x86-64 Execution.** Boot the ISO on real hardware. Fix CPU feature mismatches, UEFI handoff bugs, and ACPI parsing issues.
-- [ ] **WP-113: Real Storage Drivers.** Replace the mock implementations in `kernel/src/nvme.rs` and `kernel/src/virtio_blk.rs` with functional drivers that can enumerate devices via PCI, set up submission/completion queues, and read/write blocks.
+- [x] **WP-113: Real Storage Drivers.** Replace the mock implementations in `kernel/src/nvme.rs` and `kernel/src/virtio_blk.rs` with functional drivers that can enumerate devices via PCI, set up submission/completion queues, and read/write blocks.
 - [ ] **WP-114: Real USB and HID.** Replace stubs in `kernel/src/xhci.rs`, `kernel/src/ehci.rs`, and `kernel/src/input.rs` to process actual USB Request Blocks (URBs) and generate valid HID events.
 
 ## Phase 16: File Systems and Execution
