@@ -96,7 +96,6 @@ verus! {
     }
 }
 
-
 #[cfg(not(feature = "verus"))]
 #[derive(Debug, Clone, Copy)]
 pub struct EhciTransferDescriptor {
@@ -108,7 +107,11 @@ pub struct EhciTransferDescriptor {
 #[cfg(not(feature = "verus"))]
 impl EhciTransferDescriptor {
     pub fn new(next_qh: u32, token: u32, buffer_ptr: u32) -> Self {
-        EhciTransferDescriptor { next_qh, token, buffer_ptr }
+        EhciTransferDescriptor {
+            next_qh,
+            token,
+            buffer_ptr,
+        }
     }
 }
 
@@ -173,7 +176,7 @@ impl EhciDriver {
         // Mock hardware initialization
         // Write to USBCMD register to run
         self.write_register(0x18, qh_ptr as u32);
-            self.write_register(0x20, 1);
+        self.write_register(0x20, 1);
         self.initialized = true;
         true
     }
@@ -190,7 +193,7 @@ mod tests {
         let mut registers: [u32; 64] = [0; 64];
         let mmio_base = registers.as_mut_ptr() as usize;
 
-                let mut drv = EhciDriver::new(mmio_base);
+        let mut drv = EhciDriver::new(mmio_base);
         assert!(!drv.initialized);
 
         let qh = EhciQueueHead::new(0, 0, 0);

@@ -109,7 +109,11 @@ pub struct XhciTrb {
 #[cfg(not(feature = "verus"))]
 impl XhciTrb {
     pub fn new(parameter: u64, status: u32, control: u32) -> Self {
-        XhciTrb { parameter, status, control }
+        XhciTrb {
+            parameter,
+            status,
+            control,
+        }
     }
 }
 
