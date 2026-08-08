@@ -47,6 +47,10 @@ verus! {
     pub struct UsbHidDriver {
         pub endpoint_addr: u8,
         pub initialized: bool,
+        // Since EventType doesn't implement Verus traits well without extra boilerplates, we omit `last_event` in verus for simplicity,
+        // or we just don't add last_event field in verus definition and only add it in standard rust.
+        // Actually, Verus structures must match exactly unless cfg is used correctly.
+        // We'll just define the dummy `last_event` if needed, but let's just make `handle_urb` return the bool in verus without parsing.
     }
 
     impl UsbHidDriver {
@@ -151,6 +155,7 @@ impl HidInputDriver {
 pub struct UsbHidDriver {
     pub endpoint_addr: u8,
     pub initialized: bool,
+    pub last_event: core::option::Option<InputEvent>,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -159,14 +164,31 @@ impl UsbHidDriver {
         UsbHidDriver {
             endpoint_addr,
             initialized: true,
+            last_event: None,
         }
     }
 
-    pub fn handle_urb(&self, urb: &crate::usb::Urb) -> bool {
+    pub fn handle_urb(&mut self, urb: &crate::usb::Urb) -> bool {
         if !self.initialized {
             return false;
         }
-        urb.endpoint_addr == self.endpoint_addr && urb.actual_length > 0
+        if urb.endpoint_addr == self.endpoint_addr && urb.actual_length > 0 {
+            if urb.actual_length >= 8 && urb.buffer_ptr != 0 {
+                // Parse HID boot keyboard report
+                unsafe {
+                    let report = core::slice::from_raw_parts(urb.buffer_ptr as *const u8, 8);
+                    let _modifier = report[0];
+                    let keycode = report[2];
+
+                    if keycode != 0 {
+                        self.last_event = Some(InputEvent::new(EventType::Key, keycode as u16, 1));
+                    }
+                }
+            }
+            true
+        } else {
+            false
+        }
     }
 }
 
@@ -239,20 +261,39 @@ mod tests {
 
     #[test]
     fn test_usb_hid_driver() {
-        let drv = UsbHidDriver::new(1);
+        let mut drv = UsbHidDriver::new(1);
         assert_eq!(drv.endpoint_addr, 1);
         assert!(drv.initialized);
 
         let mut urb = crate::usb::Urb::new(1, 0x2000, 8);
         urb.actual_length = 8;
+        // mock valid buffer since we added pointer dereferencing
+        let mock_report: [u8; 8] = [0; 8];
+        urb.buffer_ptr = mock_report.as_ptr() as usize;
         assert!(drv.handle_urb(&urb));
 
-        let mut bad_urb = crate::usb::Urb::new(2, 0x2000, 8);
+        let mut bad_urb = crate::usb::Urb::new(2, mock_report.as_ptr() as usize, 8);
         bad_urb.actual_length = 8;
         assert!(!drv.handle_urb(&bad_urb));
 
         urb.actual_length = 0;
         assert!(!drv.handle_urb(&urb));
+    }
+
+    #[test]
+    fn test_usb_hid_driver_keyboard_report() {
+        let mut drv = UsbHidDriver::new(1);
+        let mock_report: [u8; 8] = [0x02, 0, 0x04, 0, 0, 0, 0, 0]; // Left Shift + 'A'
+        let mut urb = crate::usb::Urb::new(1, mock_report.as_ptr() as usize, 8);
+        urb.actual_length = 8;
+
+        assert!(drv.handle_urb(&urb));
+        assert!(drv.last_event.is_some());
+
+        let event = drv.last_event.as_ref().unwrap();
+        assert_eq!(event.event_type, EventType::Key);
+        assert_eq!(event.code, 0x04);
+        assert_eq!(event.value, 1);
     }
 
     #[test]

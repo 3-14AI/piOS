@@ -1,5 +1,6 @@
 #![no_std]
 #![allow(unused_imports)]
+extern crate alloc;
 
 #[cfg(feature = "verus")]
 use vstd::prelude::*;
