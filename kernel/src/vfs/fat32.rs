@@ -44,11 +44,17 @@ pub struct Fat32 {
 #[cfg(not(feature = "verus"))]
 impl Fat32 {
     pub fn new() -> Self {
-        Fat32 { block_device: None, mounted: false }
+        Fat32 {
+            block_device: None,
+            mounted: false,
+        }
     }
 
     pub fn new_with_device(dev: crate::virtio_blk::VirtioBlkDriver) -> Self {
-        Fat32 { block_device: Some(dev), mounted: false }
+        Fat32 {
+            block_device: Some(dev),
+            mounted: false,
+        }
     }
 
     pub fn mount(&mut self) -> Result<(), ()> {

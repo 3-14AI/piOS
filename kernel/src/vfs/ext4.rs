@@ -46,11 +46,17 @@ pub struct Ext4 {
 #[cfg(not(feature = "verus"))]
 impl Ext4 {
     pub fn new() -> Self {
-        Ext4 { block_device: None, mounted: false }
+        Ext4 {
+            block_device: None,
+            mounted: false,
+        }
     }
 
     pub fn new_with_device(dev: crate::virtio_blk::VirtioBlkDriver) -> Self {
-        Ext4 { block_device: Some(dev), mounted: false }
+        Ext4 {
+            block_device: Some(dev),
+            mounted: false,
+        }
     }
 
     pub fn mount(&mut self) -> Result<(), ()> {
