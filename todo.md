@@ -9,7 +9,7 @@ Currently, piOS consists mostly of architectural scaffolding and mocks. To achie
 - [x] **WP-114: Real USB and HID.** Replace stubs in `kernel/src/xhci.rs`, `kernel/src/ehci.rs`, and `kernel/src/input.rs` to process actual USB Request Blocks (URBs) and generate valid HID events.
 
 ## Phase 16: File Systems and Execution
-- [ ] **WP-115: VFS and File Systems.** Implement actual FAT32 and ext4 drivers on top of the block devices instead of simple stubs.
+- [x] **WP-115: VFS and File Systems.** Implement actual FAT32 and ext4 drivers on top of the block devices instead of simple stubs.
 - [ ] **WP-116: Real WASM Execution.** Ensure that the kernel's WASM runtime (e.g., via Cranelift/Winch) can load and execute standalone `wasm32-wasip1` binaries correctly.
 - [ ] **WP-117: Libc/WASI compatibility.** Ensure `wasi-libc` fully supports the kernel's WASI-core implementation.
 
