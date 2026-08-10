@@ -75,7 +75,8 @@ impl BiosParameterBlock {
         let table_size_16 = u16::from_le_bytes([buffer[22], buffer[23]]);
         let sectors_per_track = u16::from_le_bytes([buffer[24], buffer[25]]);
         let head_side_count = u16::from_le_bytes([buffer[26], buffer[27]]);
-        let hidden_sector_count = u32::from_le_bytes([buffer[28], buffer[29], buffer[30], buffer[31]]);
+        let hidden_sector_count =
+            u32::from_le_bytes([buffer[28], buffer[29], buffer[30], buffer[31]]);
         let total_sectors_32 = u32::from_le_bytes([buffer[32], buffer[33], buffer[34], buffer[35]]);
 
         // For FAT32
@@ -196,9 +197,9 @@ mod tests {
         mock[511] = 0xAA;
         mock[11] = 0x00;
         mock[12] = 0x02; // 512 bytes/sector
-        mock[13] = 8;    // 8 sectors/cluster
-        mock[14] = 32;   // 32 reserved sectors
-        mock[16] = 2;    // 2 FATs
+        mock[13] = 8; // 8 sectors/cluster
+        mock[14] = 32; // 32 reserved sectors
+        mock[16] = 2; // 2 FATs
 
         let bpb = BiosParameterBlock::parse(&mock).unwrap();
         assert_eq!(bpb.bytes_per_sector, 512);

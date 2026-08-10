@@ -77,13 +77,17 @@ impl Ext4Superblock {
             inodes_count: u32::from_le_bytes([buffer[0], buffer[1], buffer[2], buffer[3]]),
             blocks_count_lo: u32::from_le_bytes([buffer[4], buffer[5], buffer[6], buffer[7]]),
             r_blocks_count_lo: u32::from_le_bytes([buffer[8], buffer[9], buffer[10], buffer[11]]),
-            free_blocks_count_lo: u32::from_le_bytes([buffer[12], buffer[13], buffer[14], buffer[15]]),
+            free_blocks_count_lo: u32::from_le_bytes([
+                buffer[12], buffer[13], buffer[14], buffer[15],
+            ]),
             free_inodes_count: u32::from_le_bytes([buffer[16], buffer[17], buffer[18], buffer[19]]),
             first_data_block: u32::from_le_bytes([buffer[20], buffer[21], buffer[22], buffer[23]]),
             log_block_size: u32::from_le_bytes([buffer[24], buffer[25], buffer[26], buffer[27]]),
             log_cluster_size: u32::from_le_bytes([buffer[28], buffer[29], buffer[30], buffer[31]]),
             blocks_per_group: u32::from_le_bytes([buffer[32], buffer[33], buffer[34], buffer[35]]),
-            clusters_per_group: u32::from_le_bytes([buffer[36], buffer[37], buffer[38], buffer[39]]),
+            clusters_per_group: u32::from_le_bytes([
+                buffer[36], buffer[37], buffer[38], buffer[39],
+            ]),
             inodes_per_group: u32::from_le_bytes([buffer[40], buffer[41], buffer[42], buffer[43]]),
             mtime: u32::from_le_bytes([buffer[44], buffer[45], buffer[46], buffer[47]]),
             wtime: u32::from_le_bytes([buffer[48], buffer[49], buffer[50], buffer[51]]),
@@ -197,7 +201,7 @@ mod tests {
         let mut mock = [0u8; 1024];
         mock[56] = 0x53; // 0xEF53 magic
         mock[57] = 0xEF;
-        mock[0] = 0x00;  // 1024 inodes
+        mock[0] = 0x00; // 1024 inodes
         mock[1] = 0x04;
 
         let sb = Ext4Superblock::parse(&mock).unwrap();
