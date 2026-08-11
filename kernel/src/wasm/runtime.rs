@@ -3,8 +3,9 @@ extern crate alloc;
 #[cfg(not(feature = "verus"))]
 use crate::wasm::wasi::sys_intent;
 use crate::wasm::wasi::{
-    args_get, args_sizes_get, environ_get, environ_sizes_get, fd_close, fd_read, fd_write,
-    proc_exit, WasiCtx,
+    args_get, args_sizes_get, clock_time_get, environ_get, environ_sizes_get, fd_close,
+    fd_fdstat_get, fd_prestat_dir_name, fd_prestat_get, fd_read, fd_seek, fd_write, proc_exit,
+    random_get, WasiCtx,
 };
 #[cfg(not(feature = "verus"))]
 use crate::wasm::wasi_crypto::constant_time_eq_host;
@@ -91,6 +92,36 @@ impl WasmRuntime {
         )?;
         linker.define(
             "wasi_snapshot_preview1",
+            "random_get",
+            Func::wrap(&mut store, random_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "clock_time_get",
+            Func::wrap(&mut store, clock_time_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "fd_prestat_get",
+            Func::wrap(&mut store, fd_prestat_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "fd_prestat_dir_name",
+            Func::wrap(&mut store, fd_prestat_dir_name),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "fd_fdstat_get",
+            Func::wrap(&mut store, fd_fdstat_get),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "fd_seek",
+            Func::wrap(&mut store, fd_seek),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
             "proc_exit",
             Func::wrap(&mut store, proc_exit),
         )?;
@@ -147,7 +178,10 @@ impl WasmRuntime {
 
         let instance = linker.instantiate_and_start(&mut store, &module)?;
 
-        if let Some(Extern::Func(main)) = instance.get_export(&mut store, "main") {
+        if let Some(Extern::Func(start)) = instance.get_export(&mut store, "_start") {
+            let typed_start = start.typed::<(), ()>(&store)?;
+            typed_start.call(&mut store, ())?;
+        } else if let Some(Extern::Func(main)) = instance.get_export(&mut store, "main") {
             let typed_main = main.typed::<(), ()>(&store)?;
             typed_main.call(&mut store, ())?;
         }

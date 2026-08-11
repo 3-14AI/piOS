@@ -6,6 +6,8 @@ extern crate alloc;
 use alloc::vec::Vec;
 use smoltcp::iface::{Interface, SocketSet};
 use smoltcp::phy::{ChecksumCapabilities, Device, DeviceCapabilities, Medium};
+use smoltcp::socket::dhcpv4::Socket as Dhcpv4Socket;
+use smoltcp::socket::dns::Socket as DnsSocket;
 use smoltcp::socket::tcp::{
     Socket as TcpSocket, SocketBuffer as TcpSocketBuffer, State as TcpState,
 };
@@ -218,10 +220,28 @@ impl WasmNetStack {
                 .unwrap();
         });
 
+        let mut sockets = SocketSet::new(Vec::new());
+
+        // Add DHCP socket
+        let dhcp_socket = Dhcpv4Socket::new();
+        sockets.add(dhcp_socket);
+
+        // Add DNS socket
+        let dns_servers: &'static [smoltcp::wire::IpAddress] =
+            alloc::boxed::Box::leak(alloc::boxed::Box::new([smoltcp::wire::IpAddress::Ipv4(
+                smoltcp::wire::Ipv4Address::new(8, 8, 8, 8),
+            )]));
+        let mut dns_queries = alloc::vec![];
+        for _ in 0..4 {
+            dns_queries.push(None);
+        }
+        let dns_socket = DnsSocket::new(dns_servers, dns_queries);
+        sockets.add(dns_socket);
+
         Self {
             device,
             interface,
-            sockets: SocketSet::new(Vec::new()),
+            sockets,
         }
     }
 

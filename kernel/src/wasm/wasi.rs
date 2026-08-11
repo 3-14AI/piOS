@@ -253,6 +253,66 @@ pub fn proc_exit(_caller: Caller<'_, WasiCtx>, _rval: i32) {
     // Usually this would trap or terminate the instance
 }
 
+pub fn random_get(mut caller: Caller<'_, WasiCtx>, buf: i32, buf_len: i32) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+    // TODO: Replace with a real entropy source
+    let data = alloc::vec![0u8; buf_len as usize];
+    if memory.write(&mut caller, buf as usize, &data).is_err() {
+        return WASI_ERRNO_BADF;
+    }
+    WASI_ERRNO_SUCCESS
+}
+
+pub fn clock_time_get(
+    mut caller: Caller<'_, WasiCtx>,
+    _id: i32,
+    _precision: i64,
+    time: i32,
+) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+    let time_val: u64 = 0;
+    if memory
+        .write(&mut caller, time as usize, &time_val.to_le_bytes())
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+    WASI_ERRNO_SUCCESS
+}
+
+pub fn fd_prestat_get(_caller: Caller<'_, WasiCtx>, _fd: i32, _buf: i32) -> i32 {
+    WASI_ERRNO_BADF
+}
+
+pub fn fd_prestat_dir_name(
+    _caller: Caller<'_, WasiCtx>,
+    _fd: i32,
+    _path: i32,
+    _path_len: i32,
+) -> i32 {
+    WASI_ERRNO_BADF
+}
+
+pub fn fd_fdstat_get(_caller: Caller<'_, WasiCtx>, _fd: i32, _stat: i32) -> i32 {
+    WASI_ERRNO_BADF
+}
+
+pub fn fd_seek(
+    _caller: Caller<'_, WasiCtx>,
+    _fd: i32,
+    _offset: i64,
+    _whence: i32,
+    _newoffset: i32,
+) -> i32 {
+    WASI_ERRNO_BADF
+}
+
 #[cfg(not(feature = "verus"))]
 pub fn sys_intent(
     mut caller: Caller<'_, WasiCtx>,
