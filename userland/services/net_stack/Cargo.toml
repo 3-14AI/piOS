@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-smoltcp = { version = "0.11.0", default-features = false, features = ["alloc", "medium-ethernet", "proto-ipv4", "proto-ipv6", "socket-tcp", "socket-udp", "socket-icmp", "socket-dns", "proto-dns"] }
+smoltcp = { version = "0.11.0", default-features = false, features = ["alloc", "medium-ethernet", "proto-ipv4", "proto-ipv6", "socket-tcp", "socket-udp", "socket-icmp", "socket-dns", "proto-dns", "socket-dhcpv4", "proto-dhcpv4"] }
 log = "0.4.20"
 verus_builtin = { path = "../../../tools/verus/verus-x86-linux/builtin", optional = true }
 verus_builtin_macros = { path = "../../../tools/verus/verus-x86-linux/builtin_macros", optional = true }
