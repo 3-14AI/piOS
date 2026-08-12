@@ -25,6 +25,6 @@ Currently, piOS consists mostly of architectural scaffolding and mocks. To achie
 
 ## Phase 19: AI Agent Loop and Next-Gen IPC
 - [ ] **WP-124: IPC Refactoring.** Replace current rendezvous channels with a more robust message-passing interface that supports WASM components efficiently.
-- [ ] **WP-125: Dynamic Agent Spawning.** Enable the natural language shell (NL-Shell) to spawn agent WASM components on demand and manage their lifecycles.
-- [ ] **WP-126: Continuous Learning Loop.** Integrate telemetry and semantic logs deeply into the LLM context to allow agents to analyze faults and generate Rust code fixes autonomously.
-- [ ] **WP-127: System Calls for Autopoiesis.** Add `wasi_ephemeral_compiler` or similar syscalls so an agent can invoke Cranelift dynamically from userland.
+- [x] **WP-125: Dynamic Agent Spawning.** Enable the natural language shell (NL-Shell) to spawn agent WASM components on demand and manage their lifecycles.
+- [x] **WP-126: Continuous Learning Loop.** Integrate telemetry and semantic logs deeply into the LLM context to allow agents to analyze faults and generate Rust code fixes autonomously.
+- [x] **WP-127: System Calls for Autopoiesis.** Add `wasi_ephemeral_compiler` or similar syscalls so an agent can invoke Cranelift dynamically from userland.
