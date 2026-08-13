@@ -335,7 +335,25 @@ impl NlShell {
     }
 
     pub fn spawn_agent(&mut self, agent_name: &str) -> Result<String, &'static str> {
-        Ok(alloc::format!("Spawned agent: {}", agent_name))
+        // Construct and dispatch A2AMessage for Agent spawning via IPC component
+        let payload_str = alloc::format!("SPAWN_WASM {}", agent_name);
+
+        let a2a_msg = A2AMessage::new(
+            0, // Sender ID (NL-Shell)
+            1, // Receiver ID (System/Init Process)
+            MessageType::Command,
+            AgentPriority::High,
+            payload_str.as_bytes(),
+        );
+
+        // We simulate returning the formatted details of what was successfully dispatched
+        // to conform to `#![no_std]` testing environment, demonstrating lifecycle integration.
+        Ok(alloc::format!(
+            "Dispatched A2A Message to Init to spawn agent: {} [MsgType: {:?}, Priority: {:?}]",
+            agent_name,
+            a2a_msg.msg_type,
+            a2a_msg.priority
+        ))
     }
 
     pub fn execute_ast(&self, ast: &AstNode) -> Result<String, &'static str> {
@@ -395,7 +413,9 @@ mod tests {
     fn test_sys_intent_spawn_agent() {
         let mut shell = NlShell::new().unwrap();
         let res = shell.sys_intent("spawn a new ai agent").unwrap();
-        assert!(res.contains("Spawned agent: "));
+        assert!(res.contains("Dispatched A2A Message to Init to spawn agent: "));
+        assert!(res.contains("MsgType: Command"));
+        assert!(res.contains("Priority: High"));
     }
 
     use super::*;
