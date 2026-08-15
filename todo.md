@@ -16,7 +16,7 @@ Currently, piOS consists mostly of architectural scaffolding and mocks. To achie
 ## Phase 17: Userland and Connectivity
 - [x] **WP-118: Real Network Stack.** Replace the `MockDevice` in `userland/services/net_stack` with a real interface communicating with `virtio_net` or physical NICs. Get DHCP and DNS fully functional.
 - [x] **WP-119: Functional Coreutils.** Implement functional utilities (`ls`, `cat`, `mkdir`, `ps`) as WASM components.
-- [ ] **WP-120: Package Manager CLI.** Implement real downloading and installation of WASM apps from a remote repository.
+- [x] **WP-120: Package Manager CLI.** Implement real downloading and installation of WASM apps from a remote repository.
 
 ## Phase 18: Real Autopoiesis
 - [ ] **WP-121: On-Device LLM (WASI-NN).** Replace the `mock_model` in `libs/inference_runtime` with actual model loading and inference (e.g., Llama.cpp or Mistral via WASI-NN).

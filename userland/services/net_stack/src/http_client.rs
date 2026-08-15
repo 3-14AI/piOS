@@ -88,10 +88,48 @@ impl HttpClient {
         }
     }
 
+    pub fn read_raw_response(
+        &mut self,
+        stack: &mut WasmNetStack,
+    ) -> Result<alloc::vec::Vec<u8>, &'static str> {
+        let socket = stack.sockets.get_mut::<TcpSocket>(self.socket_handle);
+        if socket.can_recv() {
+            let mut buf = alloc::vec![0; 4096];
+            let len = socket
+                .recv_slice(&mut buf)
+                .map_err(|_| "Failed to receive data")?;
+            if len == 0 {
+                return Err("No data received");
+            }
+            buf.truncate(len);
+            Ok(buf)
+        } else {
+            Err("Socket cannot receive data right now")
+        }
+    }
+
     pub fn parse_response(response: &str) -> Result<String, &'static str> {
         if let Some(header_end) = response.find("\r\n\r\n") {
             let body = &response[header_end + 4..];
             Ok(body.to_string())
+        } else {
+            Err("Failed to parse HTTP response headers")
+        }
+    }
+
+    pub fn parse_raw_response(response: &[u8]) -> Result<alloc::vec::Vec<u8>, &'static str> {
+        // Find "\r\n\r\n"
+        let window_size = 4;
+        let mut header_end = None;
+        for i in 0..=response.len().saturating_sub(window_size) {
+            if &response[i..i + window_size] == b"\r\n\r\n" {
+                header_end = Some(i);
+                break;
+            }
+        }
+
+        if let Some(end) = header_end {
+            Ok(response[end + window_size..].to_vec())
         } else {
             Err("Failed to parse HTTP response headers")
         }
@@ -113,6 +151,20 @@ mod tests {
     fn test_parse_response_error() {
         let response = "HTTP/1.1 200 OK\r\nContent-Length: 13";
         let body = HttpClient::parse_response(response);
+        assert!(body.is_err());
+    }
+
+    #[test]
+    fn test_parse_raw_response() {
+        let response = b"HTTP/1.1 200 OK\r\nContent-Length: 4\r\n\r\n\x01\x02\x03\x04";
+        let body = HttpClient::parse_raw_response(response).unwrap();
+        assert_eq!(body, alloc::vec![1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn test_parse_raw_response_error() {
+        let response = b"HTTP/1.1 200 OK\r\nContent-Length: 4";
+        let body = HttpClient::parse_raw_response(response);
         assert!(body.is_err());
     }
 
