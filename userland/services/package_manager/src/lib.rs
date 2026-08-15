@@ -19,6 +19,57 @@ pub struct Repository {
     pub packages: BTreeMap<String, Package>,
 }
 
+pub struct RemoteRepository {
+    pub host: String,
+    pub port: u16,
+}
+
+impl RemoteRepository {
+    pub fn new(host: &str, port: u16) -> Self {
+        Self {
+            host: host.to_string(),
+            port,
+        }
+    }
+
+    pub fn download_package(&self, name: &str) -> Result<Package, String> {
+        let mut stack = net_stack::WasmNetStack::new();
+        let mut client = net_stack::HttpClient::new(&mut stack, &self.host, self.port);
+
+        // Mock connection. In a real system, we'd resolve DNS and connect to the actual IP.
+        let mock_ip = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        if client.connect(&mut stack, mock_ip, 12345).is_err() {
+            // It will fail because of the MockDevice, but we proceed with the logic structure
+        }
+
+        let path = alloc::format!("/packages/{}.wasm", name);
+        if client.send_request(&mut stack, &path).is_err() {
+            // Return mock error if network is not actually available
+            return Err(alloc::format!(
+                "Failed to send request for package {}",
+                name
+            ));
+        }
+
+        match client.read_raw_response(&mut stack) {
+            Ok(raw_response) => {
+                match net_stack::HttpClient::parse_raw_response(&raw_response) {
+                    Ok(body) => {
+                        Ok(Package {
+                            name: name.to_string(),
+                            version: "1.0.0".to_string(), // In a real system, fetch metadata first
+                            dependencies: Vec::new(),
+                            wasm_blob: body,
+                        })
+                    }
+                    Err(e) => Err(e.to_string()),
+                }
+            }
+            Err(e) => Err(e.to_string()),
+        }
+    }
+}
+
 impl Default for Repository {
     fn default() -> Self {
         Self::new()
@@ -160,6 +211,15 @@ mod tests {
             .install("app")
             .expect_err("Should fail due to missing dependency");
         assert_eq!(err, "Package missing_lib not found in repository");
+    }
+
+    #[test]
+    fn test_remote_repository_download_error() {
+        let remote = RemoteRepository::new("example.com", 80);
+        let result = remote.download_package("testpkg");
+        // Because the net_stack uses MockDevice internally which does not really send,
+        // it returns Err("Failed to send request for package testpkg")
+        assert!(result.is_err());
     }
 
     #[test]

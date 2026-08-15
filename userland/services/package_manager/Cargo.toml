@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 pios-api = { path = "../../../libs/pios-api" }
+net_stack = { path = "../net_stack" }
+smoltcp = { version = "0.11.0", default-features = false }

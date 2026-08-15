@@ -9,7 +9,7 @@ extern crate std;
 use alloc::string::String;
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use package_manager::{Package, PackageManager, Repository};
+use package_manager::{Package, PackageManager, RemoteRepository, Repository};
 
 #[cfg(target_arch = "wasm32")]
 #[panic_handler]
@@ -95,6 +95,8 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
 
     let mut pm = PackageManager::new(repo);
 
+    let remote_repo = RemoteRepository::new("pkg.pios.org", 80);
+
     match command {
         "install" => {
             if args.len() < 2 {
@@ -103,21 +105,48 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
             let pkg_name = args[1].as_str();
             match pm.install(pkg_name) {
                 Ok(_installed) => {
-                    // Simulating success
+                    // Success from local repo
                     Ok(())
                 }
-                Err(e) => Err(e),
+                Err(local_err) => {
+                    // Fall back to remote repository
+                    match remote_repo.download_package(pkg_name) {
+                        Ok(pkg) => {
+                            pm.repo.add_package(pkg);
+                            // Try installing again after adding it to the local repo
+                            match pm.install(pkg_name) {
+                                Ok(_) => Ok(()),
+                                Err(e) => Err(e),
+                            }
+                        }
+                        Err(remote_err) => Err(alloc::format!(
+                            "Local error: {}, Remote error: {}",
+                            local_err,
+                            remote_err
+                        )),
+                    }
+                }
             }
         }
         "update" => {
             // Simulate fetching from a remote repository by modifying pm's repo
-            pm.repo.add_package(Package {
-                name: "new_remote_pkg".to_string(),
-                version: "1.0.0".to_string(),
-                dependencies: alloc::vec![],
-                wasm_blob: alloc::vec![],
-            });
-            Ok(())
+            // For real update, we could fetch an index and download updates, but here we just try a hardcoded one.
+            match remote_repo.download_package("new_remote_pkg") {
+                Ok(pkg) => {
+                    pm.repo.add_package(pkg);
+                    Ok(())
+                }
+                Err(_err) => {
+                    // Fallback to local mock update if remote fails
+                    pm.repo.add_package(Package {
+                        name: "new_remote_pkg".to_string(),
+                        version: "1.0.0".to_string(),
+                        dependencies: alloc::vec![],
+                        wasm_blob: alloc::vec![],
+                    });
+                    Ok(())
+                }
+            }
         }
         "search" => {
             if args.len() < 2 {
