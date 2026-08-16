@@ -20,7 +20,7 @@ Currently, piOS consists mostly of architectural scaffolding and mocks. To achie
 
 ## Phase 18: Real Autopoiesis
 - [ ] **WP-121: On-Device LLM (WASI-NN).** Replace the `mock_model` in `libs/inference_runtime` with actual model loading and inference (e.g., Llama.cpp or Mistral via WASI-NN).
-- [ ] **WP-122: Semantic System Logs.** Implement real vector database functionality to convert system logs into embeddings.
+- [x] **WP-122: Semantic System Logs.** Implement real vector database functionality to convert system logs into embeddings.
 - [ ] **WP-123: Closed-Loop Driver Synthesis.** Demonstrate the actual end-to-end loop: LLM writes Rust code -> Verus proves it -> Cranelift compiles it to WASM -> Kernel hot-swaps it.
 
 ## Phase 19: AI Agent Loop and Next-Gen IPC
@@ -28,3 +28,9 @@ Currently, piOS consists mostly of architectural scaffolding and mocks. To achie
 - [x] **WP-125: Dynamic Agent Spawning.** Enable the natural language shell (NL-Shell) to spawn agent WASM components on demand and manage their lifecycles.
 - [x] **WP-126: Continuous Learning Loop.** Integrate telemetry and semantic logs deeply into the LLM context to allow agents to analyze faults and generate Rust code fixes autonomously.
 - [x] **WP-127: System Calls for Autopoiesis.** Add `wasi_ephemeral_compiler` or similar syscalls so an agent can invoke Cranelift dynamically from userland.
+
+## Phase 20: Next Generation AI OS Features
+- [ ] **WP-128: Autonomous System Optimization.** Implement a daemon that continuously monitors system performance and dynamically adjusts scheduling, memory allocation, and power management using AI.
+- [ ] **WP-129: Zero-Trust Security with AI.** Develop an AI-driven intrusion detection and prevention system (IDS/IPS) that learns normal system behavior and blocks anomalous activities in real-time.
+- [ ] **WP-130: Natural Language Desktop Environment.** Build a GUI desktop environment where all interactions (window management, file operations, settings) can be controlled entirely through natural language commands and multimodal inputs.
+- [ ] **WP-131: Predictive Application Preloading.** Implement a system that predicts which applications the user is likely to launch next based on historical usage patterns and preloads them into memory for instant startup.
