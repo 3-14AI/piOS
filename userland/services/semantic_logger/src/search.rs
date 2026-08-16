@@ -2,9 +2,9 @@
 #![allow(unused)]
 
 extern crate alloc;
+use crate::SemanticLogger;
 use alloc::string::String;
 use alloc::vec::Vec;
-use crate::SemanticLogger;
 
 pub struct SearchResult {
     pub content: String,
