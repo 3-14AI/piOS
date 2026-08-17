@@ -1,6 +1,7 @@
-#![no_std]
-#![no_main]
+#![cfg_attr(target_arch = "wasm32", no_std)]
+#![cfg_attr(target_arch = "wasm32", no_main)]
 
+#[cfg(target_arch = "wasm32")]
 extern crate alloc;
 
 use sys_optimizer::SysOptimizer;
@@ -50,8 +51,7 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-#[no_mangle]
-pub extern "C" fn main() -> ! {
+pub fn main() {
     let mut optimizer = SysOptimizer::new();
 
     // In a real WASM environment, initialization might be provided.
@@ -79,6 +79,7 @@ pub extern "C" fn main() -> ! {
     loop {}
 }
 
+#[cfg(target_arch = "wasm32")]
 #[cfg(not(test))]
 #[panic_handler]
 #[allow(clippy::empty_loop)]
