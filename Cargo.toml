@@ -22,7 +22,8 @@ members = [
     "userland/services/installer",
     "userland/applications/coreutils",
     "userland/applications/llm_runner",
-    "userland/services/semantic_logger"
+    "userland/services/semantic_logger",
+    "userland/services/sys_optimizer"
 ]
 exclude = [
     "tools/verus"

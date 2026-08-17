@@ -30,7 +30,7 @@ Currently, piOS consists mostly of architectural scaffolding and mocks. To achie
 - [x] **WP-127: System Calls for Autopoiesis.** Add `wasi_ephemeral_compiler` or similar syscalls so an agent can invoke Cranelift dynamically from userland.
 
 ## Phase 20: Next Generation AI OS Features
-- [ ] **WP-128: Autonomous System Optimization.** Implement a daemon that continuously monitors system performance and dynamically adjusts scheduling, memory allocation, and power management using AI.
+- [x] **WP-128: Autonomous System Optimization.** Implement a daemon that continuously monitors system performance and dynamically adjusts scheduling, memory allocation, and power management using AI.
 - [ ] **WP-129: Zero-Trust Security with AI.** Develop an AI-driven intrusion detection and prevention system (IDS/IPS) that learns normal system behavior and blocks anomalous activities in real-time.
 - [ ] **WP-130: Natural Language Desktop Environment.** Build a GUI desktop environment where all interactions (window management, file operations, settings) can be controlled entirely through natural language commands and multimodal inputs.
 - [ ] **WP-131: Predictive Application Preloading.** Implement a system that predicts which applications the user is likely to launch next based on historical usage patterns and preloads them into memory for instant startup.
