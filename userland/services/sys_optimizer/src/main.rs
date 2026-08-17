@@ -27,6 +27,7 @@ pub extern "C" fn _start() -> ! {
     // For now, we attempt to initialize it.
     let _ = optimizer.init();
 
+    #[allow(clippy::never_loop)]
     loop {
         // Mock system metric scraping. In reality this would call out to host functions
         // provided by the kernel (e.g. via WASI) to get real cpu_usage and mem_usage.
@@ -43,11 +44,13 @@ pub extern "C" fn _start() -> ! {
     }
 
     // Exit sequence
+    #[allow(clippy::empty_loop)]
     loop {}
 }
 
 #[cfg(not(test))]
 #[panic_handler]
+#[allow(clippy::empty_loop)]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
