@@ -1,0 +1,19 @@
+[package]
+name = "sys_optimizer"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "sys_optimizer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "sys_optimizer"
+path = "src/main.rs"
+test = false
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+
+[lints]
+workspace = true
