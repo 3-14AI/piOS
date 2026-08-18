@@ -176,13 +176,7 @@ impl InferenceEngine {
 
     pub fn load_model_by_name(&mut self, name: &str) -> Result<Model, Error> {
         let mut graph: u32 = 0;
-        let res = unsafe {
-            load_by_name(
-                name.as_ptr(),
-                name.len() as i32,
-                &mut graph as *mut u32,
-            )
-        };
+        let res = unsafe { load_by_name(name.as_ptr(), name.len() as i32, &mut graph as *mut u32) };
         if res != 0 {
             return Err(Error::InvalidModel);
         }
@@ -194,26 +188,17 @@ impl InferenceEngine {
 
     pub fn init_execution_context(&mut self, model: &Model) -> Result<usize, Error> {
         let mut context: u32 = 0;
-        let res = unsafe {
-            init_execution_context(model.id as u32, &mut context as *mut u32)
-        };
+        let res = unsafe { init_execution_context(model.id as u32, &mut context as *mut u32) };
         if res != 0 {
             return Err(Error::InvalidModel);
         }
         Ok(context as usize)
     }
 
-    pub fn set_input(
-        &mut self,
-        context: usize,
-        index: u32,
-        tensor: &Tensor,
-    ) -> Result<(), Error> {
+    pub fn set_input(&mut self, context: usize, index: u32, tensor: &Tensor) -> Result<(), Error> {
         // Normally we might have to pass an actual WASI-NN Tensor structure pointer,
         // but for compatibility with the kernel mock we pass just the data pointer.
-        let res = unsafe {
-            set_input(context as u32, index as i32, tensor.data.as_ptr())
-        };
+        let res = unsafe { set_input(context as u32, index as i32, tensor.data.as_ptr()) };
         if res != 0 {
             return Err(Error::InvalidInput);
         }
