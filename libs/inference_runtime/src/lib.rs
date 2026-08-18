@@ -29,6 +29,30 @@ pub struct Model {
     pub name: &'static str,
 }
 
+#[cfg(target_arch = "wasm32")]
+#[link(wasm_import_module = "wasi_ephemeral_nn")]
+extern "C" {
+    pub fn load(
+        builder_ptr: *const u8,
+        builder_len: i32,
+        encoding: i32,
+        target: i32,
+        graph_ptr: *mut u32,
+    ) -> i32;
+    pub fn load_by_name(name_ptr: *const u8, name_len: i32, graph_ptr: *mut u32) -> i32;
+    pub fn init_execution_context(graph: u32, context_ptr: *mut u32) -> i32;
+    pub fn set_input(context: u32, index: i32, tensor_ptr: *const u8) -> i32;
+    pub fn compute(context: u32) -> i32;
+    pub fn get_output(
+        context: u32,
+        index: i32,
+        out_buffer_ptr: *mut u8,
+        out_buffer_max_size: i32,
+        bytes_written_ptr: *mut u32,
+    ) -> i32;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub struct InferenceEngine {
     loaded_models: usize,
     execution_contexts: usize,
@@ -36,12 +60,14 @@ pub struct InferenceEngine {
     has_input: bool,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl Default for InferenceEngine {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl InferenceEngine {
     pub fn new() -> Self {
         Self {
@@ -108,7 +134,125 @@ impl InferenceEngine {
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+pub struct InferenceEngine {
+    _private: (),
+}
+
+#[cfg(target_arch = "wasm32")]
+impl Default for InferenceEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl InferenceEngine {
+    pub fn new() -> Self {
+        Self { _private: () }
+    }
+
+    pub fn load_model(&mut self, model_data: &[u8]) -> Result<Model, Error> {
+        let mut graph: u32 = 0;
+        // Wasi-NN args (simplified): builder, builder_len, encoding, target, graph_ptr
+        // For a true implementation, we'd need to properly format builder payload
+        let res = unsafe {
+            load(
+                model_data.as_ptr(),
+                model_data.len() as i32,
+                0, // encoding OPENVINO=0 (mock)
+                0, // target CPU=0
+                &mut graph as *mut u32,
+            )
+        };
+        if res != 0 {
+            return Err(Error::InvalidModel);
+        }
+        Ok(Model {
+            id: graph as usize,
+            name: "wasi_nn_model",
+        })
+    }
+
+    pub fn load_model_by_name(&mut self, name: &str) -> Result<Model, Error> {
+        let mut graph: u32 = 0;
+        let res = unsafe {
+            load_by_name(
+                name.as_ptr(),
+                name.len() as i32,
+                &mut graph as *mut u32,
+            )
+        };
+        if res != 0 {
+            return Err(Error::InvalidModel);
+        }
+        Ok(Model {
+            id: graph as usize,
+            name: "wasi_nn_model_named",
+        })
+    }
+
+    pub fn init_execution_context(&mut self, model: &Model) -> Result<usize, Error> {
+        let mut context: u32 = 0;
+        let res = unsafe {
+            init_execution_context(model.id as u32, &mut context as *mut u32)
+        };
+        if res != 0 {
+            return Err(Error::InvalidModel);
+        }
+        Ok(context as usize)
+    }
+
+    pub fn set_input(
+        &mut self,
+        context: usize,
+        index: u32,
+        tensor: &Tensor,
+    ) -> Result<(), Error> {
+        // Normally we might have to pass an actual WASI-NN Tensor structure pointer,
+        // but for compatibility with the kernel mock we pass just the data pointer.
+        let res = unsafe {
+            set_input(context as u32, index as i32, tensor.data.as_ptr())
+        };
+        if res != 0 {
+            return Err(Error::InvalidInput);
+        }
+        Ok(())
+    }
+
+    pub fn compute(&mut self, context: usize) -> Result<(), Error> {
+        let res = unsafe { compute(context as u32) };
+        if res != 0 {
+            return Err(Error::ComputeFailed);
+        }
+        Ok(())
+    }
+
+    pub fn get_output(
+        &self,
+        context: usize,
+        index: u32,
+        out_buffer: &mut [u8],
+    ) -> Result<usize, Error> {
+        let mut bytes_written: u32 = 0;
+        let res = unsafe {
+            get_output(
+                context as u32,
+                index as i32,
+                out_buffer.as_mut_ptr(),
+                out_buffer.len() as i32,
+                &mut bytes_written as *mut u32,
+            )
+        };
+        if res != 0 {
+            return Err(Error::ComputeFailed);
+        }
+        Ok(bytes_written as usize)
+    }
+}
+
 #[cfg(test)]
+#[cfg(not(target_arch = "wasm32"))]
 mod tests {
     use super::*;
     use alloc::vec;
