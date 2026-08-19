@@ -1,0 +1,10 @@
+[package]
+name = "llm_inference"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+inference_runtime = { path = "../inference_runtime" }
+
+[lints]
+workspace = true

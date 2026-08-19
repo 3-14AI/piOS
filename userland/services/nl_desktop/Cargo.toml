@@ -1,0 +1,19 @@
+[package]
+name = "nl_desktop"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "nl_desktop"
+path = "src/lib.rs"
+
+[[bin]]
+name = "nl_desktop"
+path = "src/main.rs"
+test = false
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+
+[lints]
+workspace = true

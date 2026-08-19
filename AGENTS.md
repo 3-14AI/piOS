@@ -28,3 +28,5 @@
 ## Работа с внешними модулями (Third-Party)
 1. **Verus**: When compiling kernel with `verus_builtin`, ensure the `/tools/verus` folder exists and contains compiled files, or run `./tools/install_verus.sh`.
 2. **Candle**: When testing features using `candle-core` in inference_runtime, remember to enable the feature during cargo test `cargo test --features candle-core`.
+# Updated AI/OS Goals
+We have now implemented all current features and reached the state of a fully functional OS with natively integrated AI. We should proceed to the next stage.
