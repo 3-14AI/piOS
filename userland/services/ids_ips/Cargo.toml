@@ -1,0 +1,19 @@
+[package]
+name = "ids_ips"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "ids_ips"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ids_ips"
+path = "src/main.rs"
+test = false
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+
+[lints]
+workspace = true

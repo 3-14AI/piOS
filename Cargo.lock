@@ -162,6 +162,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
+name = "app_preloader"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+]
+
+[[package]]
 name = "arbitrary"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1416,6 +1423,14 @@ name = "dpi"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
+
+[[package]]
+name = "driver_synthesizer"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+ "llm_inference",
+]
 
 [[package]]
 name = "drm"
@@ -3000,6 +3015,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ids_ips"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+]
+
+[[package]]
 name = "image"
 version = "0.25.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3550,6 +3572,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "llm_inference"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+]
+
+[[package]]
 name = "llm_runner"
 version = "0.1.0"
 dependencies = [
@@ -3873,6 +3902,13 @@ dependencies = [
  "cfg-if",
  "cfg_aliases 0.2.1",
  "libc",
+]
+
+[[package]]
+name = "nl_desktop"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
 ]
 
 [[package]]

@@ -1,0 +1,20 @@
+[package]
+name = "driver_synthesizer"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "driver_synthesizer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "driver_synthesizer"
+path = "src/main.rs"
+test = false
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+llm_inference = { path = "../../../libs/llm_inference" }
+
+[lints]
+workspace = true
