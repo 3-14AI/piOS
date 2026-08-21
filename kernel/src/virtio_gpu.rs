@@ -272,7 +272,6 @@ verus! {
 #[cfg(not(feature = "verus"))]
 use crate::virtio_blk::{UsedElem, Virtqueue};
 
-
 #[cfg(not(feature = "verus"))]
 #[derive(Debug, PartialEq)]
 pub enum HardwareBackend {
@@ -296,7 +295,6 @@ pub struct VirtioGpuDriver {
 
 #[cfg(not(feature = "verus"))]
 impl VirtioGpuDriver {
-
     pub fn set_backend(&mut self, backend: HardwareBackend) {
         self.backend = backend;
     }
@@ -438,7 +436,6 @@ mod tests {
         assert_eq!(drv.control_queue.avail.idx, 1);
         assert_eq!(drv.control_queue.avail.ring[0], 3);
     }
-
 
     #[test]
     fn test_native_hardware_acceleration_backend() {

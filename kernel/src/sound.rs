@@ -166,8 +166,6 @@ pub struct HdaSoundDriver {
     pub initialized: bool,
 }
 
-
-
 #[cfg(not(feature = "verus"))]
 impl HdaSoundDriver {
     pub fn new() -> Self {
@@ -181,8 +179,6 @@ impl HdaSoundDriver {
     }
 }
 
-
-
 #[cfg(not(feature = "verus"))]
 impl Default for HdaSoundDriver {
     fn default() -> Self {
@@ -195,8 +191,6 @@ impl Default for HdaSoundDriver {
 mod tests {
     use super::*;
 
-
-
     #[test]
     fn test_continuous_voice_loop() {
         let drv = HdaSoundDriver::new();
@@ -204,7 +198,6 @@ mod tests {
         drv.continuous_voice_loop(&mut buf);
         assert_eq!(buf.head, 1);
     }
-
 
     #[test]
     fn test_sound_driver() {

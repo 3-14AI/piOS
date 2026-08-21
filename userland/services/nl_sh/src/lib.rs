@@ -356,7 +356,6 @@ impl NlShell {
         ))
     }
 
-
     pub fn broadcast_message(&mut self, payload: &str) -> Result<String, &'static str> {
         // Broadcasts an A2AMessage to all other agents (Receiver ID 255 represents broadcast)
         let a2a_msg = A2AMessage::new(
@@ -512,7 +511,6 @@ mod tests {
             _ => panic!("Expected Or node"),
         }
     }
-
 
     #[test]
     fn test_broadcast_message() {

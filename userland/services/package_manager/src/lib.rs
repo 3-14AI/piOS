@@ -32,7 +32,6 @@ impl RemoteRepository {
         }
     }
 
-
     pub fn connect_online_repo(&mut self) -> Result<(), String> {
         // Mock connecting to an online repository
         // In a real system, this would attempt a handshake or fetch an index file.
@@ -224,7 +223,6 @@ mod tests {
             .expect_err("Should fail due to missing dependency");
         assert_eq!(err, "Package missing_lib not found in repository");
     }
-
 
     #[test]
     fn test_connect_online_repo() {

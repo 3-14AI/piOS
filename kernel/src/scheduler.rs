@@ -438,7 +438,6 @@ impl Scheduler {
         }
     }
 
-
     pub fn suspend_thread(&mut self, tid: usize) -> Result<(), ()> {
         if tid < 4 && tid != self.current_tid {
             if matches!(self.tcbs[tid as int].state, ThreadState::Ready) {
@@ -455,7 +454,6 @@ impl Scheduler {
         }
     }
 
-
     pub fn resume_thread(&mut self, tid: usize) -> Result<(), ()> {
         if tid < 4 && tid != self.current_tid {
             if matches!(self.tcbs[tid as int].state, ThreadState::Suspended) {
@@ -465,8 +463,6 @@ impl Scheduler {
         }
         Err(())
     }
-
-
 
     pub fn predict_next_thread(&self) -> Option<usize> {
         for i in 0..4 {
@@ -478,8 +474,6 @@ impl Scheduler {
     }
 
     pub fn schedule(&mut self) {
-
-
         let mut next_tid = (self.current_tid + 1) % 4;
         let mut found = false;
 
@@ -513,7 +507,6 @@ impl Scheduler {
 mod tests {
     use super::*;
     use crate::thread::{ThreadState, TCB};
-
 
     #[test]
     fn test_predictive_scheduling() {

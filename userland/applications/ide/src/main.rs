@@ -24,10 +24,10 @@ static ALLOCATOR: DummyAllocator = DummyAllocator;
 #[cfg(target_arch = "wasm32")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-
-
     // In-OS IDE compiles code
-    let module = compiler_frontend::ast::Module { functions: alloc::vec![] };
+    let module = compiler_frontend::ast::Module {
+        functions: alloc::vec![],
+    };
     let _ = compiler_frontend::compile_to_mir(&module);
 
     #[allow(clippy::empty_loop)]
@@ -36,10 +36,10 @@ pub extern "C" fn _start() -> ! {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn main() {
-
-
     // In-OS IDE compiles code
-    let module = compiler_frontend::ast::Module { functions: alloc::vec![] };
+    let module = compiler_frontend::ast::Module {
+        functions: alloc::vec![],
+    };
     let _ = compiler_frontend::compile_to_mir(&module);
 }
 
