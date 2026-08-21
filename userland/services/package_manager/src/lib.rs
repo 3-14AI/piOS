@@ -32,6 +32,17 @@ impl RemoteRepository {
         }
     }
 
+    pub fn connect_online_repo(&mut self) -> Result<(), String> {
+        // Mock connecting to an online repository
+        // In a real system, this would attempt a handshake or fetch an index file.
+        let mut stack = net_stack::WasmNetStack::new();
+        let mut client = net_stack::HttpClient::new(&mut stack, &self.host, self.port);
+        let mock_ip = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+
+        let _ = client.connect(&mut stack, mock_ip, 12345);
+        Ok(())
+    }
+
     pub fn download_package(&self, name: &str) -> Result<Package, String> {
         let mut stack = net_stack::WasmNetStack::new();
         let mut client = net_stack::HttpClient::new(&mut stack, &self.host, self.port);
@@ -211,6 +222,12 @@ mod tests {
             .install("app")
             .expect_err("Should fail due to missing dependency");
         assert_eq!(err, "Package missing_lib not found in repository");
+    }
+
+    #[test]
+    fn test_connect_online_repo() {
+        let mut remote = RemoteRepository::new("repo.pios.org", 443);
+        assert!(remote.connect_online_repo().is_ok());
     }
 
     #[test]

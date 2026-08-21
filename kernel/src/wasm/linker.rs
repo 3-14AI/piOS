@@ -79,6 +79,16 @@ impl WasmComponentLinker {
             "proc_exit",
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::proc_exit),
         )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "sys_tune_kernel",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::sys_tune_kernel),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "sys_compact_memory",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::sys_compact_memory),
+        )?;
 
         #[cfg(not(feature = "verus"))]
         {

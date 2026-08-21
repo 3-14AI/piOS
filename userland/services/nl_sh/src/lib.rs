@@ -356,6 +356,23 @@ impl NlShell {
         ))
     }
 
+    pub fn broadcast_message(&mut self, payload: &str) -> Result<String, &'static str> {
+        // Broadcasts an A2AMessage to all other agents (Receiver ID 255 represents broadcast)
+        let a2a_msg = A2AMessage::new(
+            0,   // Sender ID (NL-Shell)
+            255, // Receiver ID (Broadcast)
+            MessageType::Announcement,
+            AgentPriority::Normal,
+            payload.as_bytes(),
+        );
+
+        Ok(alloc::format!(
+            "Broadcasted A2A Message: {:?} (Payload string: {})",
+            a2a_msg,
+            payload
+        ))
+    }
+
     pub fn execute_ast(&self, ast: &AstNode) -> Result<String, &'static str> {
         match ast {
             AstNode::Simple(pipe_chain) => {
@@ -493,6 +510,14 @@ mod tests {
             AstNode::Or(_, _) => (),
             _ => panic!("Expected Or node"),
         }
+    }
+
+    #[test]
+    fn test_broadcast_message() {
+        let mut shell = NlShell::new().unwrap();
+        let res = shell.broadcast_message("Hello all agents!").unwrap();
+        assert!(res.contains("Broadcasted A2A Message"));
+        assert!(res.contains("Hello all agents!"));
     }
 
     #[test]

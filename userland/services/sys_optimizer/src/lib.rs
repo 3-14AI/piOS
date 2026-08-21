@@ -10,6 +10,7 @@ pub struct SysOptimizer {
     pub context: Option<usize>,
     pub memory_limit: usize,
     pub scheduler_quantum: usize,
+    pub oom_prediction_threshold: u8,
 }
 
 impl Default for SysOptimizer {
@@ -26,6 +27,7 @@ impl SysOptimizer {
             context: None,
             memory_limit: 1024 * 1024 * 1024, // 1GB
             scheduler_quantum: 10,            // 10ms
+            oom_prediction_threshold: 85,
         }
     }
 
@@ -45,6 +47,13 @@ impl SysOptimizer {
 
     pub fn analyze_and_adjust(&mut self, cpu_usage: u8, mem_usage: u8) -> Result<(), &'static str> {
         let ctx = self.context.ok_or("Optimizer not initialized")?;
+
+        // Predict OOM and compact memory proactively
+        if mem_usage > self.oom_prediction_threshold {
+            unsafe {
+                sys_compact_memory();
+            }
+        }
 
         let input_data = alloc::vec![cpu_usage, mem_usage];
         let tensor = Tensor::new(input_data, alloc::vec![2]);
@@ -78,10 +87,35 @@ impl SysOptimizer {
             } else {
                 self.memory_limit = 1024 * 1024 * 1024; // default fallback
             }
+
+            unsafe {
+                // Call WASI API to tune kernel parameter
+                tune_kernel_parameters(self.scheduler_quantum as i32, self.memory_limit as i32);
+            }
         }
 
         Ok(())
     }
+}
+
+#[cfg(target_arch = "wasm32")]
+extern "C" {
+    fn sys_tune_kernel(quantum: i32, memory_limit: i32) -> i32;
+    fn sys_compact_memory() -> i32;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn sys_tune_kernel(_quantum: i32, _memory_limit: i32) -> i32 {
+    0
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn sys_compact_memory() -> i32 {
+    0
+}
+
+unsafe fn tune_kernel_parameters(quantum: i32, memory_limit: i32) -> i32 {
+    sys_tune_kernel(quantum, memory_limit)
 }
 
 #[cfg(test)]

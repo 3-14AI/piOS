@@ -30,3 +30,7 @@
 2. **Candle**: When testing features using `candle-core` in inference_runtime, remember to enable the feature during cargo test `cargo test --features candle-core`.
 # Updated AI/OS Goals
 We have now implemented all current features and reached the state of a fully functional OS with natively integrated AI. We should proceed to the next stage.
+
+## Phase 24 and 25 Focus: Swarm and Real Hardware
+1. **Physical Adoption**: Now that mocks are fully wired, agents must focus on real MMIO mapping, actual PCI/PCIe configuration space manipulation, and concrete hardware structs. Stop implementing logic inside `#[cfg(not(feature = "verus"))]` whenever possible, unless it explicitly interfaces with untrusted host hardware bindings.
+2. **Distributed Architecture**: When building network features (like `WP-144`), assume a multi-node environment. Tests should simulate two or more OS instances passing TCP/UDP packets.
