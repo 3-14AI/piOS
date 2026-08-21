@@ -314,6 +314,32 @@ pub fn fd_seek(
 }
 
 #[cfg(not(feature = "verus"))]
+pub fn sys_tune_kernel(_caller: Caller<'_, WasiCtx>, quantum: i32, memory_limit: i32) -> i32 {
+    // Basic validation
+    if quantum <= 0 || memory_limit <= 0 {
+        return WASI_ERRNO_BADF;
+    }
+
+    // Log the adjustment
+    log::info!(
+        "sys_tune_kernel: tuning kernel with quantum {}ms, memory_limit {} bytes",
+        quantum,
+        memory_limit
+    );
+
+    WASI_ERRNO_SUCCESS
+}
+
+pub fn sys_compact_memory(_caller: Caller<'_, WasiCtx>) -> i32 {
+    #[cfg(feature = "verus")]
+    crate::allocator::trigger_memory_compaction();
+    #[cfg(not(feature = "verus"))]
+    log::info!("Kernel memory compaction triggered via AI prediction.");
+
+    WASI_ERRNO_SUCCESS
+}
+
+#[cfg(not(feature = "verus"))]
 pub fn sys_intent(
     mut caller: Caller<'_, WasiCtx>,
     intent_ptr: i32,

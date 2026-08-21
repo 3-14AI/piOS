@@ -21,6 +21,7 @@ members = [
     "userland/applications/pkg_cli",
     "userland/services/installer",
     "userland/applications/coreutils",
+    "userland/applications/ide",
     "userland/applications/llm_runner",
     "userland/services/semantic_logger",
     "userland/services/sys_optimizer"

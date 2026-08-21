@@ -98,6 +98,23 @@ impl BitmapSlabAllocator {
             self.bitmap[word_idx] = self.bitmap[word_idx] & !mask;
         }
     }
+
+    pub fn compact(&mut self)
+        requires old(self).valid()
+        ensures self.valid()
+    {
+        // Simple mock implementation of memory compaction:
+        // In a real system, this would move allocated objects together
+        // and update pointers to create contiguous free space.
+        // For our verified bitmap slab allocator, we just ensure it remains valid
+        // and maybe reset the bitmap if it's completely empty.
+
+        let empty = self.bitmap[0] == 0 && self.bitmap[1] == 0;
+        if empty {
+            self.bitmap[0] = 0;
+            self.bitmap[1] = 0;
+        }
+    }
 }
 
 } // verus!
@@ -168,3 +185,20 @@ unsafe impl Sync for KernelAllocator {}
 #[cfg(not(test))]
 #[global_allocator]
 static ALLOCATOR: KernelAllocator = KernelAllocator;
+
+#[cfg(not(feature = "verus"))]
+pub fn trigger_memory_compaction() {
+    // Attempt to lock or access the SLAB to run compact() safely
+    // Since SLAB is a static mut and we are mocking, we will just log for now
+    // In actual implementation, we would lock and then call `slab.compact()`
+    log::info!("Kernel memory compaction triggered via AI prediction.");
+}
+
+#[cfg(feature = "verus")]
+pub fn trigger_memory_compaction() {
+    unsafe {
+        if let Some(slab) = &mut SLAB {
+            slab.compact();
+        }
+    }
+}

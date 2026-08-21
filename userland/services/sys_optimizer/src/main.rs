@@ -6,10 +6,13 @@ extern crate alloc;
 
 use sys_optimizer::SysOptimizer;
 
+#[cfg(target_arch = "wasm32")]
 use core::alloc::{GlobalAlloc, Layout};
 
+#[cfg(target_arch = "wasm32")]
 struct DummyAllocator;
 
+#[cfg(target_arch = "wasm32")]
 unsafe impl GlobalAlloc for DummyAllocator {
     unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
         core::ptr::null_mut()
@@ -17,6 +20,7 @@ unsafe impl GlobalAlloc for DummyAllocator {
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {}
 }
 
+#[cfg(target_arch = "wasm32")]
 #[global_allocator]
 static ALLOCATOR: DummyAllocator = DummyAllocator;
 
@@ -75,8 +79,6 @@ pub fn main() {
     }
 
     // Exit sequence
-    #[allow(clippy::empty_loop)]
-    loop {}
 }
 
 #[cfg(target_arch = "wasm32")]

@@ -68,13 +68,32 @@ verus! {
         pub initialized: bool,
     }
 
+
     impl HdaSoundDriver {
         pub fn new() -> (d: Self)
             ensures d.initialized == true
         {
             HdaSoundDriver { initialized: true }
         }
+
+
+        pub fn continuous_voice_loop(&self, buffer: &mut AudioBuffer)
+            requires
+                old(buffer).capacity > 0,
+                old(buffer).head < old(buffer).capacity
+            ensures
+                buffer.capacity == old(buffer).capacity,
+                buffer.tail == old(buffer).tail,
+                buffer.head == (old(buffer).head + 1) || buffer.head == old(buffer).head
+        {
+            // Simulate reading an audio frame
+            if buffer.head + 1 < buffer.capacity {
+                buffer.head = buffer.head + 1;
+            }
+        }
+
     }
+
 }
 
 #[cfg(not(feature = "verus"))]
@@ -147,12 +166,22 @@ pub struct HdaSoundDriver {
     pub initialized: bool,
 }
 
+
+
 #[cfg(not(feature = "verus"))]
 impl HdaSoundDriver {
     pub fn new() -> Self {
         HdaSoundDriver { initialized: true }
     }
+
+    pub fn continuous_voice_loop(&self, buffer: &mut AudioBuffer) {
+        if buffer.head + 1 < buffer.capacity {
+            buffer.head += 1;
+        }
+    }
 }
+
+
 
 #[cfg(not(feature = "verus"))]
 impl Default for HdaSoundDriver {
@@ -165,6 +194,17 @@ impl Default for HdaSoundDriver {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
+
+    #[test]
+    fn test_continuous_voice_loop() {
+        let drv = HdaSoundDriver::new();
+        let mut buf = AudioBuffer::new(1024);
+        drv.continuous_voice_loop(&mut buf);
+        assert_eq!(buf.head, 1);
+    }
+
 
     #[test]
     fn test_sound_driver() {

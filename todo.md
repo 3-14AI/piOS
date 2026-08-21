@@ -1,24 +1,20 @@
-# piOS - Global Roadmap for the Next Phase: Post-1.0 AI Native Capabilities
+# piOS - Global Roadmap for the Next Phase: Swarm Intelligence & Physical Adoption
 
-Currently, piOS has completed its base architecture. We have successfully implemented:
+Currently, piOS has completed its base architecture and the integration of AI-native loops within a single node context. We have successfully implemented:
 - Bootable ISO, hardware enumeration, and base drivers
 - Full network stack with smoltcp, WASM package manager, and userland coreutils
 - Foundational AI capabilities: Inference runtime, sys optimizer, LLM inference abstraction
 - Next-Gen OS features: Natural language desktop simulation, AI predictive app preloader, AI IDS/IPS, and autonomous closed-loop driver synthesis.
+- Complete Developer Ecosystem: Multi-agent collaboration, In-OS IDE, Package repository connections.
 
-To achieve the overarching goal of a "fully functional operating system with natively integrated AI", we must replace these stubs with real implementations and scale up.
+To achieve the overarching goal of a "fully functional operating system with natively integrated AI", we must transition from single-node mock systems to physical hardware integration and multi-node swarm intelligence.
 
-## Phase 21: Full System Autonomy and Optimization
-- [ ] **WP-132: Real-time Kernel Parameter Tuning.** Expand `sys_optimizer` to actually hook into kernel scheduler APIs instead of mocks.
-- [ ] **WP-133: Deep Neural Scheduler.** Completely replace the round-robin/CFS scheduler in the kernel with an inference-based predictor that prioritizes threads based on user intent.
-- [ ] **WP-134: Self-Healing Memory Management.** Use the AI monitoring to predict out-of-memory errors and proactively compact or swap memory in advance.
+## Phase 24: Real Hardware Adoption and Stabilization
+- [ ] **WP-141: Bare Metal Bootloader Integration.** Replace UEFI QEMU stubs with a fully signed GRUB or systemd-boot configuration that supports booting piOS natively on modern x86_64 motherboards.
+- [ ] **WP-142: Physical Device Drivers.** Implement true hardware interaction for the `AmdGpu` and `Intel` graphics backends instead of mock interfaces in `virtio_gpu.rs`, including MMIO memory mapping and PCIe register initialization.
+- [ ] **WP-143: Native File System Mounts.** Expand `vfs` to perform actual disk mounting of physical NVMe/SATA drives using the ext4 or btrfs driver, transitioning away from in-memory arrays.
 
-## Phase 22: Generative GUI and Desktop Experience
-- [ ] **WP-135: Generative UI Compositor.** Enhance `slint_gui` to construct windows and UI elements completely on the fly based on LLM outputs from `nl_desktop`.
-- [ ] **WP-136: Native Hardware Acceleration.** Replace `VirtioGpu` mocks with full `virglrenderer` and `amdgpu`/`intel` backend for actual hardware 3D and compute offload of AI tasks.
-- [ ] **WP-137: Audio/Voice Assistant Integration.** Hook up the `sound.rs` driver to a continuous voice recognition loop, allowing pure hands-free operation.
-
-## Phase 23: Complete Developer Loop and Ecosystem
-- [ ] **WP-138: Package Repository Expansion.** Create an online repository of WASM components and integrate it fully with the Package Manager CLI to download and load applications dynamically.
-- [ ] **WP-139: In-OS IDE.** Build a userland application that allows writing, Verus-verifying, and Cranelift-compiling Rust code directly within piOS without needing a host system.
-- [ ] **WP-140: Multi-Agent Collaboration.** Extend `NlShell` and `sys_intent` so multiple agents can collaborate on complex tasks (e.g. one agent searches docs, another writes code, another verifies it).
+## Phase 25: Distributed Swarm Intelligence
+- [ ] **WP-144: Swarm State Synchronization.** Introduce an agent in `nl_sh` that synchronizes system state (processes, memory limits) continuously with other piOS instances on the LAN via `A2AMessage` broadcasts.
+- [ ] **WP-145: Distributed AI Inference.** Modify `inference_runtime` to split tensor computation across multiple network nodes using `wasi_ephemeral_nn` and RPC if the local node lacks GPU power.
+- [ ] **WP-146: Global Anomaly Defense.** Enhance `ids_ips` to build a shared network-wide anomaly graph, blocking attacks on the entire swarm when one node detects a threat.

@@ -272,6 +272,16 @@ verus! {
 #[cfg(not(feature = "verus"))]
 use crate::virtio_blk::{UsedElem, Virtqueue};
 
+
+#[cfg(not(feature = "verus"))]
+#[derive(Debug, PartialEq)]
+pub enum HardwareBackend {
+    Mock,
+    VirglRenderer,
+    AmdGpu,
+    Intel,
+}
+
 #[cfg(not(feature = "verus"))]
 #[derive(Debug)]
 pub struct VirtioGpuDriver {
@@ -281,10 +291,16 @@ pub struct VirtioGpuDriver {
     pub virgl_enabled: bool,
     pub num_3d_contexts: u32,
     pub num_3d_resources: u32,
+    pub backend: HardwareBackend,
 }
 
 #[cfg(not(feature = "verus"))]
 impl VirtioGpuDriver {
+
+    pub fn set_backend(&mut self, backend: HardwareBackend) {
+        self.backend = backend;
+    }
+
     pub fn enable_virgl(&mut self) {
         self.virgl_enabled = true;
     }
@@ -324,6 +340,7 @@ impl VirtioGpuDriver {
             virgl_enabled: false,
             num_3d_contexts: 0,
             num_3d_resources: 0,
+            backend: HardwareBackend::Mock,
         }
     }
 
@@ -420,6 +437,22 @@ mod tests {
         assert_eq!(drv.unacked_commands, 1);
         assert_eq!(drv.control_queue.avail.idx, 1);
         assert_eq!(drv.control_queue.avail.ring[0], 3);
+    }
+
+
+    #[test]
+    fn test_native_hardware_acceleration_backend() {
+        let mut drv = VirtioGpuDriver::new(4);
+        assert_eq!(drv.backend, HardwareBackend::Mock);
+
+        drv.set_backend(HardwareBackend::VirglRenderer);
+        assert_eq!(drv.backend, HardwareBackend::VirglRenderer);
+
+        drv.set_backend(HardwareBackend::AmdGpu);
+        assert_eq!(drv.backend, HardwareBackend::AmdGpu);
+
+        drv.set_backend(HardwareBackend::Intel);
+        assert_eq!(drv.backend, HardwareBackend::Intel);
     }
 
     #[test]

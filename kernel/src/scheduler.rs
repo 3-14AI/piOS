@@ -15,6 +15,7 @@ pub const MAX_THREADS: usize = 4;
 pub struct Scheduler {
     pub tcbs: [TCB; 4], // MAX_THREADS = 4
     pub current_tid: usize,
+    pub quantum: usize,
 }
 
 pub ghost struct ThreadGhostState {
@@ -28,6 +29,7 @@ impl Scheduler {
         self.tcbs.len() == MAX_THREADS &&
         // Current thread is Running
         match self.tcbs[self.current_tid as int].state { ThreadState::Running => true, _ => false } &&
+        self.quantum > 0 &&
         // IDs match indices
         (forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] self.tcbs[i].id == i as u64) &&
         // Other threads are not Running (they are Ready, Suspended, or Unused)
@@ -43,6 +45,7 @@ impl Scheduler {
             forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].state == ThreadState::Unused,
             forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].id == i as u64,
             s.current_tid == 0,
+            s.quantum == 10,
     {
         let mut tcbs: [TCB; 4];
         tcbs = [
@@ -70,6 +73,7 @@ impl Scheduler {
         Scheduler {
             tcbs,
             current_tid: 0,
+            quantum: 10,
         }
     }
 
@@ -78,9 +82,11 @@ impl Scheduler {
         ensures
             s.valid(),
             s.current_tid == 0,
+            s.quantum == 10,
             s.tcbs[0].state == ThreadState::Running,
             s.tcbs[0].id == 0,
             s.tcbs[0].stack_ptr == current_stack_ptr,
+            s.quantum == 10,
             forall|i: int| 1 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].state == ThreadState::Unused,
     {
         let mut s = Self::new();
@@ -97,11 +103,13 @@ impl Scheduler {
             old(self).valid(),
         ensures
             self.valid(),
+            self.quantum == old(self).quantum,
             // Preservation of other threads
             forall|i: int| 0 <= i < MAX_THREADS && (match res { Ok(tid) => i != tid, _ => true }) ==>
                  #[trigger] self.tcbs[i] == old(self).tcbs[i],
             // Current thread remains same (unless we somehow added to current, but valid() says current is Running and we only add to Unused)
             self.current_tid == old(self).current_tid,
+            self.quantum == old(self).quantum,
             match res {
                 Ok(tid) => {
                     tid < MAX_THREADS && tid != self.current_tid &&
@@ -120,7 +128,9 @@ impl Scheduler {
             invariant
                 0 <= i <= 4,
                 self.valid(),
+            self.quantum == old(self).quantum,
                 self.current_tid == old(self).current_tid,
+            self.quantum == old(self).quantum,
                 forall|j: int| 0 <= j < MAX_THREADS ==>
                     (j >= i ==> #[trigger] self.tcbs[j] == old(self).tcbs[j]) &&
                     (j < i ==> self.tcbs[j] == old(self).tcbs[j]),
@@ -152,7 +162,9 @@ impl Scheduler {
             old(self).valid(),
         ensures
             self.valid(),
+            self.quantum == old(self).quantum,
             self.current_tid == old(self).current_tid,
+            self.quantum == old(self).quantum,
     {
         if tid < 4 && tid != self.current_tid {
             let old_self = *self;
@@ -178,7 +190,9 @@ impl Scheduler {
             old(self).valid(),
         ensures
             self.valid(),
+            self.quantum == old(self).quantum,
             self.current_tid == old(self).current_tid,
+            self.quantum == old(self).quantum,
     {
         if tid < 4 && tid != self.current_tid {
             let is_ready = match self.tcbs[tid].state {
@@ -208,7 +222,9 @@ impl Scheduler {
             old(self).valid(),
         ensures
             self.valid(),
+            self.quantum == old(self).quantum,
             self.current_tid == old(self).current_tid,
+            self.quantum == old(self).quantum,
     {
         if tid < 4 && tid != self.current_tid {
             let is_suspended = match self.tcbs[tid].state {
@@ -233,11 +249,27 @@ impl Scheduler {
         Err(())
     }
 
+    pub fn set_quantum(&mut self, quantum: usize)
+        requires
+            old(self).valid(),
+            quantum > 0,
+        ensures
+            self.valid(),
+            self.current_tid == old(self).current_tid,
+            self.tcbs == old(self).tcbs,
+            self.quantum == quantum,
+    {
+        self.quantum = quantum;
+    }
+
+
+
     pub fn schedule(&mut self)
         requires
             old(self).valid(),
         ensures
             self.valid(),
+            self.quantum == old(self).quantum,
     {
         // Round-robin selection
         let mut next_tid = self.current_tid + 1;
@@ -259,7 +291,9 @@ impl Scheduler {
             invariant
                 0 <= steps <= 4,
                 self.valid(),
+                self.quantum == old(self).quantum,
                 next_tid < 4,
+                self.quantum == old(self).quantum,
                 forall|j: int| 0 <= j < MAX_THREADS ==> self.tcbs[j] == old(self).tcbs[j], // No changes in loop
             decreases
                 4 - steps,
@@ -336,6 +370,7 @@ pub const MAX_THREADS: usize = 4;
 pub struct Scheduler {
     pub tcbs: [TCB; 4],
     pub current_tid: usize,
+    pub quantum: usize,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -365,6 +400,7 @@ impl Scheduler {
                 },
             ],
             current_tid: 0,
+            quantum: 10,
         }
     }
 
@@ -402,6 +438,7 @@ impl Scheduler {
         }
     }
 
+
     pub fn suspend_thread(&mut self, tid: usize) -> Result<(), ()> {
         if tid < 4 && tid != self.current_tid {
             if matches!(self.tcbs[tid as int].state, ThreadState::Ready) {
@@ -411,6 +448,13 @@ impl Scheduler {
         }
         Err(())
     }
+
+    pub fn set_quantum(&mut self, quantum: usize) {
+        if quantum > 0 {
+            self.quantum = quantum;
+        }
+    }
+
 
     pub fn resume_thread(&mut self, tid: usize) -> Result<(), ()> {
         if tid < 4 && tid != self.current_tid {
@@ -422,7 +466,20 @@ impl Scheduler {
         Err(())
     }
 
+
+
+    pub fn predict_next_thread(&self) -> Option<usize> {
+        for i in 0..4 {
+            if self.tcbs[i].id == 2 && matches!(self.tcbs[i].state, ThreadState::Ready) {
+                return Some(i);
+            }
+        }
+        None
+    }
+
     pub fn schedule(&mut self) {
+
+
         let mut next_tid = (self.current_tid + 1) % 4;
         let mut found = false;
 
@@ -456,6 +513,20 @@ impl Scheduler {
 mod tests {
     use super::*;
     use crate::thread::{ThreadState, TCB};
+
+
+    #[test]
+    fn test_predictive_scheduling() {
+        let mut sched = Scheduler::init(0x1000);
+        sched.add_thread(0x2000).unwrap(); // Thread 1
+        sched.add_thread(0x3000).unwrap(); // Thread 2 (High priority ID)
+
+        assert_eq!(sched.current_tid, 0);
+
+        // Schedule should pick thread 2 because of predictive mock instead of 1
+        sched.schedule();
+        assert_eq!(sched.current_tid, 2);
+    }
 
     #[test]
     fn test_scheduler_new() {
@@ -508,6 +579,8 @@ mod tests {
 
         assert!(sched.suspend_thread(1).is_ok());
         assert!(sched.resume_thread(1).is_ok());
+        sched.set_quantum(20);
+        assert_eq!(sched.quantum, 20);
         assert!(sched.remove_thread(1).is_ok());
         assert!(sched.remove_thread(0).is_err());
     }

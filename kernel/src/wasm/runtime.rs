@@ -1,12 +1,12 @@
 extern crate alloc;
 
-#[cfg(not(feature = "verus"))]
-use crate::wasm::wasi::sys_intent;
 use crate::wasm::wasi::{
     args_get, args_sizes_get, clock_time_get, environ_get, environ_sizes_get, fd_close,
     fd_fdstat_get, fd_prestat_dir_name, fd_prestat_get, fd_read, fd_seek, fd_write, proc_exit,
     random_get, WasiCtx,
 };
+#[cfg(not(feature = "verus"))]
+use crate::wasm::wasi::{sys_compact_memory, sys_intent, sys_tune_kernel};
 #[cfg(not(feature = "verus"))]
 use crate::wasm::wasi_crypto::constant_time_eq_host;
 #[cfg(not(feature = "verus"))]
@@ -132,6 +132,16 @@ impl WasmRuntime {
                 "wasi_snapshot_preview1",
                 "sys_intent",
                 Func::wrap(&mut store, sys_intent),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
+                "sys_tune_kernel",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_tune_kernel),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
+                "sys_compact_memory",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_compact_memory),
             )?;
             linker.define("wasi_ephemeral_nn", "load", Func::wrap(&mut store, load))?;
             linker.define(
@@ -341,6 +351,20 @@ mod tests {
                 "wasi_snapshot_preview1",
                 "sys_intent",
                 Func::wrap(&mut store, crate::wasm::wasi::sys_intent),
+            )
+            .unwrap();
+        linker
+            .define(
+                "wasi_snapshot_preview1",
+                "sys_tune_kernel",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_tune_kernel),
+            )
+            .unwrap();
+        linker
+            .define(
+                "wasi_snapshot_preview1",
+                "sys_compact_memory",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_compact_memory),
             )
             .unwrap();
 
