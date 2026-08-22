@@ -78,10 +78,23 @@ impl SysOptimizer {
             } else {
                 self.memory_limit = 1024 * 1024 * 1024; // default fallback
             }
+
+            #[cfg(target_arch = "wasm32")]
+            {
+                unsafe {
+                    set_scheduler_quantum(self.scheduler_quantum as i32);
+                }
+            }
         }
 
         Ok(())
     }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[link(wasm_import_module = "wasi_snapshot_preview1")]
+extern "C" {
+    fn set_scheduler_quantum(quantum: i32) -> i32;
 }
 
 #[cfg(test)]
