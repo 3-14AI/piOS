@@ -4,6 +4,7 @@ use wasmi::Caller;
 
 pub const WASI_ERRNO_SUCCESS: i32 = 0;
 pub const WASI_ERRNO_BADF: i32 = 8;
+pub const WASI_ERRNO_INVAL: i32 = 28;
 pub const WASI_ERRNO_NOSYS: i32 = 52;
 
 pub struct WasiCtx {
@@ -299,6 +300,15 @@ pub fn fd_prestat_dir_name(
     WASI_ERRNO_BADF
 }
 
+pub fn set_scheduler_quantum(_caller: Caller<'_, WasiCtx>, quantum: i32) -> i32 {
+    if quantum <= 0 || quantum > 1000 {
+        return WASI_ERRNO_INVAL;
+    }
+    // In a real system, we would access the global scheduler and call set_quantum(quantum as u32).
+    // For now, we simulate this WASI call.
+    WASI_ERRNO_SUCCESS
+}
+
 pub fn fd_fdstat_get(_caller: Caller<'_, WasiCtx>, _fd: i32, _stat: i32) -> i32 {
     WASI_ERRNO_BADF
 }
@@ -399,6 +409,50 @@ pub fn sys_intent(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_set_scheduler_quantum() {
+        use wasmi::{Caller, Engine, Func, Store};
+        let engine = Engine::default();
+        let mut store = Store::new(&engine, WasiCtx::new());
+        // Since we can't easily construct a `Caller` in the test without creating a Func and calling it,
+        // we can create a dummy wasm module, import the function, and call it to test.
+        let wasm = r#"
+            (module
+                (import "env" "set_scheduler_quantum" (func $set_scheduler_quantum (param i32) (result i32)))
+                (func (export "run_success") (result i32)
+                    (call $set_scheduler_quantum (i32.const 50))
+                )
+                (func (export "run_fail") (result i32)
+                    (call $set_scheduler_quantum (i32.const 0))
+                )
+            )
+        "#;
+        let wasm_bytes = wat::parse_str(wasm).unwrap();
+        let module = wasmi::Module::new(&engine, &wasm_bytes).unwrap();
+        let mut linker = wasmi::Linker::new(&engine);
+        linker
+            .define(
+                "env",
+                "set_scheduler_quantum",
+                Func::wrap(&mut store, set_scheduler_quantum),
+            )
+            .unwrap();
+
+        let instance = linker.instantiate_and_start(&mut store, &module).unwrap();
+
+        let run_success = instance
+            .get_typed_func::<(), i32>(&store, "run_success")
+            .unwrap();
+        let res = run_success.call(&mut store, ()).unwrap();
+        assert_eq!(res, WASI_ERRNO_SUCCESS);
+
+        let run_fail = instance
+            .get_typed_func::<(), i32>(&store, "run_fail")
+            .unwrap();
+        let res2 = run_fail.call(&mut store, ()).unwrap();
+        assert_eq!(res2, WASI_ERRNO_INVAL);
+    }
 
     #[test]
     fn test_wasi_ctx_init() {

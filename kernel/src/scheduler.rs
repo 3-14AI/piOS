@@ -15,6 +15,7 @@ pub const MAX_THREADS: usize = 4;
 pub struct Scheduler {
     pub tcbs: [TCB; 4], // MAX_THREADS = 4
     pub current_tid: usize,
+    pub quantum: u32,
 }
 
 pub ghost struct ThreadGhostState {
@@ -43,6 +44,7 @@ impl Scheduler {
             forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].state == ThreadState::Unused,
             forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].id == i as u64,
             s.current_tid == 0,
+            s.quantum == 10,
     {
         let mut tcbs: [TCB; 4];
         tcbs = [
@@ -70,6 +72,7 @@ impl Scheduler {
         Scheduler {
             tcbs,
             current_tid: 0,
+            quantum: 10,
         }
     }
 
@@ -81,6 +84,7 @@ impl Scheduler {
             s.tcbs[0].state == ThreadState::Running,
             s.tcbs[0].id == 0,
             s.tcbs[0].stack_ptr == current_stack_ptr,
+            s.quantum == 10,
             forall|i: int| 1 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].state == ThreadState::Unused,
     {
         let mut s = Self::new();
@@ -90,6 +94,22 @@ impl Scheduler {
             id: 0,
         };
         s
+    }
+
+    pub fn set_quantum(&mut self, new_quantum: u32)
+        requires
+            old(self).valid(),
+        ensures
+            self.valid(),
+            self.current_tid == old(self).current_tid,
+            self.tcbs == old(self).tcbs,
+            self.quantum == (if new_quantum > 0 { new_quantum } else { 1 }),
+    {
+        if new_quantum > 0 {
+            self.quantum = new_quantum;
+        } else {
+            self.quantum = 1;
+        }
     }
 
     pub fn add_thread(&mut self, stack_ptr: u64) -> (res: Result<usize, ()>)
@@ -336,6 +356,7 @@ pub const MAX_THREADS: usize = 4;
 pub struct Scheduler {
     pub tcbs: [TCB; 4],
     pub current_tid: usize,
+    pub quantum: u32,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -365,6 +386,15 @@ impl Scheduler {
                 },
             ],
             current_tid: 0,
+            quantum: 10,
+        }
+    }
+
+    pub fn set_quantum(&mut self, new_quantum: u32) {
+        if new_quantum > 0 {
+            self.quantum = new_quantum;
+        } else {
+            self.quantum = 1;
         }
     }
 
@@ -481,6 +511,16 @@ mod tests {
         assert_eq!(tid, 1);
         assert_eq!(sched.tcbs[1].state, ThreadState::Ready);
         assert_eq!(sched.tcbs[1].stack_ptr, 0x2000);
+    }
+
+    #[test]
+    fn test_scheduler_quantum() {
+        let mut sched = Scheduler::new();
+        assert_eq!(sched.quantum, 10);
+        sched.set_quantum(50);
+        assert_eq!(sched.quantum, 50);
+        sched.set_quantum(0); // Should set back to 1
+        assert_eq!(sched.quantum, 1);
     }
 
     #[test]

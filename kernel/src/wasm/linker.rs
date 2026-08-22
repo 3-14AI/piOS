@@ -79,6 +79,11 @@ impl WasmComponentLinker {
             "proc_exit",
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::proc_exit),
         )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "set_scheduler_quantum",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::set_scheduler_quantum),
+        )?;
 
         #[cfg(not(feature = "verus"))]
         {
