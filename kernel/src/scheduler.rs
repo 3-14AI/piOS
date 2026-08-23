@@ -456,12 +456,45 @@ impl Scheduler {
         let mut next_tid = (self.current_tid + 1) % 4;
         let mut found = false;
 
-        for _ in 0..4 {
-            if matches!(self.tcbs[next_tid].state, ThreadState::Ready) {
-                found = true;
-                break;
+        #[cfg(not(feature = "verus"))]
+        {
+            let mut engine = inference_runtime::InferenceEngine::new();
+            if let Ok(model) = engine.load_model_by_name("neural_scheduler") {
+                if let Ok(ctx) = engine.init_execution_context(&model) {
+                    let mut input_data = alloc::vec::Vec::new();
+                    for i in 0..4 {
+                        input_data.push(match self.tcbs[i].state {
+                            ThreadState::Running => 1,
+                            ThreadState::Ready => 2,
+                            ThreadState::Suspended => 3,
+                            ThreadState::Unused => 0,
+                        });
+                    }
+                    let tensor = inference_runtime::Tensor::new(input_data, alloc::vec![4]);
+                    if engine.set_input(ctx, 0, &tensor).is_ok() {
+                        if engine.compute(ctx).is_ok() {
+                            let mut out = [0u8; 1];
+                            if engine.get_output(ctx, 0, &mut out).is_ok() {
+                                let predicted_tid = (out[0] % 4) as usize;
+                                if matches!(self.tcbs[predicted_tid].state, ThreadState::Ready) {
+                                    next_tid = predicted_tid;
+                                    found = true;
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            next_tid = (next_tid + 1) % 4;
+        }
+
+        if !found {
+            for _ in 0..4 {
+                if matches!(self.tcbs[next_tid].state, ThreadState::Ready) {
+                    found = true;
+                    break;
+                }
+                next_tid = (next_tid + 1) % 4;
+            }
         }
 
         if found && self.current_tid != next_tid {
