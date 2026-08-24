@@ -84,6 +84,11 @@ impl WasmComponentLinker {
             "set_scheduler_quantum",
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::set_scheduler_quantum),
         )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "compact_memory",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::compact_memory),
+        )?;
 
         #[cfg(not(feature = "verus"))]
         {

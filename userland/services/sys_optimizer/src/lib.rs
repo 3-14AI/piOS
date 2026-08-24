@@ -66,6 +66,7 @@ impl SysOptimizer {
             // [desired_quantum_ms, desired_mem_limit_scale]
             let desired_quantum = out[0];
             let memory_scale = out[1];
+            let needs_compaction = out[2];
 
             if desired_quantum > 0 {
                 self.scheduler_quantum = desired_quantum as usize;
@@ -83,7 +84,15 @@ impl SysOptimizer {
             {
                 unsafe {
                     set_scheduler_quantum(self.scheduler_quantum as i32);
+                    if needs_compaction > 0 {
+                        compact_memory();
+                    }
                 }
+            }
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                // Just to use the variable in non-wasm builds and prevent unused variable warning
+                let _ = needs_compaction;
             }
         }
 
@@ -95,6 +104,7 @@ impl SysOptimizer {
 #[link(wasm_import_module = "wasi_snapshot_preview1")]
 extern "C" {
     fn set_scheduler_quantum(quantum: i32) -> i32;
+    fn compact_memory() -> i32;
 }
 
 #[cfg(test)]
@@ -117,9 +127,12 @@ mod tests {
         optimizer.analyze_and_adjust(90, 95).unwrap();
 
         // With the mock model bytes (b"mock_output"),
-        // out[0] == b'm' == 109, out[1] == b'o' == 111.
+        // out[0] == b'm' == 109, out[1] == b'o' == 111, out[2] == b'c' == 99.
         // So scheduler_quantum should be 109 and memory limit 111 * 10 * 1024 * 1024.
         assert_eq!(optimizer.scheduler_quantum, 109);
         assert_eq!(optimizer.memory_limit, 111 * 10 * 1024 * 1024);
+
+        // The compaction logic is triggered if out[2] > 0, which 99 is. The wasm32 tests
+        // would call the host function, but since these run native, we just verify the state changes.
     }
 }

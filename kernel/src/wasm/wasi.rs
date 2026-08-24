@@ -309,6 +309,11 @@ pub fn set_scheduler_quantum(_caller: Caller<'_, WasiCtx>, quantum: i32) -> i32 
     WASI_ERRNO_SUCCESS
 }
 
+pub fn compact_memory(_caller: Caller<'_, WasiCtx>) -> i32 {
+    // In a real system, we would trigger memory compaction / swapping.
+    WASI_ERRNO_SUCCESS
+}
+
 pub fn fd_fdstat_get(_caller: Caller<'_, WasiCtx>, _fd: i32, _stat: i32) -> i32 {
     WASI_ERRNO_BADF
 }
@@ -420,11 +425,15 @@ mod tests {
         let wasm = r#"
             (module
                 (import "env" "set_scheduler_quantum" (func $set_scheduler_quantum (param i32) (result i32)))
+                (import "env" "compact_memory" (func $compact_memory (result i32)))
                 (func (export "run_success") (result i32)
                     (call $set_scheduler_quantum (i32.const 50))
                 )
                 (func (export "run_fail") (result i32)
                     (call $set_scheduler_quantum (i32.const 0))
+                )
+                (func (export "run_compact") (result i32)
+                    (call $compact_memory)
                 )
             )
         "#;
@@ -436,6 +445,13 @@ mod tests {
                 "env",
                 "set_scheduler_quantum",
                 Func::wrap(&mut store, set_scheduler_quantum),
+            )
+            .unwrap();
+        linker
+            .define(
+                "env",
+                "compact_memory",
+                Func::wrap(&mut store, compact_memory),
             )
             .unwrap();
 
@@ -452,6 +468,12 @@ mod tests {
             .unwrap();
         let res2 = run_fail.call(&mut store, ()).unwrap();
         assert_eq!(res2, WASI_ERRNO_INVAL);
+
+        let run_compact = instance
+            .get_typed_func::<(), i32>(&store, "run_compact")
+            .unwrap();
+        let res3 = run_compact.call(&mut store, ()).unwrap();
+        assert_eq!(res3, WASI_ERRNO_SUCCESS);
     }
 
     #[test]
