@@ -5816,6 +5816,7 @@ dependencies = [
 name = "slint_gui"
 version = "0.1.0"
 dependencies = [
+ "nl_desktop",
  "slint",
  "slint-build",
  "wgpu_compositor",

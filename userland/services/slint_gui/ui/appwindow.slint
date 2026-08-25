@@ -1,15 +1,35 @@
+import { Button } from "std-widgets.slint";
+
 export component AppWindow inherits Window {
     preferred-width: 400px;
     preferred-height: 300px;
 
     in property <string> generative_text: "Welcome to Generative UI";
+    in property <string> active_element: "text";
+    in property <string> window_title: "piOS AI Desktop";
+    in property <string> button_text: "Click Me";
+    in property <color> bg_color: white;
+
+    title: window_title;
+    background: bg_color;
 
     VerticalLayout {
         alignment: center;
-        Text {
+        spacing: 10px;
+
+        if active_element == "text" : Text {
             text: root.generative_text;
             font-size: 24px;
             horizontal-alignment: center;
+        }
+        if active_element == "button" : Button {
+            text: root.button_text;
+        }
+        if active_element == "window" : Rectangle {
+            background: lightblue;
+            border-color: blue;
+            border-width: 2px;
+            Text { text: "Generated Window"; }
         }
     }
 }

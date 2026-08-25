@@ -1,17 +1,43 @@
 slint::include_modules!();
+use nl_desktop::NlDesktop;
 
 pub struct GenerativeUI {
     app: AppWindow,
+    desktop_ai: NlDesktop,
 }
 
 impl GenerativeUI {
     pub fn new() -> Result<Self, slint::PlatformError> {
         let app = AppWindow::new()?;
-        Ok(Self { app })
+        let mut desktop_ai = NlDesktop::new();
+        let _ = desktop_ai.init();
+        Ok(Self { app, desktop_ai })
     }
 
     pub fn set_text(&self, text: &str) {
         self.app.set_generative_text(text.into());
+    }
+
+    pub fn handle_nl_command(&mut self, command: &str) {
+        if command.contains("button") {
+            self.app.set_active_element("button".into());
+            self.app.set_button_text("AI Button".into());
+            return;
+        }
+
+        if let Ok(action) = self.desktop_ai.process_command(command) {
+            if action == "Open Window" || command.contains("window") {
+                self.app.set_active_element("window".into());
+                self.app.set_window_title("AI Generated Window".into());
+            } else {
+                self.app.set_active_element("text".into());
+                self.app.set_generative_text(action.into());
+            }
+        } else {
+            self.app.set_active_element("text".into());
+            self.app
+                .set_generative_text("Failed to process command".into());
+        }
     }
 
     pub fn run(&self) -> Result<(), slint::PlatformError> {
@@ -24,10 +50,6 @@ mod tests {
     use super::*;
 
     use std::rc::Rc;
-
-    // Slint needs a minimal platform in no_std/test environments if standard event loop isn't used.
-    // For unit testing properties, we can often just instantiate it if the default backend falls back to testing/software.
-    // Setting up a dummy platform to satisfy slint in test mode:
 
     struct TestPlatform {
         window: Rc<slint::platform::software_renderer::MinimalSoftwareWindow>,
@@ -64,5 +86,24 @@ mod tests {
         let ui = GenerativeUI::new().unwrap();
         ui.set_text("Hello AI");
         assert_eq!(ui.app.get_generative_text(), "Hello AI");
+    }
+
+    #[test]
+    fn test_generative_ui_nl_command_window() {
+        init_test_platform();
+        let mut ui = GenerativeUI::new().unwrap();
+        ui.handle_nl_command("open browser");
+        // Due to nl_desktop mock logic, "open browser" results in "Open Window" action
+        assert_eq!(ui.app.get_active_element(), "window");
+        assert_eq!(ui.app.get_window_title(), "AI Generated Window");
+    }
+
+    #[test]
+    fn test_generative_ui_nl_command_button() {
+        init_test_platform();
+        let mut ui = GenerativeUI::new().unwrap();
+        ui.handle_nl_command("create a button");
+        assert_eq!(ui.app.get_active_element(), "button");
+        assert_eq!(ui.app.get_button_text(), "AI Button");
     }
 }

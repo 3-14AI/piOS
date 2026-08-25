@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 wgpu_compositor = { path = "../wgpu_compositor" }
 slint = { version = "1.9", default-features = false, features = ["compat-1-2", "unsafe-single-threaded", "std", "renderer-software"] }
+nl_desktop = { path = "../nl_desktop" }
 
 [build-dependencies]
 slint-build = "1.9"
