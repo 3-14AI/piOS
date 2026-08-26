@@ -21,4 +21,4 @@ To achieve the overarching goal of a "fully functional operating system with nat
 ## Phase 23: Complete Developer Loop and Ecosystem
 - [ ] **WP-138: Package Repository Expansion.** Create an online repository of WASM components and integrate it fully with the Package Manager CLI to download and load applications dynamically.
 - [ ] **WP-139: In-OS IDE.** Build a userland application that allows writing, Verus-verifying, and Cranelift-compiling Rust code directly within piOS without needing a host system.
-- [ ] **WP-140: Multi-Agent Collaboration.** Extend `NlShell` and `sys_intent` so multiple agents can collaborate on complex tasks (e.g. one agent searches docs, another writes code, another verifies it).
+- [x] **WP-140: Multi-Agent Collaboration.** Extend `NlShell` and `sys_intent` so multiple agents can collaborate on complex tasks (e.g. one agent searches docs, another writes code, another verifies it).

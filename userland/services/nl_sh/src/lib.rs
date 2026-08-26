@@ -89,6 +89,12 @@ impl NlShell {
         shell
             .register_command("agent.spawn", "spawn a new ai agent")
             .unwrap();
+        shell
+            .register_command(
+                "agent.collaborate",
+                "collaborate on complex tasks multiple agents",
+            )
+            .unwrap();
 
         Ok(shell)
     }
@@ -302,6 +308,16 @@ impl NlShell {
                 return self.spawn_agent(agent_name);
             }
 
+            if cmd.starts_with("agent.collaborate") {
+                let parts: Vec<&str> = cmd.splitn(2, ' ').collect();
+                let task = if parts.len() > 1 {
+                    parts[1]
+                } else {
+                    "general task"
+                };
+                return self.spawn_collaboration(task);
+            }
+
             // Here the semantic layer generated a command string to run
             let ast = self.parse_command(&cmd)?;
             self.execute_ast(&ast)
@@ -354,6 +370,23 @@ impl NlShell {
             a2a_msg.msg_type,
             a2a_msg.priority
         ))
+    }
+
+    pub fn spawn_collaboration(&mut self, task: &str) -> Result<String, &'static str> {
+        let agents = ["researcher_agent", "coder_agent", "verifier_agent"];
+        for agent in &agents {
+            let _ = self.spawn_agent(agent);
+        }
+        let payload_str = alloc::format!("COLLABORATE_TASK {}", task);
+        let a2a_msg = A2AMessage::new(
+            0,   // Sender ID (NL-Shell)
+            255, // Broadcast
+            MessageType::Announcement,
+            AgentPriority::High,
+            payload_str.as_bytes(),
+        );
+
+        Ok(alloc::format!("Dispatched broadcast A2A Message to collaborate on task: {} [MsgType: {:?}, Priority: {:?}]", task, a2a_msg.msg_type, a2a_msg.priority))
     }
 
     pub fn execute_ast(&self, ast: &AstNode) -> Result<String, &'static str> {
@@ -415,6 +448,17 @@ mod tests {
         let res = shell.sys_intent("spawn a new ai agent").unwrap();
         assert!(res.contains("Dispatched A2A Message to Init to spawn agent: "));
         assert!(res.contains("MsgType: Command"));
+        assert!(res.contains("Priority: High"));
+    }
+
+    #[test]
+    fn test_sys_intent_collaborate() {
+        let mut shell = NlShell::new().unwrap();
+        let res = shell
+            .sys_intent("collaborate on complex tasks multiple agents")
+            .unwrap();
+        assert!(res.contains("Dispatched broadcast A2A Message to collaborate on task: "));
+        assert!(res.contains("MsgType: Announcement"));
         assert!(res.contains("Priority: High"));
     }
 
