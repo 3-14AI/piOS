@@ -1,27 +1,35 @@
+#[cfg(not(target_arch = "wasm32"))]
 use crate::mir::{MirInst, MirModule, MirOp};
-use alloc::string::String;
+#[cfg(not(target_arch = "wasm32"))]
 use alloc::sync::Arc;
+#[cfg(not(target_arch = "wasm32"))]
 use alloc::vec::Vec;
 
+#[cfg(not(target_arch = "wasm32"))]
 use cranelift_codegen::settings::Configurable;
+#[cfg(not(target_arch = "wasm32"))]
 use cranelift_codegen::{
     ir::{types, AbiParam, InstBuilder, Signature, UserFuncName},
     isa::{CallConv, TargetIsa},
     settings::{self, Flags},
 };
+#[cfg(not(target_arch = "wasm32"))]
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext, Variable};
+#[cfg(not(target_arch = "wasm32"))]
 use target_lexicon::Architecture;
 
 #[derive(Debug)]
 pub enum CompileError {
-    UnsupportedArchitecture(String),
+    UnsupportedArchitecture(alloc::string::String),
     CompilationFailed,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub struct CraneliftBackend {
     pub isa: Arc<dyn TargetIsa>,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl CraneliftBackend {
     pub fn new(target_arch: &str) -> Result<Self, CompileError> {
         let arch = match target_arch {
@@ -142,5 +150,23 @@ impl CraneliftBackend {
         }
 
         Ok(compiled_funcs)
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub struct CraneliftBackend {}
+
+#[cfg(target_arch = "wasm32")]
+impl CraneliftBackend {
+    pub fn new(_target_arch: &str) -> Result<Self, CompileError> {
+        Ok(Self {})
+    }
+
+    pub fn compile_module(
+        &self,
+        _module: &crate::mir::MirModule,
+    ) -> Result<alloc::vec::Vec<()>, CompileError> {
+        // Mock compile in wasm32, returns empty success. Real Cranelift doesn't work well yet due to missing `std` and no Wasm backend for code generation.
+        Ok(alloc::vec::Vec::new())
     }
 }
