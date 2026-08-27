@@ -24,7 +24,7 @@ members = [
     "userland/applications/llm_runner",
     "userland/services/semantic_logger",
     "userland/services/sys_optimizer"
-, "userland/services/ids_ips", "userland/services/app_preloader", "userland/services/nl_desktop", "libs/llm_inference", "userland/services/driver_synthesizer"]
+, "userland/services/ids_ips", "userland/services/app_preloader", "userland/services/nl_desktop", "libs/llm_inference", "userland/services/driver_synthesizer", "userland/applications/ide"]
 exclude = [
     "tools/verus"
 ]

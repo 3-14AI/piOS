@@ -1,0 +1,13 @@
+[package]
+name = "ide"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pios-api = { path = "../../../libs/pios-api" }
+compiler_frontend = { path = "../../../libs/compiler_frontend" }
+
+[lib]
+name = "ide"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
