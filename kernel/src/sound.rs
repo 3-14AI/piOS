@@ -52,6 +52,47 @@ verus! {
         }
     }
 
+
+    pub struct VoiceAssistant {
+        pub is_listening: bool,
+    }
+
+    impl VoiceAssistant {
+        pub fn new() -> (v: Self)
+            ensures v.is_listening == false
+        {
+            VoiceAssistant { is_listening: false }
+        }
+
+        pub fn start_listening(&mut self)
+            ensures self.is_listening == true
+        {
+            self.is_listening = true;
+        }
+
+        pub fn stop_listening(&mut self)
+            ensures self.is_listening == false
+        {
+            self.is_listening = false;
+        }
+
+        pub fn process_audio_buffer(&mut self, buffer: &AudioBuffer) -> (res: bool)
+            ensures
+                res == (self.is_listening && buffer.capacity > 0)
+        {
+            self.is_listening && buffer.capacity > 0
+        }
+
+        // Verus mock for fetching command. We return a boolean indicating success.
+        pub fn get_recognized_command_id(&self) -> (res: u32)
+            ensures
+                self.is_listening ==> res == 1,
+                !self.is_listening ==> res == 0
+        {
+            if self.is_listening { 1 } else { 0 }
+        }
+    }
+
     pub struct AudioMixer {
         pub master_volume: u8,
     }
@@ -66,13 +107,25 @@ verus! {
 
     pub struct HdaSoundDriver {
         pub initialized: bool,
+        pub is_recognition_loop_running: bool,
     }
 
     impl HdaSoundDriver {
         pub fn new() -> (d: Self)
-            ensures d.initialized == true
+            ensures
+                d.initialized == true,
+                d.is_recognition_loop_running == false
         {
-            HdaSoundDriver { initialized: true }
+            HdaSoundDriver {
+                initialized: true,
+                is_recognition_loop_running: false,
+            }
+        }
+
+        pub fn start_voice_recognition_loop(&mut self)
+            ensures self.is_recognition_loop_running == true
+        {
+            self.is_recognition_loop_running = true;
         }
     }
 }
@@ -124,6 +177,49 @@ impl PcmStream {
 
 #[cfg(not(feature = "verus"))]
 #[derive(Debug)]
+pub struct VoiceAssistant {
+    pub is_listening: bool,
+}
+
+#[cfg(not(feature = "verus"))]
+impl VoiceAssistant {
+    pub fn new() -> Self {
+        VoiceAssistant {
+            is_listening: false,
+        }
+    }
+
+    pub fn start_listening(&mut self) {
+        self.is_listening = true;
+    }
+
+    pub fn stop_listening(&mut self) {
+        self.is_listening = false;
+    }
+
+    pub fn process_audio_buffer(&mut self, buffer: &AudioBuffer) -> bool {
+        self.is_listening && buffer.capacity > 0
+    }
+
+    pub fn get_recognized_command_id(&self) -> u32 {
+        if self.is_listening {
+            1
+        } else {
+            0
+        }
+    }
+
+    pub fn get_recognized_command(&self) -> Option<alloc::string::String> {
+        if self.is_listening {
+            Some(alloc::string::String::from("recognized voice command"))
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+#[derive(Debug)]
 pub struct AudioMixer {
     pub master_volume: u8,
 }
@@ -145,12 +241,33 @@ impl Default for AudioMixer {
 #[cfg(not(feature = "verus"))]
 pub struct HdaSoundDriver {
     pub initialized: bool,
+    pub is_recognition_loop_running: bool,
+    pub assistant: VoiceAssistant,
 }
 
 #[cfg(not(feature = "verus"))]
 impl HdaSoundDriver {
     pub fn new() -> Self {
-        HdaSoundDriver { initialized: true }
+        HdaSoundDriver {
+            initialized: true,
+            is_recognition_loop_running: false,
+            assistant: VoiceAssistant::new(),
+        }
+    }
+
+    pub fn start_voice_recognition_loop(&mut self) {
+        self.is_recognition_loop_running = true;
+        self.assistant.start_listening();
+    }
+
+    // Simulate one iteration of the continuous loop
+    pub fn poll_recognition_loop(&mut self, buffer: &AudioBuffer) -> Option<alloc::string::String> {
+        if self.is_recognition_loop_running {
+            if self.assistant.process_audio_buffer(buffer) {
+                return self.assistant.get_recognized_command();
+            }
+        }
+        None
     }
 }
 
@@ -168,8 +285,20 @@ mod tests {
 
     #[test]
     fn test_sound_driver() {
-        let drv = HdaSoundDriver::new();
+        let mut drv = HdaSoundDriver::new();
         assert!(drv.initialized);
+        assert!(!drv.is_recognition_loop_running);
+
+        drv.start_voice_recognition_loop();
+        assert!(drv.is_recognition_loop_running);
+
+        let buf = AudioBuffer::new(1024);
+        let cmd = drv.poll_recognition_loop(&buf);
+        assert_eq!(
+            cmd,
+            Some(alloc::string::String::from("recognized voice command"))
+        );
+
         let drv_def = HdaSoundDriver::default();
         assert!(drv_def.initialized);
     }
@@ -188,6 +317,29 @@ mod tests {
         assert_eq!(stream.sample_rate, 44100);
         assert_eq!(stream.channels, 2);
         assert!(!stream.state.is_playing);
+    }
+
+    #[test]
+    fn test_voice_assistant() {
+        let mut assistant = VoiceAssistant::new();
+        assert!(!assistant.is_listening);
+
+        assistant.start_listening();
+        assert!(assistant.is_listening);
+
+        let buf = AudioBuffer::new(1024);
+        let res = assistant.process_audio_buffer(&buf);
+        assert!(res);
+        assert_eq!(
+            assistant.get_recognized_command(),
+            Some(alloc::string::String::from("recognized voice command"))
+        );
+
+        assistant.stop_listening();
+        assert!(!assistant.is_listening);
+        let res_stopped = assistant.process_audio_buffer(&buf);
+        assert!(!res_stopped);
+        assert_eq!(assistant.get_recognized_command(), None);
     }
 
     #[test]
