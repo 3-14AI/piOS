@@ -16,7 +16,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 ## Phase 22: Generative GUI and Desktop Experience
 - [x] **WP-135: Generative UI Compositor.** Enhance `slint_gui` to construct windows and UI elements completely on the fly based on LLM outputs from `nl_desktop`.
 - [ ] **WP-136: Native Hardware Acceleration.** Replace `VirtioGpu` mocks with full `virglrenderer` and `amdgpu`/`intel` backend for actual hardware 3D and compute offload of AI tasks.
-- [ ] **WP-137: Audio/Voice Assistant Integration.** Hook up the `sound.rs` driver to a continuous voice recognition loop, allowing pure hands-free operation.
+- [x] **WP-137: Audio/Voice Assistant Integration.** Hook up the `sound.rs` driver to a continuous voice recognition loop, allowing pure hands-free operation.
 
 ## Phase 23: Complete Developer Loop and Ecosystem
 - [ ] **WP-138: Package Repository Expansion.** Create an online repository of WASM components and integrate it fully with the Package Manager CLI to download and load applications dynamically.
