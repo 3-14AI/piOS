@@ -52,7 +52,6 @@ verus! {
         }
     }
 
-
     pub struct VoiceAssistant {
         pub is_listening: bool,
     }
@@ -182,6 +181,13 @@ pub struct VoiceAssistant {
 }
 
 #[cfg(not(feature = "verus"))]
+impl Default for VoiceAssistant {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 impl VoiceAssistant {
     pub fn new() -> Self {
         VoiceAssistant {
@@ -260,12 +266,9 @@ impl HdaSoundDriver {
         self.assistant.start_listening();
     }
 
-    // Simulate one iteration of the continuous loop
     pub fn poll_recognition_loop(&mut self, buffer: &AudioBuffer) -> Option<alloc::string::String> {
-        if self.is_recognition_loop_running {
-            if self.assistant.process_audio_buffer(buffer) {
-                return self.assistant.get_recognized_command();
-            }
+        if self.is_recognition_loop_running && self.assistant.process_audio_buffer(buffer) {
+            return self.assistant.get_recognized_command();
         }
         None
     }
@@ -304,22 +307,6 @@ mod tests {
     }
 
     #[test]
-    fn test_audio_buffer() {
-        let buf = AudioBuffer::new(1024);
-        assert_eq!(buf.capacity, 1024);
-        assert_eq!(buf.head, 0);
-        assert_eq!(buf.tail, 0);
-    }
-
-    #[test]
-    fn test_pcm_stream() {
-        let stream = PcmStream::new(44100, 2);
-        assert_eq!(stream.sample_rate, 44100);
-        assert_eq!(stream.channels, 2);
-        assert!(!stream.state.is_playing);
-    }
-
-    #[test]
     fn test_voice_assistant() {
         let mut assistant = VoiceAssistant::new();
         assert!(!assistant.is_listening);
@@ -340,6 +327,22 @@ mod tests {
         let res_stopped = assistant.process_audio_buffer(&buf);
         assert!(!res_stopped);
         assert_eq!(assistant.get_recognized_command(), None);
+    }
+
+    #[test]
+    fn test_audio_buffer() {
+        let buf = AudioBuffer::new(1024);
+        assert_eq!(buf.capacity, 1024);
+        assert_eq!(buf.head, 0);
+        assert_eq!(buf.tail, 0);
+    }
+
+    #[test]
+    fn test_pcm_stream() {
+        let stream = PcmStream::new(44100, 2);
+        assert_eq!(stream.sample_rate, 44100);
+        assert_eq!(stream.channels, 2);
+        assert!(!stream.state.is_playing);
     }
 
     #[test]
