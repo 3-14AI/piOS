@@ -158,6 +158,23 @@ impl AmdGpuDriver {
 
 #[cfg(not(feature = "verus"))]
 extern crate alloc;
+#[cfg(not(feature = "verus"))]
+use alloc::vec::Vec;
+
+#[cfg(not(feature = "verus"))]
+use crate::pci::PciConfig;
+
+#[cfg(not(feature = "verus"))]
+pub fn scan_for_gpus(devices: &[PciConfig]) -> Vec<AmdIntelGpuDriver> {
+    let mut gpus = Vec::new();
+    for dev in devices {
+        // Display controller class code is 0x03
+        if dev.class_code == 0x03 {
+            gpus.push(AmdIntelGpuDriver::new(8192)); // Default size for stub
+        }
+    }
+    gpus
+}
 
 #[cfg(not(feature = "verus"))]
 pub struct KmsConnector {

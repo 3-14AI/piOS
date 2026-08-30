@@ -30,3 +30,9 @@
 2. **Candle**: When testing features using `candle-core` in inference_runtime, remember to enable the feature during cargo test `cargo test --features candle-core`.
 # Updated AI/OS Goals
 We have now implemented all current features and reached the state of a fully functional OS with natively integrated AI. We should proceed to the next stage.
+
+## Phase 24 and 25 Focus
+For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integration and actual network packet passing, moving away from simulated interfaces.
+
+## Swarm Implementation Details
+1. **A2AMessage Network Serialization:** When dispatching `A2AMessage` across the network, they must be properly serialized to a `&[u8]` slice and broadcast over the `WasmNetStack` UDP capabilities (port 9999) using `add_udp_broadcast_socket` and `send_udp_broadcast`.

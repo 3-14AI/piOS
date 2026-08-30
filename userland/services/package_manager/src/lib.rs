@@ -32,6 +32,39 @@ impl RemoteRepository {
         }
     }
 
+    pub fn fetch_index(&self) -> Result<Vec<String>, String> {
+        let mut stack = net_stack::WasmNetStack::new();
+        let mut client = net_stack::HttpClient::new(&mut stack, &self.host, self.port);
+
+        let mock_ip = smoltcp::wire::IpAddress::v4(8, 8, 8, 8);
+        if client.connect(&mut stack, mock_ip, 12345).is_err() {
+            // Mock connection failure
+        }
+
+        if client.send_request(&mut stack, "/").is_err() {
+            return Err("Failed to send request for index".to_string());
+        }
+
+        match client.read_response(&mut stack) {
+            Ok(response) => {
+                match net_stack::HttpClient::parse_response(&response) {
+                    Ok(body) => {
+                        // Mock parsing
+                        let mut packages = Vec::new();
+                        for line in body.split('\n') {
+                            if !line.is_empty() {
+                                packages.push(line.to_string());
+                            }
+                        }
+                        Ok(packages)
+                    }
+                    Err(e) => Err(e.to_string()),
+                }
+            }
+            Err(e) => Err(e.to_string()),
+        }
+    }
+
     pub fn download_package(&self, name: &str) -> Result<Package, String> {
         let mut stack = net_stack::WasmNetStack::new();
         let mut client = net_stack::HttpClient::new(&mut stack, &self.host, self.port);
