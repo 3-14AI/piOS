@@ -129,15 +129,21 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
             }
         }
         "update" => {
-            // Simulate fetching from a remote repository by modifying pm's repo
-            // For real update, we could fetch an index and download updates, but here we just try a hardcoded one.
-            match remote_repo.download_package("new_remote_pkg") {
-                Ok(pkg) => {
-                    pm.repo.add_package(pkg);
+            // Simulate fetching an index from a remote repository
+            match remote_repo.fetch_index() {
+                Ok(packages) => {
+                    for pkg_name in packages {
+                        // Dynamically try to fetch new packages from the index
+                        if pm.repo.get_package(&pkg_name).is_none() {
+                             if let Ok(pkg) = remote_repo.download_package(&pkg_name) {
+                                pm.repo.add_package(pkg);
+                             }
+                        }
+                    }
                     Ok(())
                 }
                 Err(_err) => {
-                    // Fallback to local mock update if remote fails
+                    // Fallback to local mock update if remote fetch fails
                     pm.repo.add_package(Package {
                         name: "new_remote_pkg".to_string(),
                         version: "1.0.0".to_string(),
