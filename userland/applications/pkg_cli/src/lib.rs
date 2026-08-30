@@ -135,9 +135,9 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                     for pkg_name in packages {
                         // Dynamically try to fetch new packages from the index
                         if pm.repo.get_package(&pkg_name).is_none() {
-                             if let Ok(pkg) = remote_repo.download_package(&pkg_name) {
+                            if let Ok(pkg) = remote_repo.download_package(&pkg_name) {
                                 pm.repo.add_package(pkg);
-                             }
+                            }
                         }
                     }
                     Ok(())
