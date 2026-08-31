@@ -24,7 +24,16 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-140: Multi-Agent Collaboration.** Extend `NlShell` and `sys_intent` so multiple agents can collaborate on complex tasks (e.g. one agent searches docs, another writes code, another verifies it).
 
 ## Phase 24: Real Hardware Integration
-- [ ] **WP-141: Real Hardware Boot.** Boot piOS on a physical x86-64 machine and debug NVMe, USB, and GPU driver issues.
+- [x] **WP-141: Real Hardware Boot.** Boot piOS on a physical x86-64 machine and debug NVMe, USB, and GPU driver issues.
 
 ## Phase 25: Swarm Synchronization
-- [ ] **WP-142: Swarm Packet Passing.** Implement true multi-node packet passing and agent broadcasting for A2A communication.
+- [x] **WP-142: Swarm Packet Passing.** Implement true multi-node packet passing and agent broadcasting for A2A communication.
+
+## Phase 26: Hardware Peripheral Expansion
+- [ ] **WP-143: USB Mass Storage Support.** Implement drivers for reading and writing to USB flash drives.
+- [ ] **WP-144: WiFi Capabilities.** Implement a WiFi driver and integrate it with the network stack.
+- [ ] **WP-145: Audio Framework.** Complete the audio subsystem and implement a basic AC97 or HDA driver.
+
+## Phase 27: Persistent AI Core
+- [ ] **WP-146: Model Fine-tuning on Device.** Allow local models to learn from telemetry data by saving updated weights to disk.
+- [ ] **WP-147: Multi-User Contextual Memory.** Implement separate VectorDB spaces for different users based on capabilities and permissions.

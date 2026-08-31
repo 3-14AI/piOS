@@ -67,6 +67,8 @@ pub struct NlShell {
     engine: InferenceEngine,
     model: Model,
     pub profiler: KernelProfiler,
+    net_stack: net_stack::WasmNetStack,
+    udp_handle: smoltcp::iface::SocketHandle,
 }
 
 impl NlShell {
@@ -76,11 +78,16 @@ impl NlShell {
             .load_model_by_name("embedding_model")
             .map_err(|_| "Failed to load embedding model")?;
 
+        let mut net_stack = net_stack::WasmNetStack::new();
+        let udp_handle = net_stack.add_udp_broadcast_socket(9999);
+
         let mut shell = Self {
             db: VectorDb::new(),
             engine,
             model,
             profiler: KernelProfiler::new(),
+            net_stack,
+            udp_handle,
         };
 
         shell
@@ -362,6 +369,11 @@ impl NlShell {
             payload_str.as_bytes(),
         );
 
+        let serialized_msg = a2a_msg.serialize();
+        self.net_stack
+            .send_udp_broadcast(self.udp_handle, 9999, &serialized_msg);
+        self.net_stack.poll(smoltcp::time::Instant::from_millis(0));
+
         // We simulate returning the formatted details of what was successfully dispatched
         // to conform to `#![no_std]` testing environment, demonstrating lifecycle integration.
         Ok(alloc::format!(
@@ -385,6 +397,11 @@ impl NlShell {
             AgentPriority::High,
             payload_str.as_bytes(),
         );
+
+        let serialized_msg = a2a_msg.serialize();
+        self.net_stack
+            .send_udp_broadcast(self.udp_handle, 9999, &serialized_msg);
+        self.net_stack.poll(smoltcp::time::Instant::from_millis(0));
 
         Ok(alloc::format!("Dispatched broadcast A2A Message to collaborate on task: {} [MsgType: {:?}, Priority: {:?}]", task, a2a_msg.msg_type, a2a_msg.priority))
     }
