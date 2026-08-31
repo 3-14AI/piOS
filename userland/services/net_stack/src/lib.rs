@@ -11,6 +11,7 @@ use smoltcp::socket::dns::Socket as DnsSocket;
 use smoltcp::socket::tcp::{
     Socket as TcpSocket, SocketBuffer as TcpSocketBuffer, State as TcpState,
 };
+use smoltcp::socket::udp::{PacketBuffer as UdpPacketBuffer, Socket as UdpSocket};
 use smoltcp::time::Instant;
 use smoltcp::wire::{EthernetAddress, HardwareAddress, IpAddress, IpCidr, Ipv4Address};
 
@@ -250,6 +251,34 @@ impl WasmNetStack {
         let tx_buffer = TcpSocketBuffer::new(alloc::vec![0; 1024]);
         let socket = TcpSocket::new(rx_buffer, tx_buffer);
         self.sockets.add(socket)
+    }
+
+    pub fn add_udp_broadcast_socket(&mut self, port: u16) -> smoltcp::iface::SocketHandle {
+        let rx_meta = alloc::vec![smoltcp::socket::udp::PacketMetadata::EMPTY; 4];
+        let tx_meta = alloc::vec![smoltcp::socket::udp::PacketMetadata::EMPTY; 4];
+        let rx_payload = alloc::vec![0; 1024];
+        let tx_payload = alloc::vec![0; 1024];
+
+        let rx_buffer = UdpPacketBuffer::new(rx_meta, rx_payload);
+        let tx_buffer = UdpPacketBuffer::new(tx_meta, tx_payload);
+
+        let mut socket = UdpSocket::new(rx_buffer, tx_buffer);
+        socket.bind(port).unwrap();
+        self.sockets.add(socket)
+    }
+
+    pub fn send_udp_broadcast(
+        &mut self,
+        handle: smoltcp::iface::SocketHandle,
+        port: u16,
+        data: &[u8],
+    ) {
+        let socket = self.sockets.get_mut::<UdpSocket>(handle);
+        let endpoint = smoltcp::wire::IpEndpoint::new(
+            IpAddress::Ipv4(Ipv4Address::new(255, 255, 255, 255)),
+            port,
+        );
+        let _ = socket.send_slice(data, endpoint);
     }
 
     pub fn poll(&mut self, time: Instant) {

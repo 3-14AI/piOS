@@ -3924,7 +3924,9 @@ name = "nl_sh"
 version = "0.1.0"
 dependencies = [
  "inference_runtime",
+ "net_stack",
  "pios-api",
+ "smoltcp",
  "vector_db",
 ]
 

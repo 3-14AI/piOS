@@ -58,6 +58,33 @@ impl A2AMessage {
             payload,
         }
     }
+
+    pub fn serialize(&self) -> alloc::vec::Vec<u8> {
+        let mut buf = alloc::vec::Vec::new();
+        buf.extend_from_slice(&self.sender_id.to_le_bytes());
+        buf.extend_from_slice(&self.receiver_id.to_le_bytes());
+
+        let msg_type_byte = match self.msg_type {
+            MessageType::Query => 0,
+            MessageType::Command => 1,
+            MessageType::Response => 2,
+            MessageType::Announcement => 3,
+            MessageType::Error => 4,
+        };
+        buf.push(msg_type_byte);
+
+        let priority_byte = match self.priority {
+            AgentPriority::Background => 0,
+            AgentPriority::Normal => 1,
+            AgentPriority::High => 2,
+            AgentPriority::Critical => 3,
+        };
+        buf.push(priority_byte);
+
+        buf.extend_from_slice(&(self.payload_len as u32).to_le_bytes());
+        buf.extend_from_slice(&self.payload);
+        buf
+    }
 }
 
 #[cfg(test)]
