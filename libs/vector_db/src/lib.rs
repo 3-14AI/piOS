@@ -392,28 +392,35 @@ mod tests {
 
         // User 1000 creates a DB and inserts a record
         let db_1000 = multi_db.get_or_create_db(1000);
-        assert!(db_1000
-            .insert(VectorRecord {
-                id: "1".to_string(),
-                vector: vec![1.0, 2.0],
-                metadata: None,
-            })
-            .is_ok());
+        assert!(
+            db_1000
+                .insert(VectorRecord {
+                    id: "1".to_string(),
+                    vector: vec![1.0, 2.0],
+                    metadata: None,
+                })
+                .is_ok()
+        );
 
         // User 1001 creates a DB and inserts a record
         let db_1001 = multi_db.get_or_create_db(1001);
-        assert!(db_1001
-            .insert(VectorRecord {
-                id: "2".to_string(),
-                vector: vec![3.0, 4.0],
-                metadata: None,
-            })
-            .is_ok());
+        assert!(
+            db_1001
+                .insert(VectorRecord {
+                    id: "2".to_string(),
+                    vector: vec![3.0, 4.0],
+                    metadata: None,
+                })
+                .is_ok()
+        );
 
         // Test normal access
         assert!(multi_db.get_db(1000).is_some());
         assert_eq!(multi_db.get_db(1000).unwrap().len(), 1);
-        assert_eq!(multi_db.get_db(1000).unwrap().get("1").unwrap().vector, vec![1.0, 2.0]);
+        assert_eq!(
+            multi_db.get_db(1000).unwrap().get("1").unwrap().vector,
+            vec![1.0, 2.0]
+        );
 
         // Test auth access
         assert!(multi_db.get_db_with_auth(1000, 1000).is_some());
@@ -434,12 +441,13 @@ mod tests {
     fn test_multi_user_vector_db_no_dim() {
         let mut multi_db = MultiUserVectorDb::default();
         let db = multi_db.get_or_create_db(1);
-        assert!(db
-            .insert(VectorRecord {
+        assert!(
+            db.insert(VectorRecord {
                 id: "1".to_string(),
                 vector: vec![1.0],
                 metadata: None,
             })
-            .is_ok());
+            .is_ok()
+        );
     }
 }
