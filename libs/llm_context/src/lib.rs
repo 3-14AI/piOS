@@ -176,7 +176,7 @@ impl MultiUserLlmContextManager {
 
     /// Helper to get or create the active pages and current tokens for a user
     fn get_or_create_user_state(&mut self, uid: u32) -> (&mut Vec<ContextPage>, &mut usize) {
-        let pages = self.active_pages.entry(uid).or_insert_with(Vec::new);
+        let pages = self.active_pages.entry(uid).or_default();
         let tokens = self.current_tokens.entry(uid).or_insert(0);
         (pages, tokens)
     }
@@ -269,10 +269,8 @@ impl MultiUserLlmContextManager {
 
                         let (pages, _current_tokens) = self.get_or_create_user_state(uid);
 
-                        if !pages.iter().any(|p| p.id == page.id) {
-                            if self.add_page(uid, page) {
-                                loaded_count += 1;
-                            }
+                        if !pages.iter().any(|p| p.id == page.id) && self.add_page(uid, page) {
+                            loaded_count += 1;
                         }
                     }
                 }
