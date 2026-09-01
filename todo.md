@@ -36,4 +36,4 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 27: Persistent AI Core
 - [ ] **WP-146: Model Fine-tuning on Device.** Allow local models to learn from telemetry data by saving updated weights to disk.
-- [ ] **WP-147: Multi-User Contextual Memory.** Implement separate VectorDB spaces for different users based on capabilities and permissions.
+- [x] **WP-147: Multi-User Contextual Memory.** Implement separate VectorDB spaces for different users based on capabilities and permissions.
