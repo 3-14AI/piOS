@@ -2,6 +2,7 @@
 
 extern crate alloc;
 
+use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -144,6 +145,79 @@ impl VectorDb {
     }
 }
 
+/// A multi-user vector database that manages separate spaces for different users based on their UID.
+#[derive(Default)]
+pub struct MultiUserVectorDb {
+    dbs: BTreeMap<u32, VectorDb>,
+    dimension: Option<usize>,
+}
+
+impl MultiUserVectorDb {
+    /// Creates a new empty multi-user vector database.
+    pub fn new() -> Self {
+        Self {
+            dbs: BTreeMap::new(),
+            dimension: None,
+        }
+    }
+
+    /// Creates a new empty multi-user vector database with a fixed dimension.
+    pub fn with_dimension(dimension: usize) -> Self {
+        Self {
+            dbs: BTreeMap::new(),
+            dimension: Some(dimension),
+        }
+    }
+
+    /// Gets or creates a database space for a given user ID.
+    pub fn get_or_create_db(&mut self, uid: u32) -> &mut VectorDb {
+        let dimension = self.dimension;
+        self.dbs.entry(uid).or_insert_with(|| {
+            if let Some(dim) = dimension {
+                VectorDb::with_dimension(dim)
+            } else {
+                VectorDb::new()
+            }
+        })
+    }
+
+    /// Retrieves a database space for a given user ID, if it exists.
+    pub fn get_db(&self, uid: u32) -> Option<&VectorDb> {
+        self.dbs.get(&uid)
+    }
+
+    /// Retrieves a database space for a user.
+    /// If `caller_uid` is 0 (root), it has access to any `target_uid`'s space.
+    /// Otherwise, `caller_uid` must match `target_uid`.
+    pub fn get_db_with_auth(&self, caller_uid: u32, target_uid: u32) -> Option<&VectorDb> {
+        if caller_uid == 0 || caller_uid == target_uid {
+            self.get_db(target_uid)
+        } else {
+            None
+        }
+    }
+
+    /// Gets or creates a database space for a user with authorization check.
+    /// If `caller_uid` is 0 (root), it has access to any `target_uid`'s space.
+    /// Otherwise, `caller_uid` must match `target_uid`.
+    pub fn get_or_create_db_with_auth(
+        &mut self,
+        caller_uid: u32,
+        target_uid: u32,
+    ) -> Option<&mut VectorDb> {
+        if caller_uid == 0 || caller_uid == target_uid {
+            Some(self.get_or_create_db(target_uid))
+        } else {
+            None
+        }
+    }
+
+    /// Deletes a user's database space.
+    pub fn remove_db(&mut self, uid: u32) -> bool {
+        self.dbs.remove(&uid).is_some()
+    }
+}
+
 /// Computes the cosine similarity between two vectors.
 pub fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
     let mut dot_product = 0.0;
@@ -177,6 +251,7 @@ pub fn squared_euclidean_distance(a: &[f32], b: &[f32]) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::string::ToString;
     use alloc::vec;
 
     #[test]
@@ -309,5 +384,70 @@ mod tests {
         assert!(db.delete("1"));
         assert!(!db.delete("2"));
         assert!(db.is_empty());
+    }
+
+    #[test]
+    fn test_multi_user_vector_db() {
+        let mut multi_db = MultiUserVectorDb::with_dimension(2);
+
+        // User 1000 creates a DB and inserts a record
+        let db_1000 = multi_db.get_or_create_db(1000);
+        assert!(
+            db_1000
+                .insert(VectorRecord {
+                    id: "1".to_string(),
+                    vector: vec![1.0, 2.0],
+                    metadata: None,
+                })
+                .is_ok()
+        );
+
+        // User 1001 creates a DB and inserts a record
+        let db_1001 = multi_db.get_or_create_db(1001);
+        assert!(
+            db_1001
+                .insert(VectorRecord {
+                    id: "2".to_string(),
+                    vector: vec![3.0, 4.0],
+                    metadata: None,
+                })
+                .is_ok()
+        );
+
+        // Test normal access
+        assert!(multi_db.get_db(1000).is_some());
+        assert_eq!(multi_db.get_db(1000).unwrap().len(), 1);
+        assert_eq!(
+            multi_db.get_db(1000).unwrap().get("1").unwrap().vector,
+            vec![1.0, 2.0]
+        );
+
+        // Test auth access
+        assert!(multi_db.get_db_with_auth(1000, 1000).is_some());
+        assert!(multi_db.get_db_with_auth(1001, 1000).is_none());
+        assert!(multi_db.get_db_with_auth(0, 1000).is_some()); // Root access
+
+        // Test mutable auth access
+        assert!(multi_db.get_or_create_db_with_auth(1001, 1000).is_none());
+        assert!(multi_db.get_or_create_db_with_auth(0, 1002).is_some());
+
+        // Test removal
+        assert!(multi_db.remove_db(1000));
+        assert!(!multi_db.remove_db(1000));
+        assert!(multi_db.get_db(1000).is_none());
+    }
+
+    #[test]
+    fn test_multi_user_vector_db_no_dim() {
+        let mut multi_db = MultiUserVectorDb::default();
+        let db = multi_db.get_or_create_db(1);
+        assert!(
+            db.insert(VectorRecord {
+                id: "1".to_string(),
+                vector: vec![1.0],
+                metadata: None,
+            })
+            .is_ok()
+        );
     }
 }
