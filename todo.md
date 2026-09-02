@@ -30,7 +30,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-142: Swarm Packet Passing.** Implement true multi-node packet passing and agent broadcasting for A2A communication.
 
 ## Phase 26: Hardware Peripheral Expansion
-- [ ] **WP-143: USB Mass Storage Support.** Implement drivers for reading and writing to USB flash drives.
+- [x] **WP-143: USB Mass Storage Support.** Implement drivers for reading and writing to USB flash drives.
 - [ ] **WP-144: WiFi Capabilities.** Implement a WiFi driver and integrate it with the network stack.
 - [ ] **WP-145: Audio Framework.** Complete the audio subsystem and implement a basic AC97 or HDA driver.
 
