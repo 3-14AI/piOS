@@ -31,7 +31,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 26: Hardware Peripheral Expansion
 - [x] **WP-143: USB Mass Storage Support.** Implement drivers for reading and writing to USB flash drives.
-- [ ] **WP-144: WiFi Capabilities.** Implement a WiFi driver and integrate it with the network stack.
+- [x] **WP-144: WiFi Capabilities.** Implement a WiFi driver and integrate it with the network stack.
 - [ ] **WP-145: Audio Framework.** Complete the audio subsystem and implement a basic AC97 or HDA driver.
 
 ## Phase 27: Persistent AI Core
