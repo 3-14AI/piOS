@@ -80,6 +80,56 @@ impl<'a> smoltcp::phy::RxToken for MockRxToken<'a> {
     }
 }
 
+pub struct WifiDevice {
+    rx_buffer: Vec<u8>,
+    tx_buffer: Vec<u8>,
+}
+
+impl Default for WifiDevice {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl WifiDevice {
+    pub fn new() -> Self {
+        Self {
+            rx_buffer: Vec::new(),
+            tx_buffer: Vec::new(),
+        }
+    }
+}
+
+impl Device for WifiDevice {
+    type RxToken<'a>
+        = MockRxToken<'a>
+    where
+        Self: 'a;
+    type TxToken<'a>
+        = MockTxToken<'a>
+    where
+        Self: 'a;
+
+    fn receive(&mut self, _timestamp: Instant) -> Option<(Self::RxToken<'_>, Self::TxToken<'_>)> {
+        // Mock WiFi device packet reception
+        None
+    }
+
+    fn transmit(&mut self, _timestamp: Instant) -> Option<Self::TxToken<'_>> {
+        // Mock WiFi device packet transmission
+        None
+    }
+
+    fn capabilities(&self) -> DeviceCapabilities {
+        let mut caps = DeviceCapabilities::default();
+        caps.max_transmission_unit = 1500;
+        caps.max_burst_size = Some(1);
+        caps.medium = Medium::Ethernet;
+        caps.checksum = ChecksumCapabilities::ignored();
+        caps
+    }
+}
+
 pub struct MockTxToken<'a> {
     buffer: &'a mut Vec<u8>,
 }
@@ -197,6 +247,7 @@ verus! {
 
 pub struct WasmNetStack {
     device: MockDevice,
+    wifi_device: Option<WifiDevice>,
     interface: Interface,
     sockets: SocketSet<'static>,
 }
@@ -239,8 +290,11 @@ impl WasmNetStack {
         let dns_socket = DnsSocket::new(dns_servers, dns_queries);
         sockets.add(dns_socket);
 
+        let wifi_device = Some(WifiDevice::new());
+
         Self {
             device,
+            wifi_device,
             interface,
             sockets,
         }
