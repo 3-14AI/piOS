@@ -50,6 +50,13 @@ extern "C" {
         out_buffer_max_size: i32,
         bytes_written_ptr: *mut u32,
     ) -> i32;
+    pub fn save_weights(
+        context: u32,
+        path_ptr: *const u8,
+        path_len: i32,
+        weights_ptr: *const u8,
+        weights_len: i32,
+    ) -> i32;
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -131,6 +138,10 @@ impl InferenceEngine {
         }
         out_buffer[..output_data.len()].copy_from_slice(output_data);
         Ok(output_data.len())
+    }
+
+    pub fn save_weights(&self, _context: usize, _path: &str, _weights: &[u8]) -> Result<(), Error> {
+        Ok(())
     }
 }
 
@@ -233,6 +244,22 @@ impl InferenceEngine {
             return Err(Error::ComputeFailed);
         }
         Ok(bytes_written as usize)
+    }
+
+    pub fn save_weights(&self, context: usize, path: &str, weights: &[u8]) -> Result<(), Error> {
+        let res = unsafe {
+            save_weights(
+                context as u32,
+                path.as_ptr(),
+                path.len() as i32,
+                weights.as_ptr(),
+                weights.len() as i32,
+            )
+        };
+        if res != 0 {
+            return Err(Error::ComputeFailed);
+        }
+        Ok(())
     }
 }
 

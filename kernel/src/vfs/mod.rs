@@ -256,6 +256,7 @@ impl Vfs {
         Err(())
     }
 }
+
 } // verus!
 
 #[cfg(not(feature = "verus"))]
@@ -269,7 +270,30 @@ pub struct Vfs {
 }
 
 #[cfg(not(feature = "verus"))]
+pub enum OpenFlags {
+    WriteCreate,
+}
+
+#[cfg(not(feature = "verus"))]
+pub struct File;
+
+#[cfg(not(feature = "verus"))]
+impl File {
+    pub fn write_all(&mut self, _data: &[u8]) -> Result<(), ()> {
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 impl Vfs {
+    pub fn global() -> Option<Self> {
+        Some(Vfs::new(1))
+    }
+
+    pub fn open_or_create(&self, _path: &str, _flags: OpenFlags) -> Result<File, ()> {
+        Ok(File)
+    }
+
     pub fn new(root: u64) -> Self {
         let mut parent_map = alloc::collections::BTreeMap::new();
         let mut depth_map = alloc::collections::BTreeMap::new();

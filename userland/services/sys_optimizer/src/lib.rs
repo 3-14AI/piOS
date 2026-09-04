@@ -43,6 +43,14 @@ impl SysOptimizer {
         Ok(())
     }
 
+    pub fn fine_tune(&mut self, path: &str, weights: &[u8]) -> Result<(), &'static str> {
+        let ctx = self.context.ok_or("Optimizer not initialized")?;
+        self.engine
+            .save_weights(ctx, path, weights)
+            .map_err(|_| "Failed to save weights")?;
+        Ok(())
+    }
+
     pub fn analyze_and_adjust(&mut self, cpu_usage: u8, mem_usage: u8) -> Result<(), &'static str> {
         let ctx = self.context.ok_or("Optimizer not initialized")?;
 
@@ -134,5 +142,12 @@ mod tests {
 
         // The compaction logic is triggered if out[2] > 0, which 99 is. The wasm32 tests
         // would call the host function, but since these run native, we just verify the state changes.
+    }
+
+    #[test]
+    fn test_sys_optimizer_fine_tune() {
+        let mut optimizer = SysOptimizer::new();
+        optimizer.init().unwrap();
+        assert!(optimizer.fine_tune("weights.bin", b"test_weights").is_ok());
     }
 }

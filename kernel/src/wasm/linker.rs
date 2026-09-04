@@ -118,6 +118,12 @@ impl WasmComponentLinker {
                 "get_output",
                 Func::wrap(&mut store, get_output),
             )?;
+
+            linker.define(
+                "wasi_ephemeral_nn",
+                "save_weights",
+                wasmi::Func::wrap(&mut store, crate::wasm::wasi_nn::save_weights),
+            )?;
         }
 
         // First pass: instantiate all dependencies
@@ -326,6 +332,7 @@ mod tests {
               (import "wasi_ephemeral_nn" "set_input" (func $set_input (param i32 i32 i32) (result i32)))
               (import "wasi_ephemeral_nn" "compute" (func $compute (param i32) (result i32)))
               (import "wasi_ephemeral_nn" "get_output" (func $get_output (param i32 i32 i32 i32 i32) (result i32)))
+              (import "wasi_ephemeral_nn" "save_weights" (func $save_weights (param i32 i32 i32 i32 i32) (result i32)))
               (memory (export "memory") 1)
               (func $main (export "main")
                 i32.const 0
@@ -363,6 +370,14 @@ mod tests {
                 i32.const 40
                 i32.const 44
                 call $get_output
+                drop
+
+                i32.const 1
+                i32.const 0
+                i32.const 10
+                i32.const 0
+                i32.const 0
+                call $save_weights
                 drop
               )
             )
