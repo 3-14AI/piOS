@@ -119,11 +119,11 @@ impl WasmComponentLinker {
                 Func::wrap(&mut store, get_output),
             )?;
 
-        linker.define(
-            "wasi_ephemeral_nn",
-            "save_weights",
-            wasmi::Func::wrap(&mut store, crate::wasm::wasi_nn::save_weights),
-        )?;
+            linker.define(
+                "wasi_ephemeral_nn",
+                "save_weights",
+                wasmi::Func::wrap(&mut store, crate::wasm::wasi_nn::save_weights),
+            )?;
         }
 
         // First pass: instantiate all dependencies

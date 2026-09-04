@@ -259,7 +259,6 @@ impl Vfs {
 
 } // verus!
 
-
 #[cfg(not(feature = "verus"))]
 extern crate alloc;
 
