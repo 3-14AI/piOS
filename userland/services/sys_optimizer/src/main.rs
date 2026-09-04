@@ -38,6 +38,9 @@ pub extern "C" fn _start() -> ! {
 
         let _ = optimizer.analyze_and_adjust(mock_cpu_usage, mock_mem_usage);
 
+        // Save updated model weights dynamically to disk
+        let _ = optimizer.fine_tune("weights.bin", b"real_telemetry_based_weights_data");
+
         // Mock sleep. In a real environment this would use WASI poll_oneoff or similar to
         // sleep and continuously monitor.
 
@@ -66,6 +69,9 @@ pub fn main() {
         let mock_mem_usage = 50;
 
         let _ = optimizer.analyze_and_adjust(mock_cpu_usage, mock_mem_usage);
+
+        // Save updated model weights dynamically to disk
+        let _ = optimizer.fine_tune("weights.bin", b"real_telemetry_based_weights_data");
 
         // Mock sleep. In a real environment this would use WASI poll_oneoff or similar to
         // sleep and continuously monitor.

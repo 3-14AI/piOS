@@ -10,6 +10,7 @@ pub const WASI_NN_ERRNO_RUNTIME_ERROR: i32 = 5;
 pub const WASI_NN_ERRNO_UNSUPPORTED_OPERATION: i32 = 6;
 pub const WASI_NN_ERRNO_TOO_LARGE: i32 = 7;
 pub const WASI_NN_ERRNO_NOT_FOUND: i32 = 8;
+pub const WASI_NN_ERRNO_IO: i32 = 9;
 
 #[cfg(not(feature = "verus"))]
 use crate::virtio_gpu::VirtioGpuDriver;
@@ -243,6 +244,60 @@ pub fn get_output(
         .is_err()
     {
         return WASI_NN_ERRNO_INVALID_ARGUMENT;
+    }
+
+    WASI_NN_ERRNO_SUCCESS
+}
+
+pub fn save_weights(
+    caller: Caller<'_, crate::wasm::wasi::WasiCtx>,
+    _context: i32,
+    path_ptr: i32,
+    path_len: i32,
+    weights_ptr: i32,
+    weights_len: i32,
+) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_NN_ERRNO_MISSING_MEMORY,
+    };
+
+    let mut path_bytes = alloc::vec![0u8; path_len as usize];
+    if memory
+        .read(&caller, path_ptr as u32 as usize, &mut path_bytes)
+        .is_err()
+    {
+        return WASI_NN_ERRNO_INVALID_ARGUMENT;
+    }
+
+    let path_str = match alloc::str::from_utf8(&path_bytes) {
+        Ok(s) => s,
+        Err(_) => return WASI_NN_ERRNO_INVALID_ARGUMENT,
+    };
+
+    let mut weights_bytes = alloc::vec![0u8; weights_len as usize];
+    if memory
+        .read(&caller, weights_ptr as u32 as usize, &mut weights_bytes)
+        .is_err()
+    {
+        return WASI_NN_ERRNO_INVALID_ARGUMENT;
+    }
+
+    #[cfg(not(feature = "verus"))]
+    {
+        let vfs = match crate::vfs::Vfs::global() {
+            Some(v) => v,
+            None => return WASI_NN_ERRNO_IO,
+        };
+
+        let mut file = match vfs.open_or_create(path_str, crate::vfs::OpenFlags::WriteCreate) {
+            Ok(f) => f,
+            Err(_) => return WASI_NN_ERRNO_IO,
+        };
+
+        if file.write_all(&weights_bytes).is_err() {
+            return WASI_NN_ERRNO_IO;
+        }
     }
 
     WASI_NN_ERRNO_SUCCESS
