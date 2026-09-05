@@ -36,3 +36,9 @@ For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integrati
 
 ## Swarm Implementation Details
 1. **A2AMessage Network Serialization:** When dispatching `A2AMessage` across the network, they must be properly serialized to a `&[u8]` slice and broadcast over the `WasmNetStack` UDP capabilities (port 9999) using `add_udp_broadcast_socket` and `send_udp_broadcast`.
+
+## Phases 28-31 Focus: AI-Native Paradigms
+1. **System-wide AI Observer (Phase 28):** Focus on building low-overhead daemons for continuous system state recording (inputs, screen bounds) to feed into the multimodal AI. Ensure privacy boundaries are maintained.
+2. **Dynamic Application Generation (Phase 29):** Agents must focus on integrating `wasi_compiler` and `sys_intent` deeply so that missing capabilities trigger live code synthesis and ephemeral sandbox execution.
+3. **AI-Native File System (Phase 30):** Shift from POSIX tree structures to graph-based, semantic representations of files. Paths like `/semantic/...` should invoke LLM embedding similarity searches instead of simple inode lookups.
+4. **Hardware Continuity (Phase 31):** Continue pushing for real hardware support (Power Management, Bluetooth HCI) and replace remaining stub drivers with functional MMIO/DMA code.
