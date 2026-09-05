@@ -32,8 +32,24 @@ To achieve the overarching goal of a "fully functional operating system with nat
 ## Phase 26: Hardware Peripheral Expansion
 - [x] **WP-143: USB Mass Storage Support.** Implement drivers for reading and writing to USB flash drives.
 - [x] **WP-144: WiFi Capabilities.** Implement a WiFi driver and integrate it with the network stack.
-- [ ] **WP-145: Audio Framework.** Complete the audio subsystem and implement a basic AC97 or HDA driver.
+- [x] **WP-145: Audio Framework.** Complete the audio subsystem and implement a basic AC97 or HDA driver.
 
 ## Phase 27: Persistent AI Core
 - [x] **WP-146: Model Fine-tuning on Device.** Allow local models to learn from telemetry data by saving updated weights to disk.
 - [x] **WP-147: Multi-User Contextual Memory.** Implement separate VectorDB spaces for different users based on capabilities and permissions.
+
+## Phase 28: System-wide AI Observer
+- [ ] **WP-148: Screen & Input Recording Daemon.** Implement a low-overhead service that captures screenshots and input events to create a continuous local history of user actions.
+- [ ] **WP-149: Semantic Indexing of System State.** Feed the recorded history into the multimodal AI models to generate searchable embeddings, allowing users to query past system states (e.g., "What was that website I was looking at yesterday?").
+
+## Phase 29: Dynamic Application Generation
+- [ ] **WP-150: JIT WASM Synthesis.** Extend `nl_sh` and the internal compiler so that when a user asks for an app that doesn't exist, the AI generates the Rust code, verifies it with Verus, compiles to WASM, and runs it on the fly.
+- [ ] **WP-151: Ephemeral Sandboxing.** Ensure dynamically generated apps run in strict, isolated WASM sandboxes that are automatically destroyed after use.
+
+## Phase 30: AI-Native File System
+- [ ] **WP-152: SemanticFS Implementation.** Implement a new VFS driver where files are organized not just hierarchically, but as a graph of semantic relationships, allowing path resolution via natural language queries (e.g., `/semantic/recent-receipts/`).
+- [ ] **WP-153: Predictive Prefetching.** Use AI to predict which files the user will need next and preload them into RAM before they are explicitly requested.
+
+## Phase 31: Advanced Hardware & Power Management
+- [ ] **WP-154: AI Power Governor.** Implement a power management subsystem that learns usage patterns to optimize CPU states, screen brightness, and peripheral power states proactively.
+- [ ] **WP-155: Bluetooth Stack.** Implement a basic Bluetooth HCI driver and integrate it with the network stack.

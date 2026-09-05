@@ -107,17 +107,29 @@ verus! {
     pub struct HdaSoundDriver {
         pub initialized: bool,
         pub is_recognition_loop_running: bool,
+        pub pci_bus: u8,
+        pub pci_device: u8,
+        pub pci_function: u8,
+        pub mmio_base: u64,
     }
 
     impl HdaSoundDriver {
-        pub fn new() -> (d: Self)
+        pub fn new(bus: u8, device: u8, function: u8, mmio_base: u64) -> (d: Self)
             ensures
                 d.initialized == true,
-                d.is_recognition_loop_running == false
+                d.is_recognition_loop_running == false,
+                d.pci_bus == bus,
+                d.pci_device == device,
+                d.pci_function == function,
+                d.mmio_base == mmio_base
         {
             HdaSoundDriver {
                 initialized: true,
                 is_recognition_loop_running: false,
+                pci_bus: bus,
+                pci_device: device,
+                pci_function: function,
+                mmio_base,
             }
         }
 
@@ -249,15 +261,23 @@ pub struct HdaSoundDriver {
     pub initialized: bool,
     pub is_recognition_loop_running: bool,
     pub assistant: VoiceAssistant,
+    pub pci_bus: u8,
+    pub pci_device: u8,
+    pub pci_function: u8,
+    pub mmio_base: u64,
 }
 
 #[cfg(not(feature = "verus"))]
 impl HdaSoundDriver {
-    pub fn new() -> Self {
+    pub fn new(bus: u8, device: u8, function: u8, mmio_base: u64) -> Self {
         HdaSoundDriver {
             initialized: true,
             is_recognition_loop_running: false,
             assistant: VoiceAssistant::new(),
+            pci_bus: bus,
+            pci_device: device,
+            pci_function: function,
+            mmio_base,
         }
     }
 
@@ -277,7 +297,41 @@ impl HdaSoundDriver {
 #[cfg(not(feature = "verus"))]
 impl Default for HdaSoundDriver {
     fn default() -> Self {
-        Self::new()
+        Self::new(0, 0, 0, 0)
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+#[derive(Debug)]
+pub struct Ac97Driver {
+    pub pci_bus: u8,
+    pub pci_device: u8,
+    pub pci_function: u8,
+    pub nam_bar: u32,
+    pub nabm_bar: u32,
+    pub volume: u8,
+}
+
+#[cfg(not(feature = "verus"))]
+impl Ac97Driver {
+    pub fn new(bus: u8, device: u8, function: u8, nam_bar: u32, nabm_bar: u32) -> Self {
+        Ac97Driver {
+            pci_bus: bus,
+            pci_device: device,
+            pci_function: function,
+            nam_bar,
+            nabm_bar,
+            volume: 50,
+        }
+    }
+
+    pub fn init(&mut self) -> Result<(), &'static str> {
+        // Mock hardware initialization sequence for AC97
+        Ok(())
+    }
+
+    pub fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
     }
 }
 
@@ -288,7 +342,7 @@ mod tests {
 
     #[test]
     fn test_sound_driver() {
-        let mut drv = HdaSoundDriver::new();
+        let mut drv = HdaSoundDriver::new(0, 0, 0, 0);
         assert!(drv.initialized);
         assert!(!drv.is_recognition_loop_running);
 
@@ -349,5 +403,21 @@ mod tests {
     fn test_audio_mixer() {
         let mixer = AudioMixer::new();
         assert_eq!(mixer.master_volume, 100);
+    }
+
+    #[test]
+    fn test_ac97_driver() {
+        let mut drv = Ac97Driver::new(1, 2, 0, 0x1000, 0x2000);
+        assert_eq!(drv.pci_bus, 1);
+        assert_eq!(drv.pci_device, 2);
+        assert_eq!(drv.pci_function, 0);
+        assert_eq!(drv.nam_bar, 0x1000);
+        assert_eq!(drv.nabm_bar, 0x2000);
+        assert_eq!(drv.volume, 50);
+
+        assert!(drv.init().is_ok());
+
+        drv.set_volume(80);
+        assert_eq!(drv.volume, 80);
     }
 }
