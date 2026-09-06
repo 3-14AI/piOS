@@ -1,24 +1,40 @@
-#![no_std]
-#![no_main]
+#![cfg_attr(target_arch = "wasm32", no_std)]
+#![cfg_attr(target_arch = "wasm32", no_main)]
 
+#[cfg(target_arch = "wasm32")]
 extern crate alloc;
+
 use core::alloc::{GlobalAlloc, Layout};
+
+#[cfg(target_arch = "wasm32")]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
+#[cfg(target_arch = "wasm32")]
 const HEAP_SIZE: usize = 32 * 1024 * 1024;
 
+#[cfg(target_arch = "wasm32")]
 #[repr(C, align(4096))]
 struct AlignedHeap([u8; HEAP_SIZE]);
+
+#[cfg(target_arch = "wasm32")]
 struct SyncHeap(core::cell::UnsafeCell<AlignedHeap>);
+
+#[cfg(target_arch = "wasm32")]
 unsafe impl Sync for SyncHeap {}
 
+#[cfg(target_arch = "wasm32")]
 static HEAP: SyncHeap = SyncHeap(core::cell::UnsafeCell::new(AlignedHeap([0; HEAP_SIZE])));
 
+#[cfg(target_arch = "wasm32")]
 struct SimpleAllocator {
     offset: AtomicUsize,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+struct SimpleAllocator;
+
 unsafe impl GlobalAlloc for SimpleAllocator {
+    #[cfg(target_arch = "wasm32")]
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let align = layout.align();
         let size = layout.size();
@@ -48,21 +64,34 @@ unsafe impl GlobalAlloc for SimpleAllocator {
             }
         }
     }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
+        core::ptr::null_mut()
+    }
+
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {}
 }
 
+#[cfg(target_arch = "wasm32")]
 #[global_allocator]
 static ALLOCATOR: SimpleAllocator = SimpleAllocator {
     offset: AtomicUsize::new(0),
 };
 
+#[cfg(not(target_arch = "wasm32"))]
+#[global_allocator]
+static ALLOCATOR: SimpleAllocator = SimpleAllocator;
+
+#[cfg(target_arch = "wasm32")]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
+#[cfg(target_arch = "wasm32")]
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn start() -> ! {
     let mut daemon = recording_daemon::RecordingDaemon::new();
     daemon.start_recording();
 
@@ -73,4 +102,12 @@ pub extern "C" fn _start() -> ! {
         // Sleep or wait for IPC signals
         core::hint::spin_loop();
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn main() {
+    let mut daemon = recording_daemon::RecordingDaemon::new();
+    daemon.start_recording();
+
+    // Not targeting WASM, typically tests or CI workspace build
 }
