@@ -39,8 +39,8 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-147: Multi-User Contextual Memory.** Implement separate VectorDB spaces for different users based on capabilities and permissions.
 
 ## Phase 28: System-wide AI Observer
-- [ ] **WP-148: Screen & Input Recording Daemon.** Implement a low-overhead service that captures screenshots and input events to create a continuous local history of user actions.
-- [ ] **WP-149: Semantic Indexing of System State.** Feed the recorded history into the multimodal AI models to generate searchable embeddings, allowing users to query past system states (e.g., "What was that website I was looking at yesterday?").
+- [x] **WP-148: Screen & Input Recording Daemon.** Implement a low-overhead service that captures screenshots and input events to create a continuous local history of user actions.
+- [x] **WP-149: Semantic Indexing of System State.** Feed the recorded history into the multimodal AI models to generate searchable embeddings, allowing users to query past system states (e.g., "What was that website I was looking at yesterday?").
 
 ## Phase 29: Dynamic Application Generation
 - [ ] **WP-150: JIT WASM Synthesis.** Extend `nl_sh` and the internal compiler so that when a user asks for an app that doesn't exist, the AI generates the Rust code, verifies it with Verus, compiles to WASM, and runs it on the fly.
