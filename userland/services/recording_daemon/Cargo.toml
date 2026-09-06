@@ -1,0 +1,21 @@
+[package]
+name = "recording_daemon"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "recording_daemon"
+path = "src/lib.rs"
+
+[[bin]]
+name = "recording_daemon"
+path = "src/main.rs"
+test = false
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+vector_db = { path = "../../../libs/vector_db" }
+pios-common = { path = "../../../libs/pios-common" }
+
+[lints]
+workspace = true
