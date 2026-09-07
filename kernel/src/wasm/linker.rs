@@ -4,6 +4,7 @@ use alloc::string::{String, ToString};
 // use alloc::vec::Vec;
 use crate::wasm::wasi::WasiCtx;
 #[cfg(not(feature = "verus"))]
+use crate::wasm::wasi_compiler::wasi_ephemeral_compiler;
 use crate::wasm::wasi_nn::{
     compute, get_output, init_execution_context, load, load_by_name, set_input,
 };
@@ -88,6 +89,12 @@ impl WasmComponentLinker {
             "wasi_snapshot_preview1",
             "compact_memory",
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::compact_memory),
+        )?;
+        #[cfg(not(feature = "verus"))]
+        linker.define(
+            "wasi_snapshot_preview1",
+            "wasi_ephemeral_compiler",
+            wasmi::Func::wrap(&mut store, wasi_ephemeral_compiler),
         )?;
 
         #[cfg(not(feature = "verus"))]

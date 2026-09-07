@@ -43,7 +43,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-149: Semantic Indexing of System State.** Feed the recorded history into the multimodal AI models to generate searchable embeddings, allowing users to query past system states (e.g., "What was that website I was looking at yesterday?").
 
 ## Phase 29: Dynamic Application Generation
-- [ ] **WP-150: JIT WASM Synthesis.** Extend `nl_sh` and the internal compiler so that when a user asks for an app that doesn't exist, the AI generates the Rust code, verifies it with Verus, compiles to WASM, and runs it on the fly.
+- [x] **WP-150: JIT WASM Synthesis.** Extend `nl_sh` and the internal compiler so that when a user asks for an app that doesn't exist, the AI generates the Rust code, verifies it with Verus, compiles to WASM, and runs it on the fly.
 - [ ] **WP-151: Ephemeral Sandboxing.** Ensure dynamically generated apps run in strict, isolated WASM sandboxes that are automatically destroyed after use.
 
 ## Phase 30: AI-Native File System
