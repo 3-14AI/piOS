@@ -8,6 +8,8 @@ use crate::wasm::wasi::{
     random_get, WasiCtx,
 };
 #[cfg(not(feature = "verus"))]
+use crate::wasm::wasi_compiler::wasi_ephemeral_compiler;
+#[cfg(not(feature = "verus"))]
 use crate::wasm::wasi_crypto::constant_time_eq_host;
 #[cfg(not(feature = "verus"))]
 use crate::wasm::wasi_nn::{
@@ -132,6 +134,11 @@ impl WasmRuntime {
                 "wasi_snapshot_preview1",
                 "sys_intent",
                 Func::wrap(&mut store, sys_intent),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
+                "wasi_ephemeral_compiler",
+                Func::wrap(&mut store, wasi_ephemeral_compiler),
             )?;
             linker.define("wasi_ephemeral_nn", "load", Func::wrap(&mut store, load))?;
             linker.define(
