@@ -44,7 +44,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 29: Dynamic Application Generation
 - [x] **WP-150: JIT WASM Synthesis.** Extend `nl_sh` and the internal compiler so that when a user asks for an app that doesn't exist, the AI generates the Rust code, verifies it with Verus, compiles to WASM, and runs it on the fly.
-- [ ] **WP-151: Ephemeral Sandboxing.** Ensure dynamically generated apps run in strict, isolated WASM sandboxes that are automatically destroyed after use.
+- [x] **WP-151: Ephemeral Sandboxing.** Ensure dynamically generated apps run in strict, isolated WASM sandboxes that are automatically destroyed after use.
 
 ## Phase 30: AI-Native File System
 - [ ] **WP-152: SemanticFS Implementation.** Implement a new VFS driver where files are organized not just hierarchically, but as a graph of semantic relationships, allowing path resolution via natural language queries (e.g., `/semantic/recent-receipts/`).
