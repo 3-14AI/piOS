@@ -86,6 +86,17 @@ impl SemanticSearch {
 
         Ok(final_results)
     }
+
+    pub fn resolve_path(&mut self, path: &str) -> Result<u64, &'static str> {
+        if path.starts_with("/semantic/") {
+            let query = &path[10..];
+            let results = self.search(query, 1)?;
+            if let Some((_score, inode)) = results.first() {
+                return Ok(*inode);
+            }
+        }
+        Err("Path not found or not a semantic path")
+    }
 }
 
 #[cfg(test)]
@@ -110,5 +121,17 @@ mod tests {
         // Search
         let results = search.search("config", 2).unwrap();
         assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn test_semantic_search_resolve_path() {
+        let mut search = SemanticSearch::new().unwrap();
+        assert!(search.index_file(1, "recent receipts").is_ok());
+
+        let inode = search.resolve_path("/semantic/recent-receipts/").unwrap();
+        assert_eq!(inode, 1);
+
+        let err = search.resolve_path("/normal/path");
+        assert!(err.is_err());
     }
 }

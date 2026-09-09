@@ -47,7 +47,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-151: Ephemeral Sandboxing.** Ensure dynamically generated apps run in strict, isolated WASM sandboxes that are automatically destroyed after use.
 
 ## Phase 30: AI-Native File System
-- [ ] **WP-152: SemanticFS Implementation.** Implement a new VFS driver where files are organized not just hierarchically, but as a graph of semantic relationships, allowing path resolution via natural language queries (e.g., `/semantic/recent-receipts/`).
+- [x] **WP-152: SemanticFS Implementation.** Implement a new VFS driver where files are organized not just hierarchically, but as a graph of semantic relationships, allowing path resolution via natural language queries (e.g., `/semantic/recent-receipts/`).
 - [ ] **WP-153: Predictive Prefetching.** Use AI to predict which files the user will need next and preload them into RAM before they are explicitly requested.
 
 ## Phase 31: Advanced Hardware & Power Management
