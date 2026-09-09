@@ -88,8 +88,7 @@ impl SemanticSearch {
     }
 
     pub fn resolve_path(&mut self, path: &str) -> Result<u64, &'static str> {
-        if path.starts_with("/semantic/") {
-            let query = &path[10..];
+        if let Some(query) = path.strip_prefix("/semantic/") {
             let results = self.search(query, 1)?;
             if let Some((_score, inode)) = results.first() {
                 return Ok(*inode);
