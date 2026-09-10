@@ -285,10 +285,7 @@ pub fn save_weights(
 
     #[cfg(not(feature = "verus"))]
     {
-        let vfs = match crate::vfs::Vfs::global() {
-            Some(v) => v,
-            None => return WASI_NN_ERRNO_IO,
-        };
+        let mut vfs = crate::vfs::Vfs::global().lock();
 
         let mut file = match vfs.open_or_create(path_str, crate::vfs::OpenFlags::WriteCreate) {
             Ok(f) => f,

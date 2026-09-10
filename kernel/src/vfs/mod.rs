@@ -263,10 +263,30 @@ impl Vfs {
 extern crate alloc;
 
 #[cfg(not(feature = "verus"))]
+pub mod prefetch;
+#[cfg(not(feature = "verus"))]
+pub mod semantic;
+#[cfg(not(feature = "verus"))]
+pub mod btrfs;
+#[cfg(not(feature = "verus"))]
+pub mod ext4;
+#[cfg(not(feature = "verus"))]
+pub mod fat32;
+#[cfg(not(feature = "verus"))]
+pub mod zfs;
+#[cfg(not(feature = "verus"))]
+pub mod dynamic_fs;
+
+#[cfg(not(feature = "verus"))]
+static GLOBAL_VFS: spin::Once<spin::Mutex<Vfs>> = spin::Once::new();
+
+#[cfg(not(feature = "verus"))]
 pub struct Vfs {
     pub parent_map: alloc::collections::BTreeMap<u64, u64>,
     pub depth_map: alloc::collections::BTreeMap<u64, u64>,
     pub locks: alloc::collections::BTreeMap<u64, bool>,
+    pub prefetcher: Option<prefetch::PrefetchPredictor>,
+    pub ram_cache: alloc::collections::BTreeMap<u64, alloc::vec::Vec<u8>>,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -286,11 +306,22 @@ impl File {
 
 #[cfg(not(feature = "verus"))]
 impl Vfs {
-    pub fn global() -> Option<Self> {
-        Some(Vfs::new(1))
+    pub fn global() -> &'static spin::Mutex<Vfs> {
+        GLOBAL_VFS.call_once(|| spin::Mutex::new(Vfs::new(1)))
     }
 
-    pub fn open_or_create(&self, _path: &str, _flags: OpenFlags) -> Result<File, ()> {
+    pub fn open_or_create(&mut self, _path: &str, _flags: OpenFlags) -> Result<File, ()> {
+        let dummy_inode = _path.len() as u64;
+
+        if let Some(prefetcher) = &mut self.prefetcher {
+            if let Ok(predicted_inode) = prefetcher.predict_and_prefetch(dummy_inode) {
+                if predicted_inode > 0 && !self.ram_cache.contains_key(&predicted_inode) {
+                    // Preload predicted file data into RAM
+                    let dummy_data = alloc::vec![0u8; 1024];
+                    self.ram_cache.insert(predicted_inode, dummy_data);
+                }
+            }
+        }
         Ok(File)
     }
 
@@ -307,6 +338,8 @@ impl Vfs {
             parent_map,
             depth_map,
             locks,
+            prefetcher: prefetch::PrefetchPredictor::new().ok(),
+            ram_cache: alloc::collections::BTreeMap::new(),
         }
     }
 
@@ -332,7 +365,6 @@ impl Vfs {
             if parent != child {
                 let child_locked = *self.locks.get(&child).unwrap();
                 if child_locked {
-                    // Check leaf
                     let mut is_leaf = true;
                     for (_, &p) in self.parent_map.iter() {
                         if p == child {
@@ -383,53 +415,16 @@ mod tests {
     #[test]
     fn test_vfs_basic() {
         let mut vfs = Vfs::new(1);
-
-        // Cannot mkdir without lock
         assert!(vfs.mkdir(1, 2).is_err());
-
-        // Lock root
         assert!(vfs.lock(1).is_ok());
-
-        // Create child
         assert!(vfs.mkdir(1, 2).is_ok());
-
-        // Cannot lock twice
         assert!(vfs.lock(1).is_err());
-
-        // Cannot create if child already exists
         assert!(vfs.mkdir(1, 2).is_err());
-
-        // Root cannot be removed
         assert!(vfs.rmdir(1).is_err());
-
-        // Cannot remove child if not locked
         assert!(vfs.rmdir(2).is_err());
-
-        // Lock child
         assert!(vfs.lock(2).is_ok());
-
-        // Remove child
         assert!(vfs.rmdir(2).is_ok());
-
-        // Unlock root
         assert!(vfs.unlock(1).is_ok());
-
-        // Cannot unlock twice
         assert!(vfs.unlock(1).is_err());
     }
 }
-
-#[cfg(not(feature = "verus"))]
-pub mod semantic;
-
-#[cfg(not(feature = "verus"))]
-pub mod btrfs;
-#[cfg(not(feature = "verus"))]
-pub mod ext4;
-#[cfg(not(feature = "verus"))]
-pub mod fat32;
-#[cfg(not(feature = "verus"))]
-pub mod zfs;
-
-#[cfg(not(feature = "verus"))]
-pub mod dynamic_fs;

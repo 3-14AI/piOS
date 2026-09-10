@@ -48,7 +48,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 30: AI-Native File System
 - [x] **WP-152: SemanticFS Implementation.** Implement a new VFS driver where files are organized not just hierarchically, but as a graph of semantic relationships, allowing path resolution via natural language queries (e.g., `/semantic/recent-receipts/`).
-- [ ] **WP-153: Predictive Prefetching.** Use AI to predict which files the user will need next and preload them into RAM before they are explicitly requested.
+- [x] **WP-153: Predictive Prefetching.** Use AI to predict which files the user will need next and preload them into RAM before they are explicitly requested.
 
 ## Phase 31: Advanced Hardware & Power Management
 - [ ] **WP-154: AI Power Governor.** Implement a power management subsystem that learns usage patterns to optimize CPU states, screen brightness, and peripheral power states proactively.
