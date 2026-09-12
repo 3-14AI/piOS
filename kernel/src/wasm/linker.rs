@@ -85,6 +85,22 @@ impl WasmComponentLinker {
             "set_scheduler_quantum",
             wasmi::Func::wrap(&mut store, crate::wasm::wasi::set_scheduler_quantum),
         )?;
+
+        linker.define(
+            "wasi_snapshot_preview1",
+            "set_cpu_freq",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::set_cpu_freq),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "set_screen_brightness",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::set_screen_brightness),
+        )?;
+        linker.define(
+            "wasi_snapshot_preview1",
+            "set_peripheral_power_state",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::set_peripheral_power_state),
+        )?;
         linker.define(
             "wasi_snapshot_preview1",
             "compact_memory",

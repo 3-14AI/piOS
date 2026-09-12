@@ -51,5 +51,5 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-153: Predictive Prefetching.** Use AI to predict which files the user will need next and preload them into RAM before they are explicitly requested.
 
 ## Phase 31: Advanced Hardware & Power Management
-- [ ] **WP-154: AI Power Governor.** Implement a power management subsystem that learns usage patterns to optimize CPU states, screen brightness, and peripheral power states proactively.
+- [x] **WP-154: AI Power Governor.** Implement a power management subsystem that learns usage patterns to optimize CPU states, screen brightness, and peripheral power states proactively.
 - [ ] **WP-155: Bluetooth Stack.** Implement a basic Bluetooth HCI driver and integrate it with the network stack.

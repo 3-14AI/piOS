@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "userland/services/power_governor",
     "kernel",
     "libs/pios-common",
     "libs/pios-api",
