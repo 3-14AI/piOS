@@ -300,6 +300,31 @@ pub fn fd_prestat_dir_name(
     WASI_ERRNO_BADF
 }
 
+pub fn set_cpu_freq(_caller: Caller<'_, WasiCtx>, freq_mhz: i32) -> i32 {
+    if !(0..=10000).contains(&freq_mhz) {
+        return WASI_ERRNO_INVAL;
+    }
+    // Simulate setting CPU frequency
+    WASI_ERRNO_SUCCESS
+}
+
+pub fn set_screen_brightness(_caller: Caller<'_, WasiCtx>, level: i32) -> i32 {
+    if !(0..=100).contains(&level) {
+        return WASI_ERRNO_INVAL;
+    }
+    // Simulate setting screen brightness
+    WASI_ERRNO_SUCCESS
+}
+
+pub fn set_peripheral_power_state(
+    _caller: Caller<'_, WasiCtx>,
+    _peripheral_id: i32,
+    _state: i32,
+) -> i32 {
+    // Simulate setting peripheral power state
+    WASI_ERRNO_SUCCESS
+}
+
 pub fn set_scheduler_quantum(_caller: Caller<'_, WasiCtx>, quantum: i32) -> i32 {
     if quantum <= 0 || quantum > 1000 {
         return WASI_ERRNO_INVAL;
@@ -426,6 +451,10 @@ mod tests {
             (module
                 (import "env" "set_scheduler_quantum" (func $set_scheduler_quantum (param i32) (result i32)))
                 (import "env" "compact_memory" (func $compact_memory (result i32)))
+
+                (import "env" "set_cpu_freq" (func $set_cpu_freq (param i32) (result i32)))
+                (import "env" "set_screen_brightness" (func $set_screen_brightness (param i32) (result i32)))
+                (import "env" "set_peripheral_power_state" (func $set_peripheral_power_state (param i32 i32) (result i32)))
                 (func (export "run_success") (result i32)
                     (call $set_scheduler_quantum (i32.const 50))
                 )
@@ -434,6 +463,14 @@ mod tests {
                 )
                 (func (export "run_compact") (result i32)
                     (call $compact_memory)
+                )
+
+                (func (export "run_power") (result i32)
+                    (call $set_cpu_freq (i32.const 2000))
+                    drop
+                    (call $set_screen_brightness (i32.const 80))
+                    drop
+                    (call $set_peripheral_power_state (i32.const 1) (i32.const 0))
                 )
             )
         "#;
@@ -455,6 +492,24 @@ mod tests {
             )
             .unwrap();
 
+        linker
+            .define("env", "set_cpu_freq", Func::wrap(&mut store, set_cpu_freq))
+            .unwrap();
+        linker
+            .define(
+                "env",
+                "set_screen_brightness",
+                Func::wrap(&mut store, set_screen_brightness),
+            )
+            .unwrap();
+        linker
+            .define(
+                "env",
+                "set_peripheral_power_state",
+                Func::wrap(&mut store, set_peripheral_power_state),
+            )
+            .unwrap();
+
         let instance = linker.instantiate_and_start(&mut store, &module).unwrap();
 
         let run_success = instance
@@ -468,6 +523,12 @@ mod tests {
             .unwrap();
         let res2 = run_fail.call(&mut store, ()).unwrap();
         assert_eq!(res2, WASI_ERRNO_INVAL);
+
+        let run_power = instance
+            .get_typed_func::<(), i32>(&store, "run_power")
+            .unwrap();
+        let res3 = run_power.call(&mut store, ()).unwrap();
+        assert_eq!(res3, WASI_ERRNO_SUCCESS);
 
         let run_compact = instance
             .get_typed_func::<(), i32>(&store, "run_compact")
