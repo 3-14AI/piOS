@@ -69,6 +69,8 @@ pub mod mass_storage;
 #[cfg(feature = "verus")]
 pub mod wifi;
 #[cfg(feature = "verus")]
+pub mod bluetooth;
+#[cfg(feature = "verus")]
 pub mod xhci;
 
 #[cfg(feature = "verus")]
@@ -120,7 +122,7 @@ pub mod verifier {
     }
 
     #[allow(clippy::needless_range_loop, clippy::manual_range_contains)]
-    #[cfg(not(tarpaulin_include))]
+    #[cfg(not(tarpaulin))]
     pub fn parse_initramfs(addr: usize, size: usize) {
         let mut current = addr as *const u8;
         let end = (addr + size) as *const u8;
@@ -277,6 +279,8 @@ pub mod ehci;
 pub mod mass_storage;
 #[cfg(not(feature = "verus"))]
 pub mod wifi;
+#[cfg(not(feature = "verus"))]
+pub mod bluetooth;
 #[cfg(not(feature = "verus"))]
 pub mod xhci;
 
