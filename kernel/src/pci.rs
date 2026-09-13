@@ -217,6 +217,17 @@ impl PciEnumerator {
                 return 0x00000000; // multi-function flag only checked on func 0
             }
         }
+        if bus == 0 && device == 3 && function == 0 {
+            if offset == 0 {
+                return 0x00298087; // vendor 8087, device 0029 (Intel Bluetooth)
+            }
+            if offset == 8 {
+                return 0x0D000000; // class code 0x0D (Wireless)
+            }
+            if offset == 12 {
+                return 0x00000000;
+            }
+        }
 
         0xFFFFFFFF // Invalid vendor
     }
@@ -371,13 +382,16 @@ mod tests {
     fn test_pci_scan_bus() {
         let e = PciEnumerator::new(0); // only scan bus 0 in tests
         let devices = e.scan_bus();
-        assert_eq!(devices.len(), 3);
+        assert_eq!(devices.len(), 4);
         assert_eq!(devices[0].vendor_id, 0x8086);
         assert_eq!(devices[0].device_id, 0x100e);
         assert_eq!(devices[1].vendor_id, 0x1af4);
         assert_eq!(devices[1].device_id, 0x1001);
         assert_eq!(devices[2].vendor_id, 0x1af4);
         assert_eq!(devices[2].device_id, 0x1002);
+        assert_eq!(devices[3].vendor_id, 0x8087);
+        assert_eq!(devices[3].device_id, 0x0029);
+        assert_eq!(devices[3].class_code, 0x0D);
     }
 
     #[test]

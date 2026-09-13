@@ -63,6 +63,8 @@ pub mod usb;
 pub mod usb_hub;
 
 #[cfg(feature = "verus")]
+pub mod bluetooth;
+#[cfg(feature = "verus")]
 pub mod ehci;
 #[cfg(feature = "verus")]
 pub mod mass_storage;
@@ -271,6 +273,8 @@ pub mod usb;
 #[cfg(not(feature = "verus"))]
 pub mod usb_hub;
 
+#[cfg(not(feature = "verus"))]
+pub mod bluetooth;
 #[cfg(not(feature = "verus"))]
 pub mod ehci;
 #[cfg(not(feature = "verus"))]
