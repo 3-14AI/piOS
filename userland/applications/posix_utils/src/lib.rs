@@ -1,5 +1,6 @@
 #![no_std]
 #![allow(clippy::empty_loop)]
+#![allow(clippy::missing_safety_doc)]
 
 extern crate alloc;
 
