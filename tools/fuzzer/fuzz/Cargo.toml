@@ -5,8 +5,12 @@ edition = "2024"
 
 [dependencies]
 libfuzzer-sys = "0.4"
+kernel = { path = "../../../kernel" }
+inference_runtime = { path = "../../../libs/inference_runtime" }
+
 [package.metadata]
 cargo-fuzz = true
+
 [[bin]]
 name = "kernel-fuzzer"
 path = "fuzz_targets/kernel-fuzzer.rs"

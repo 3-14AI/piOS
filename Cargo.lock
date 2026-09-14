@@ -4772,6 +4772,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "posix_utils"
+version = "0.1.0"
+
+[[package]]
 name = "potential_utf"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6993,6 +6997,10 @@ dependencies = [
  "wasm-encoder 0.244.0",
  "wasmparser 0.244.0",
 ]
+
+[[package]]
+name = "wasm_bridge"
+version = "0.1.0"
 
 [[package]]
 name = "wasmi"
