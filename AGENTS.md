@@ -42,3 +42,9 @@ For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integrati
 2. **Dynamic Application Generation (Phase 29):** Agents must focus on integrating `wasi_compiler` and `sys_intent` deeply so that missing capabilities trigger live code synthesis and ephemeral sandbox execution.
 3. **AI-Native File System (Phase 30):** Shift from POSIX tree structures to graph-based, semantic representations of files. Paths like `/semantic/...` should invoke LLM embedding similarity searches instead of simple inode lookups.
 4. **Hardware Continuity (Phase 31):** Continue pushing for real hardware support (Power Management, Bluetooth HCI) and replace remaining stub drivers with functional MMIO/DMA code.
+
+## Phases 33-36 Focus: Advanced AI-Native Paradigms
+1. **Multi-modal Interfaces (Phase 33):** When implementing vision and advanced voice integrations, prioritize real-time local model execution using `inference_runtime` with `#![no_std]` constraints. Ensure that memory usage is bounded for these large models.
+2. **Proactive Background Agents (Phase 34):** Agents should be built as lightweight WASM components. Ensure they use non-blocking scheduling via `set_scheduler_quantum` and securely share context via the isolated semantic VFS namespaces rather than direct memory access.
+3. **Formally Verified AI Code (Phase 35):** When an agent generates code dynamically, the validation step **must** invoke Verus checks. If the generated code fails formal proofs, the loop must iterate, correct the logic based on Verus error output, and retry. Do not bypass the verification step.
+4. **Distributed Swarm Intelligence (Phase 36):** Testing swarm consensus and state migration requires spinning up multiple test environments passing `A2AMessage` via `WasmNetStack` UDP capabilities. Ensure state serialization uses zero-copy abstractions where possible to reduce network latency during cross-node migration.
