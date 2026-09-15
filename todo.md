@@ -55,6 +55,22 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-155: Bluetooth Stack.** Implement a basic Bluetooth HCI driver and integrate it with the network stack.
 
 ## Phase 32: System Stabilization and Polish
-- [ ] **WP-156: Kernel Fuzzer Polish.** Implement robust automated fuzzing targeting WASM components and driver boundaries to assure code robustness.
-- [ ] **WP-157: Expand WASM App Ecosystem.** Begin porting standard POSIX and POSIX-adjacent C/C++ libraries and applications into native WASM applications.
-- [ ] **WP-158: Comprehensive User Documentation.** Finalize end-to-end user-facing documentation to demonstrate the core capabilities and architecture of the newly finalized system.
+- [x] **WP-156: Kernel Fuzzer Polish.** Implement robust automated fuzzing targeting WASM components and driver boundaries to assure code robustness.
+- [x] **WP-157: Expand WASM App Ecosystem.** Begin porting standard POSIX and POSIX-adjacent C/C++ libraries and applications into native WASM applications.
+- [x] **WP-158: Comprehensive User Documentation.** Finalize end-to-end user-facing documentation to demonstrate the core capabilities and architecture of the newly finalized system.
+
+## Phase 33: Multi-modal Interfaces
+- [ ] **WP-159: Vision Capabilities Integration.** Integrate the vision capabilities into the generative GUI to process visual inputs (e.g., webcam) directly in the UI.
+- [ ] **WP-160: Advanced Voice Assistant.** Enhance the continuous voice recognition loop with a dedicated local audio processing model for reliable wake-word detection and intent mapping.
+
+## Phase 34: Proactive Background Agents
+- [ ] **WP-161: Proactive Task Agents.** Develop background WASM services (agents) that monitor system state and user intent to autonomously execute routine tasks, such as system cleanup, without direct user intervention.
+- [ ] **WP-162: Agent Context Sharing.** Implement a standard context-sharing mechanism for agents, enabling them to share findings and coordinate tasks seamlessly in the background.
+
+## Phase 35: Formally Verified AI-generated Code
+- [ ] **WP-163: AI-Verus Integration Loop.** Tighten the loop for JIT WASM synthesis by guaranteeing that AI-generated Rust code strictly passes Verus formal verification checks before it is compiled and executed.
+- [ ] **WP-164: Verified Standard Library Enhancements.** Extend the verifiable API surface exposed to the WASM compiler, ensuring that more complex AI-generated applications can be formally proven safe.
+
+## Phase 36: Distributed Swarm Intelligence
+- [ ] **WP-165: Swarm Consensus Mechanism.** Develop a consensus protocol within `WasmNetStack` to allow multiple nodes in a swarm to vote and make collective decisions on distributed task scheduling.
+- [ ] **WP-166: Cross-Node Agent Migration.** Implement the ability for a running WASM agent (and its memory state) to migrate seamlessly from one physical node to another across the network.
