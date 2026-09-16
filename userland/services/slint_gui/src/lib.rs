@@ -1,9 +1,12 @@
 slint::include_modules!();
 use nl_desktop::NlDesktop;
 
+use inference_runtime::VisionModel;
+
 pub struct GenerativeUI {
     app: AppWindow,
     desktop_ai: NlDesktop,
+    vision_model: VisionModel,
 }
 
 impl GenerativeUI {
@@ -11,11 +14,18 @@ impl GenerativeUI {
         let app = AppWindow::new()?;
         let mut desktop_ai = NlDesktop::new();
         let _ = desktop_ai.init();
-        Ok(Self { app, desktop_ai })
+        let vision_model = VisionModel::new(1, "gui_vision_model");
+        Ok(Self { app, desktop_ai, vision_model })
     }
 
     pub fn set_text(&self, text: &str) {
         self.app.set_generative_text(text.into());
+    }
+
+    pub fn process_visual_input(&self, image_data: &[u8]) {
+        if let Ok(description) = self.vision_model.process_image(image_data) {
+            self.app.set_generative_text(description.into());
+        }
     }
 
     pub fn handle_nl_command(&mut self, command: &str) {
@@ -105,5 +115,13 @@ mod tests {
         ui.handle_nl_command("create a button");
         assert_eq!(ui.app.get_active_element(), "button");
         assert_eq!(ui.app.get_button_text(), "AI Button");
+    }
+
+    #[test]
+    fn test_generative_ui_process_visual_input() {
+        init_test_platform();
+        let ui = GenerativeUI::new().unwrap();
+        ui.process_visual_input(b"dummy_image");
+        assert_eq!(ui.app.get_generative_text(), "A simulated view of a user looking at the screen.");
     }
 }

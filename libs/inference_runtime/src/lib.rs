@@ -316,6 +316,11 @@ impl VisionModel {
     pub fn new(id: usize, name: &'static str) -> Self {
         Self { id, name }
     }
+
+    pub fn process_image(&self, _image_data: &[u8]) -> Result<&'static str, Error> {
+        // Mock image processing returning a textual description
+        Ok("A simulated view of a user looking at the screen.")
+    }
 }
 
 pub fn image_to_tensor(_image_data: &[u8]) -> Result<Tensor, Error> {
@@ -331,5 +336,12 @@ mod vision_tests {
     fn test_image_to_tensor() {
         let tensor = image_to_tensor(b"dummy_image").unwrap();
         assert_eq!(tensor.dimensions, alloc::vec![10, 10, 1]);
+    }
+
+    #[test]
+    fn test_process_image() {
+        let model = VisionModel::new(1, "test");
+        let result = model.process_image(b"dummy_image").unwrap();
+        assert_eq!(result, "A simulated view of a user looking at the screen.");
     }
 }
