@@ -15,7 +15,11 @@ impl GenerativeUI {
         let mut desktop_ai = NlDesktop::new();
         let _ = desktop_ai.init();
         let vision_model = VisionModel::new(1, "gui_vision_model");
-        Ok(Self { app, desktop_ai, vision_model })
+        Ok(Self {
+            app,
+            desktop_ai,
+            vision_model,
+        })
     }
 
     pub fn set_text(&self, text: &str) {
@@ -122,6 +126,9 @@ mod tests {
         init_test_platform();
         let ui = GenerativeUI::new().unwrap();
         ui.process_visual_input(b"dummy_image");
-        assert_eq!(ui.app.get_generative_text(), "A simulated view of a user looking at the screen.");
+        assert_eq!(
+            ui.app.get_generative_text(),
+            "A simulated view of a user looking at the screen."
+        );
     }
 }
