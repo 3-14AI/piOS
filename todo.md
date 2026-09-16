@@ -60,7 +60,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-158: Comprehensive User Documentation.** Finalize end-to-end user-facing documentation to demonstrate the core capabilities and architecture of the newly finalized system.
 
 ## Phase 33: Multi-modal Interfaces
-- [ ] **WP-159: Vision Capabilities Integration.** Integrate the vision capabilities into the generative GUI to process visual inputs (e.g., webcam) directly in the UI.
+- [x] **WP-159: Vision Capabilities Integration.** Integrate the vision capabilities into the generative GUI to process visual inputs (e.g., webcam) directly in the UI.
 - [ ] **WP-160: Advanced Voice Assistant.** Enhance the continuous voice recognition loop with a dedicated local audio processing model for reliable wake-word detection and intent mapping.
 
 ## Phase 34: Proactive Background Agents

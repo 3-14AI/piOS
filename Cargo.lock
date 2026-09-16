@@ -5843,6 +5843,7 @@ dependencies = [
 name = "slint_gui"
 version = "0.1.0"
 dependencies = [
+ "inference_runtime",
  "nl_desktop",
  "slint",
  "slint-build",
