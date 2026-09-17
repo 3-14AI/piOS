@@ -328,6 +328,32 @@ pub fn image_to_tensor(_image_data: &[u8]) -> Result<Tensor, Error> {
     Ok(Tensor::new(alloc::vec![0; 100], alloc::vec![10, 10, 1]))
 }
 
+pub struct AudioModel {
+    pub id: usize,
+    pub name: &'static str,
+}
+
+impl AudioModel {
+    pub fn new(id: usize, name: &'static str) -> Self {
+        Self { id, name }
+    }
+
+    pub fn detect_wake_word(&self, _audio_data: &[u8]) -> Result<bool, Error> {
+        // Mock wake-word detection
+        Ok(true)
+    }
+
+    pub fn map_intent(&self, _audio_data: &[u8]) -> Result<&'static str, Error> {
+        // Mock intent mapping
+        Ok("recognized voice command")
+    }
+}
+
+pub fn audio_to_tensor(_audio_data: &[u8]) -> Result<Tensor, Error> {
+    // Mock audio to tensor conversion
+    Ok(Tensor::new(alloc::vec![0; 50], alloc::vec![1, 50]))
+}
+
 #[cfg(test)]
 mod vision_tests {
     use super::*;
@@ -343,5 +369,30 @@ mod vision_tests {
         let model = VisionModel::new(1, "test");
         let result = model.process_image(b"dummy_image").unwrap();
         assert_eq!(result, "A simulated view of a user looking at the screen.");
+    }
+}
+
+#[cfg(test)]
+mod audio_tests {
+    use super::*;
+
+    #[test]
+    fn test_audio_to_tensor() {
+        let tensor = audio_to_tensor(b"dummy_audio").unwrap();
+        assert_eq!(tensor.dimensions, alloc::vec![1, 50]);
+    }
+
+    #[test]
+    fn test_detect_wake_word() {
+        let model = AudioModel::new(1, "test");
+        let result = model.detect_wake_word(b"dummy_audio").unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn test_map_intent() {
+        let model = AudioModel::new(1, "test");
+        let result = model.map_intent(b"dummy_audio").unwrap();
+        assert_eq!(result, "recognized voice command");
     }
 }

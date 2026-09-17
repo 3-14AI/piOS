@@ -61,7 +61,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 33: Multi-modal Interfaces
 - [x] **WP-159: Vision Capabilities Integration.** Integrate the vision capabilities into the generative GUI to process visual inputs (e.g., webcam) directly in the UI.
-- [ ] **WP-160: Advanced Voice Assistant.** Enhance the continuous voice recognition loop with a dedicated local audio processing model for reliable wake-word detection and intent mapping.
+- [x] **WP-160: Advanced Voice Assistant.** Enhance the continuous voice recognition loop with a dedicated local audio processing model for reliable wake-word detection and intent mapping.
 
 ## Phase 34: Proactive Background Agents
 - [ ] **WP-161: Proactive Task Agents.** Develop background WASM services (agents) that monitor system state and user intent to autonomously execute routine tasks, such as system cleanup, without direct user intervention.

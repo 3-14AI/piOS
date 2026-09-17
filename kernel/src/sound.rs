@@ -187,9 +187,9 @@ impl PcmStream {
 }
 
 #[cfg(not(feature = "verus"))]
-#[derive(Debug)]
 pub struct VoiceAssistant {
     pub is_listening: bool,
+    pub audio_model: inference_runtime::AudioModel,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -204,6 +204,7 @@ impl VoiceAssistant {
     pub fn new() -> Self {
         VoiceAssistant {
             is_listening: false,
+            audio_model: inference_runtime::AudioModel::new(1, "voice_assistant_model"),
         }
     }
 
@@ -216,7 +217,12 @@ impl VoiceAssistant {
     }
 
     pub fn process_audio_buffer(&mut self, buffer: &AudioBuffer) -> bool {
-        self.is_listening && buffer.capacity > 0
+        if !self.is_listening || buffer.capacity == 0 {
+            return false;
+        }
+
+        let audio_data = alloc::vec![0u8; buffer.capacity];
+        self.audio_model.detect_wake_word(&audio_data).unwrap_or(false)
     }
 
     pub fn get_recognized_command_id(&self) -> u32 {
@@ -229,7 +235,11 @@ impl VoiceAssistant {
 
     pub fn get_recognized_command(&self) -> Option<alloc::string::String> {
         if self.is_listening {
-            Some(alloc::string::String::from("recognized voice command"))
+            let audio_data = alloc::vec![0u8; 100]; // Mock audio data
+            match self.audio_model.map_intent(&audio_data) {
+                Ok(intent) => Some(alloc::string::String::from(intent)),
+                Err(_) => None,
+            }
         } else {
             None
         }
