@@ -222,7 +222,9 @@ impl VoiceAssistant {
         }
 
         let audio_data = alloc::vec![0u8; buffer.capacity];
-        self.audio_model.detect_wake_word(&audio_data).unwrap_or(false)
+        self.audio_model
+            .detect_wake_word(&audio_data)
+            .unwrap_or(false)
     }
 
     pub fn get_recognized_command_id(&self) -> u32 {
