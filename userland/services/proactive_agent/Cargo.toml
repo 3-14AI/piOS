@@ -1,0 +1,20 @@
+[package]
+name = "proactive_agent"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "proactive_agent"
+path = "src/lib.rs"
+
+[[bin]]
+name = "proactive_agent"
+path = "src/main.rs"
+test = false
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+vector_db = { path = "../../../libs/vector_db" }
+
+[lints]
+workspace = true

@@ -64,8 +64,8 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-160: Advanced Voice Assistant.** Enhance the continuous voice recognition loop with a dedicated local audio processing model for reliable wake-word detection and intent mapping.
 
 ## Phase 34: Proactive Background Agents
-- [ ] **WP-161: Proactive Task Agents.** Develop background WASM services (agents) that monitor system state and user intent to autonomously execute routine tasks, such as system cleanup, without direct user intervention.
-- [ ] **WP-162: Agent Context Sharing.** Implement a standard context-sharing mechanism for agents, enabling them to share findings and coordinate tasks seamlessly in the background.
+- [x] **WP-161: Proactive Task Agents.** Develop background WASM services (agents) that monitor system state and user intent to autonomously execute routine tasks, such as system cleanup, without direct user intervention.
+- [x] **WP-162: Agent Context Sharing.** Implement a standard context-sharing mechanism for agents, enabling them to share findings and coordinate tasks seamlessly in the background.
 
 ## Phase 35: Formally Verified AI-generated Code
 - [ ] **WP-163: AI-Verus Integration Loop.** Tighten the loop for JIT WASM synthesis by guaranteeing that AI-generated Rust code strictly passes Verus formal verification checks before it is compiled and executed.
