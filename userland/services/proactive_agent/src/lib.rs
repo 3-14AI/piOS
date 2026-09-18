@@ -46,7 +46,11 @@ impl ProactiveAgent {
         Ok(())
     }
 
-    pub fn analyze_and_act(&mut self, system_load: u8, user_activity: u8) -> Result<(), &'static str> {
+    pub fn analyze_and_act(
+        &mut self,
+        system_load: u8,
+        user_activity: u8,
+    ) -> Result<(), &'static str> {
         let ctx = self.context.ok_or("Agent not initialized")?;
 
         let input_data = alloc::vec![system_load, user_activity];
