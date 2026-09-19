@@ -664,7 +664,10 @@ mod additional_tests {
         // We inject 'unsafe' into the prompt, the mock verify block will fail it.
         let res = shell.generate_app("unknown app with unsafe block");
         assert!(res.is_err());
-        assert_eq!(res.unwrap_err(), "Generated app failed Verus formal verification");
+        assert_eq!(
+            res.unwrap_err(),
+            "Generated app failed Verus formal verification"
+        );
     }
 
     #[test]
