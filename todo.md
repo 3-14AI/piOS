@@ -68,7 +68,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-162: Agent Context Sharing.** Implement a standard context-sharing mechanism for agents, enabling them to share findings and coordinate tasks seamlessly in the background.
 
 ## Phase 35: Formally Verified AI-generated Code
-- [ ] **WP-163: AI-Verus Integration Loop.** Tighten the loop for JIT WASM synthesis by guaranteeing that AI-generated Rust code strictly passes Verus formal verification checks before it is compiled and executed.
+- [x] **WP-163: AI-Verus Integration Loop.** Tighten the loop for JIT WASM synthesis by guaranteeing that AI-generated Rust code strictly passes Verus formal verification checks before it is compiled and executed.
 - [ ] **WP-164: Verified Standard Library Enhancements.** Extend the verifiable API surface exposed to the WASM compiler, ensuring that more complex AI-generated applications can be formally proven safe.
 
 ## Phase 36: Distributed Swarm Intelligence
