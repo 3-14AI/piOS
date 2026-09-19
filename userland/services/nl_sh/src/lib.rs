@@ -11,6 +11,7 @@ use vector_db::{VectorDb, VectorRecord};
 #[link(wasm_import_module = "wasi_snapshot_preview1")]
 extern "C" {
     pub fn wasi_ephemeral_compiler(code_ptr: *const u8, code_len: i32) -> i32;
+    pub fn wasi_ephemeral_verifier(code_ptr: *const u8, code_len: i32) -> i32;
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -310,6 +311,21 @@ impl NlShell {
             "// Generated app for: {}\nfn main() {{}}",
             natural_language_input
         );
+
+        #[cfg(not(test))]
+        let verify_res = unsafe { wasi_ephemeral_verifier(code.as_ptr(), code.len() as i32) };
+        #[cfg(test)]
+        let verify_res = {
+            if code.contains("unsafe") {
+                1
+            } else {
+                0
+            }
+        };
+
+        if verify_res != 0 {
+            return Err("Generated app failed Verus formal verification");
+        }
 
         #[cfg(not(test))]
         let res = unsafe { wasi_ephemeral_compiler(code.as_ptr(), code.len() as i32) };
@@ -640,6 +656,15 @@ mod additional_tests {
         let res = shell.generate_app("unknown app");
         assert!(res.is_ok());
         assert!(res.unwrap().contains("Synthesized and compiled WASM app"));
+    }
+
+    #[test]
+    fn test_sys_intent_generate_app_verify_fail() {
+        let mut shell = NlShell::new().unwrap();
+        // We inject 'unsafe' into the prompt, the mock verify block will fail it.
+        let res = shell.generate_app("unknown app with unsafe block");
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err(), "Generated app failed Verus formal verification");
     }
 
     #[test]
