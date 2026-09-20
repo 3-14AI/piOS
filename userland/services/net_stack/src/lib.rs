@@ -387,3 +387,5 @@ pub mod distributed_compute;
 pub use distributed_compute::*;
 pub mod monitor;
 pub use monitor::*;
+pub mod swarm_consensus;
+pub use swarm_consensus::*;

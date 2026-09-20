@@ -72,5 +72,5 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [ ] **WP-164: Verified Standard Library Enhancements.** Extend the verifiable API surface exposed to the WASM compiler, ensuring that more complex AI-generated applications can be formally proven safe.
 
 ## Phase 36: Distributed Swarm Intelligence
-- [ ] **WP-165: Swarm Consensus Mechanism.** Develop a consensus protocol within `WasmNetStack` to allow multiple nodes in a swarm to vote and make collective decisions on distributed task scheduling.
+- [x] **WP-165: Swarm Consensus Mechanism.** Develop a consensus protocol within `WasmNetStack` to allow multiple nodes in a swarm to vote and make collective decisions on distributed task scheduling.
 - [ ] **WP-166: Cross-Node Agent Migration.** Implement the ability for a running WASM agent (and its memory state) to migrate seamlessly from one physical node to another across the network.
