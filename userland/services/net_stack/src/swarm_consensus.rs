@@ -2,7 +2,6 @@ extern crate alloc;
 use crate::WasmNetStack;
 use alloc::vec::Vec;
 use smoltcp::iface::SocketHandle;
-use smoltcp::socket::udp::{PacketBuffer as UdpPacketBuffer, Socket as UdpSocket};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SwarmState {
@@ -13,10 +12,26 @@ pub enum SwarmState {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ConsensusMessage {
-    RequestVote { term: u64, candidate_id: u32 },
-    Vote { term: u64, voter_id: u32, vote_granted: bool },
-    ProposeTask { term: u64, leader_id: u32, task_id: u32, task_payload: Vec<u8> },
-    AckTask { term: u64, voter_id: u32, task_id: u32 },
+    RequestVote {
+        term: u64,
+        candidate_id: u32,
+    },
+    Vote {
+        term: u64,
+        voter_id: u32,
+        vote_granted: bool,
+    },
+    ProposeTask {
+        term: u64,
+        leader_id: u32,
+        task_id: u32,
+        task_payload: Vec<u8>,
+    },
+    AckTask {
+        term: u64,
+        voter_id: u32,
+        task_id: u32,
+    },
 }
 
 impl ConsensusMessage {
@@ -28,13 +43,22 @@ impl ConsensusMessage {
                 buf.extend_from_slice(&term.to_le_bytes());
                 buf.extend_from_slice(&candidate_id.to_le_bytes());
             }
-            Self::Vote { term, voter_id, vote_granted } => {
+            Self::Vote {
+                term,
+                voter_id,
+                vote_granted,
+            } => {
                 buf.push(1);
                 buf.extend_from_slice(&term.to_le_bytes());
                 buf.extend_from_slice(&voter_id.to_le_bytes());
                 buf.push(if *vote_granted { 1 } else { 0 });
             }
-            Self::ProposeTask { term, leader_id, task_id, task_payload } => {
+            Self::ProposeTask {
+                term,
+                leader_id,
+                task_id,
+                task_payload,
+            } => {
                 buf.push(2);
                 buf.extend_from_slice(&term.to_le_bytes());
                 buf.extend_from_slice(&leader_id.to_le_bytes());
@@ -42,7 +66,11 @@ impl ConsensusMessage {
                 buf.extend_from_slice(&(task_payload.len() as u32).to_le_bytes());
                 buf.extend_from_slice(task_payload);
             }
-            Self::AckTask { term, voter_id, task_id } => {
+            Self::AckTask {
+                term,
+                voter_id,
+                task_id,
+            } => {
                 buf.push(3);
                 buf.extend_from_slice(&term.to_le_bytes());
                 buf.extend_from_slice(&voter_id.to_le_bytes());
@@ -58,36 +86,60 @@ impl ConsensusMessage {
         }
         match data[0] {
             0 => {
-                if data.len() < 13 { return None; }
+                if data.len() < 13 {
+                    return None;
+                }
                 let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
                 let candidate_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
                 Some(Self::RequestVote { term, candidate_id })
             }
             1 => {
-                if data.len() < 14 { return None; }
+                if data.len() < 14 {
+                    return None;
+                }
                 let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
                 let voter_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
                 let vote_granted = data[13] != 0;
-                Some(Self::Vote { term, voter_id, vote_granted })
+                Some(Self::Vote {
+                    term,
+                    voter_id,
+                    vote_granted,
+                })
             }
             2 => {
-                if data.len() < 21 { return None; }
+                if data.len() < 21 {
+                    return None;
+                }
                 let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
                 let leader_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
                 let task_id = u32::from_le_bytes(data[13..17].try_into().unwrap());
                 let payload_len = u32::from_le_bytes(data[17..21].try_into().unwrap()) as usize;
-                if data.len() < 21 + payload_len { return None; }
-                let task_payload = data[21..21+payload_len].to_vec();
-                Some(Self::ProposeTask { term, leader_id, task_id, task_payload })
+                let total_len = 21usize.checked_add(payload_len)?;
+                if data.len() < total_len {
+                    return None;
+                }
+                let task_payload = data[21..total_len].to_vec();
+                Some(Self::ProposeTask {
+                    term,
+                    leader_id,
+                    task_id,
+                    task_payload,
+                })
             }
             3 => {
-                if data.len() < 17 { return None; }
+                if data.len() < 17 {
+                    return None;
+                }
                 let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
                 let voter_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
                 let task_id = u32::from_le_bytes(data[13..17].try_into().unwrap());
-                Some(Self::AckTask { term, voter_id, task_id })
+                Some(Self::AckTask {
+                    term,
+                    voter_id,
+                    task_id,
+                })
             }
-            _ => None
+            _ => None,
         }
     }
 }
@@ -151,7 +203,9 @@ mod tests {
         let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
         consensus.state = SwarmState::Leader;
 
-        assert!(consensus.propose_task(&mut stack, 42, alloc::vec![1, 2, 3]).is_ok());
+        assert!(consensus
+            .propose_task(&mut stack, 42, alloc::vec![1, 2, 3])
+            .is_ok());
     }
 
     #[test]
@@ -178,8 +232,8 @@ pub struct SwarmConsensus {
     pub state: SwarmState,
     pub current_term: u64,
     pub voted_for: Option<u32>,
-    pub votes_received: usize,
-    pub task_acks: usize,
+    pub votes_received: Vec<u32>,
+    pub task_acks: Vec<u32>,
     socket_handle: SocketHandle,
     port: u16,
 }
@@ -192,8 +246,8 @@ impl SwarmConsensus {
             state: SwarmState::Follower,
             current_term: 0,
             voted_for: None,
-            votes_received: 0,
-            task_acks: 0,
+            votes_received: alloc::vec::Vec::new(),
+            task_acks: alloc::vec::Vec::new(),
             socket_handle,
             port,
         }
@@ -203,7 +257,7 @@ impl SwarmConsensus {
         self.state = SwarmState::Candidate;
         self.current_term += 1;
         self.voted_for = Some(self.node_id);
-        self.votes_received = 1; // Vote for self
+        self.votes_received = alloc::vec![self.node_id]; // Vote for self
 
         let msg = ConsensusMessage::RequestVote {
             term: self.current_term,
@@ -213,11 +267,16 @@ impl SwarmConsensus {
         stack.send_udp_broadcast(self.socket_handle, self.port, &data);
     }
 
-    pub fn propose_task(&mut self, stack: &mut WasmNetStack, task_id: u32, payload: Vec<u8>) -> Result<(), &'static str> {
+    pub fn propose_task(
+        &mut self,
+        stack: &mut WasmNetStack,
+        task_id: u32,
+        payload: Vec<u8>,
+    ) -> Result<(), &'static str> {
         if self.state != SwarmState::Leader {
             return Err("Only leader can propose tasks");
         }
-        self.task_acks = 0; // Reset acks for new task
+        self.task_acks.clear(); // Reset acks for new task
 
         let msg = ConsensusMessage::ProposeTask {
             term: self.current_term,
@@ -240,7 +299,9 @@ impl SwarmConsensus {
                         self.voted_for = None;
                     }
 
-                    let vote_granted = if term == self.current_term && (self.voted_for.is_none() || self.voted_for == Some(candidate_id)) {
+                    let vote_granted = if term == self.current_term
+                        && (self.voted_for.is_none() || self.voted_for == Some(candidate_id))
+                    {
                         self.voted_for = Some(candidate_id);
                         true
                     } else {
@@ -254,15 +315,28 @@ impl SwarmConsensus {
                     };
                     stack.send_udp_broadcast(self.socket_handle, self.port, &reply.serialize());
                 }
-                ConsensusMessage::Vote { term, voter_id: _, vote_granted } => {
-                    if self.state == SwarmState::Candidate && term == self.current_term && vote_granted {
-                        self.votes_received += 1;
-                        if self.votes_received > cluster_size / 2 {
+                ConsensusMessage::Vote {
+                    term,
+                    voter_id,
+                    vote_granted,
+                } => {
+                    if self.state == SwarmState::Candidate
+                        && term == self.current_term
+                        && vote_granted
+                        && !self.votes_received.contains(&voter_id)
+                    {
+                        self.votes_received.push(voter_id);
+                        if self.votes_received.len() > cluster_size / 2 {
                             self.state = SwarmState::Leader;
                         }
                     }
                 }
-                ConsensusMessage::ProposeTask { term, leader_id: _, task_id, task_payload: _ } => {
+                ConsensusMessage::ProposeTask {
+                    term,
+                    leader_id: _,
+                    task_id,
+                    task_payload: _,
+                } => {
                     if term >= self.current_term {
                         self.current_term = term;
                         self.state = SwarmState::Follower;
@@ -275,10 +349,17 @@ impl SwarmConsensus {
                         stack.send_udp_broadcast(self.socket_handle, self.port, &reply.serialize());
                     }
                 }
-                ConsensusMessage::AckTask { term, voter_id: _, task_id: _ } => {
-                    if self.state == SwarmState::Leader && term == self.current_term {
-                        self.task_acks += 1;
-                        // In a real system, we'd commit the task when task_acks > cluster_size / 2
+                ConsensusMessage::AckTask {
+                    term,
+                    voter_id,
+                    task_id: _,
+                } => {
+                    if self.state == SwarmState::Leader
+                        && term == self.current_term
+                        && !self.task_acks.contains(&voter_id)
+                    {
+                        self.task_acks.push(voter_id);
+                        // In a real system, we'd commit the task when task_acks.len() > cluster_size / 2
                     }
                 }
             }
