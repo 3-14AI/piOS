@@ -44,6 +44,22 @@ verus! {
         {
             self.inner.len()
         }
+
+        #[verifier(external_body)]
+        pub fn is_empty(&self) -> (b: bool)
+            ensures b == (self.view().len() == 0),
+        {
+            self.inner.is_empty()
+        }
+    }
+
+    impl<T> Default for VerifiableVec<T> {
+        #[verifier(external_body)]
+        fn default() -> (v: Self)
+            ensures v.view().len() == 0,
+        {
+            Self::new()
+        }
     }
 
     /// A verifiable representation of a Map,
@@ -80,6 +96,15 @@ verus! {
             None
         }
     }
+
+    impl<K, V> Default for VerifiableMap<K, V> {
+        #[verifier(external_body)]
+        fn default() -> (m: Self)
+            ensures m.view().dom().len() == 0,
+        {
+            Self::new()
+        }
+    }
 }
 
 // Stubs for non-verus builds
@@ -102,6 +127,16 @@ impl<T> VerifiableVec<T> {
     pub fn len(&self) -> usize {
         self.inner.len()
     }
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+impl<T> Default for VerifiableVec<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(not(feature = "verus"))]
@@ -122,6 +157,13 @@ impl<K, V> VerifiableMap<K, V> {
     }
 }
 
+#[cfg(not(feature = "verus"))]
+impl<K, V> Default for VerifiableMap<K, V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,8 +172,10 @@ mod tests {
     fn test_verifiable_vec() {
         let mut v = VerifiableVec::new();
         assert_eq!(v.len(), 0);
+        assert!(v.is_empty());
         v.push(42);
         assert_eq!(v.len(), 1);
+        assert!(!v.is_empty());
         assert_eq!(v.pop(), Some(42));
         assert_eq!(v.pop(), None);
     }
