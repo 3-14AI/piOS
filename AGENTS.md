@@ -48,3 +48,11 @@ For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integrati
 2. **Proactive Background Agents (Phase 34):** Agents should be built as lightweight WASM components. Ensure they use non-blocking scheduling via `set_scheduler_quantum` and securely share context via the isolated semantic VFS namespaces rather than direct memory access.
 3. **Formally Verified AI Code (Phase 35):** When an agent generates code dynamically, the validation step **must** invoke Verus checks. If the generated code fails formal proofs, the loop must iterate, correct the logic based on Verus error output, and retry. Do not bypass the verification step.
 4. **Distributed Swarm Intelligence (Phase 36):** Testing swarm consensus and state migration requires spinning up multiple test environments passing `A2AMessage` via `WasmNetStack` UDP capabilities. Ensure state serialization uses zero-copy abstractions where possible to reduce network latency during cross-node migration.
+
+## Swarm Consensus and Migration
+
+*   **Network Integration:** New features that require interaction across multiple OS instances must utilize the `WasmNetStack`. Multi-node tasks, agent elections, and distributed state use the Raft-inspired Swarm Consensus (`userland/services/net_stack/src/swarm_consensus.rs`).
+*   **Cross-Node Migration:** Agent migration is supported using `MigrationMessage` within `WasmNetStack` (`userland/services/net_stack/src/agent_migration.rs`), sending agent memory state across the UDP broadcast network for decentralized scaling.
+
+## Verifiable Standard Library
+*   **WASM Enhancements:** The kernel exposes verifiable standard library wrappers (e.g., `VerifiableVec`, `VerifiableMap`) in `kernel/src/wasm/verus_std_env.rs` for AI-generated code. Use these abstractions when generating applications to ensure formal verifiability with Verus before compiling with Cranelift.

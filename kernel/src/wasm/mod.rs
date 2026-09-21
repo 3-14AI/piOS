@@ -17,5 +17,6 @@ pub mod wasi_crypto;
 
 pub mod secure_boot;
 
+pub mod verus_std_env;
 #[cfg(not(feature = "verus"))]
 pub mod wasi_compiler;

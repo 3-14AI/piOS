@@ -69,8 +69,24 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 35: Formally Verified AI-generated Code
 - [x] **WP-163: AI-Verus Integration Loop.** Tighten the loop for JIT WASM synthesis by guaranteeing that AI-generated Rust code strictly passes Verus formal verification checks before it is compiled and executed.
-- [ ] **WP-164: Verified Standard Library Enhancements.** Extend the verifiable API surface exposed to the WASM compiler, ensuring that more complex AI-generated applications can be formally proven safe.
+- [x] **WP-164: Verified Standard Library Enhancements.** Extend the verifiable API surface exposed to the WASM compiler, ensuring that more complex AI-generated applications can be formally proven safe.
 
 ## Phase 36: Distributed Swarm Intelligence
 - [x] **WP-165: Swarm Consensus Mechanism.** Develop a consensus protocol within `WasmNetStack` to allow multiple nodes in a swarm to vote and make collective decisions on distributed task scheduling.
-- [ ] **WP-166: Cross-Node Agent Migration.** Implement the ability for a running WASM agent (and its memory state) to migrate seamlessly from one physical node to another across the network.
+- [x] **WP-166: Cross-Node Agent Migration.** Implement the ability for a running WASM agent (and its memory state) to migrate seamlessly from one physical node to another across the network.
+
+## Phase 37: Self-Hosting AI
+- [ ] **WP-167: Self-hosting LLM API.** Implement an API service in the userland that can serve local LLM models using inference_runtime for applications running locally or in a distributed cluster, replacing external AI service dependencies.
+- [ ] **WP-168: Federated Model Training.** Allow nodes in a swarm to share fine-tuned weight gradients anonymously with a leader node to collaboratively train the global AI models without sharing raw data.
+
+## Phase 38: Distributed Storage and Memory
+- [ ] **WP-169: Swarm Distributed VFS.** Implement a Virtual File System driver that distributes chunks of files across multiple nodes in the swarm, ensuring redundancy and fast parallel reads.
+- [ ] **WP-170: Distributed Shared Memory.** Extend the memory manager to support mapping remote node memory segments transparently for distributed WASM applications.
+
+## Phase 39: Security and Trust
+- [ ] **WP-171: Zero Trust Agent Sandboxing.** Implement fine-grained capability restrictions for WASM agents based on a cryptographic trust score maintained by the Swarm Consensus.
+- [ ] **WP-172: AI-driven Malware Analysis.** Use the local AI models to heuristically analyze new WASM binaries dynamically for malicious behavior before they are allowed to execute.
+
+## Phase 40: Next-Gen Developer Experience
+- [ ] **WP-173: Real-time Collaborative IDE.** Extend the In-OS IDE to support multiple agents and users editing the same codebase simultaneously, synchronized via Swarm Synchronization.
+- [ ] **WP-174: Natural Language Debugger.** Create a debugging tool that allows developers to ask questions about the state of their program in natural language, utilizing the AI models to inspect memory and variables.
