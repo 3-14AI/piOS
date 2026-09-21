@@ -387,5 +387,7 @@ pub mod distributed_compute;
 pub use distributed_compute::*;
 pub mod monitor;
 pub use monitor::*;
+pub mod agent_migration;
 pub mod swarm_consensus;
+pub use agent_migration::*;
 pub use swarm_consensus::*;
