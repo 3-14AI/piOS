@@ -1,6 +1,9 @@
 use alloc::vec::Vec;
 
 #[cfg(feature = "verus")]
+use vstd::prelude::*;
+
+#[cfg(feature = "verus")]
 verus! {
     /// A simple verifiable representation of a bounded sequence,
     /// abstracting over alloc::vec::Vec for formal verification of WASM std enhancements.
