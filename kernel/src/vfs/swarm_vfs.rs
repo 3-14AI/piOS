@@ -122,9 +122,11 @@ mod tests {
         assert_eq!(vfs.file_metadata.get(&1).unwrap().len(), 3);
 
         // Replication should put each chunk in 2 nodes
-        let chunk_0_copies = vfs.known_nodes.iter().filter(|&node_id| {
-            vfs.node_storage.get(node_id).unwrap().contains_key(&0)
-        }).count();
+        let chunk_0_copies = vfs
+            .known_nodes
+            .iter()
+            .filter(|&node_id| vfs.node_storage.get(node_id).unwrap().contains_key(&0))
+            .count();
         assert_eq!(chunk_0_copies, 2);
 
         // Read the file back
