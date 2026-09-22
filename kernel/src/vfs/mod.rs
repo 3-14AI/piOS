@@ -275,6 +275,8 @@ pub mod prefetch;
 #[cfg(not(feature = "verus"))]
 pub mod semantic;
 #[cfg(not(feature = "verus"))]
+pub mod swarm_vfs;
+#[cfg(not(feature = "verus"))]
 pub mod zfs;
 
 #[cfg(not(feature = "verus"))]

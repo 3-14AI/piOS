@@ -76,11 +76,11 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-166: Cross-Node Agent Migration.** Implement the ability for a running WASM agent (and its memory state) to migrate seamlessly from one physical node to another across the network.
 
 ## Phase 37: Self-Hosting AI
-- [ ] **WP-167: Self-hosting LLM API.** Implement an API service in the userland that can serve local LLM models using inference_runtime for applications running locally or in a distributed cluster, replacing external AI service dependencies.
-- [ ] **WP-168: Federated Model Training.** Allow nodes in a swarm to share fine-tuned weight gradients anonymously with a leader node to collaboratively train the global AI models without sharing raw data.
+- [x] **WP-167: Self-hosting LLM API.** Implement an API service in the userland that can serve local LLM models using inference_runtime for applications running locally or in a distributed cluster, replacing external AI service dependencies.
+- [x] **WP-168: Federated Model Training.** Allow nodes in a swarm to share fine-tuned weight gradients anonymously with a leader node to collaboratively train the global AI models without sharing raw data.
 
 ## Phase 38: Distributed Storage and Memory
-- [ ] **WP-169: Swarm Distributed VFS.** Implement a Virtual File System driver that distributes chunks of files across multiple nodes in the swarm, ensuring redundancy and fast parallel reads.
+- [x] **WP-169: Swarm Distributed VFS.** Implement a Virtual File System driver that distributes chunks of files across multiple nodes in the swarm, ensuring redundancy and fast parallel reads.
 - [ ] **WP-170: Distributed Shared Memory.** Extend the memory manager to support mapping remote node memory segments transparently for distributed WASM applications.
 
 ## Phase 39: Security and Trust

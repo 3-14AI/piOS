@@ -388,6 +388,8 @@ pub use distributed_compute::*;
 pub mod monitor;
 pub use monitor::*;
 pub mod agent_migration;
+pub mod federated_learning;
+pub use federated_learning::*;
 pub mod swarm_consensus;
 pub use agent_migration::*;
 pub use swarm_consensus::*;
