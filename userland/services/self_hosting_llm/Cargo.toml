@@ -1,0 +1,19 @@
+[package]
+name = "self_hosting_llm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+net_stack = { path = "../net_stack" }
+pios-api = { path = "../../../libs/pios-api" }
+log = "0.4.20"
+
+[lib]
+name = "self_hosting_llm"
+path = "src/lib.rs"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "self_hosting_llm_service"
+path = "src/main.rs"

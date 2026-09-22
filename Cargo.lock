@@ -5470,6 +5470,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "self_hosting_llm"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+ "log",
+ "net_stack",
+ "pios-api",
+]
+
+[[package]]
 name = "semantic_logger"
 version = "0.1.0"
 dependencies = [
