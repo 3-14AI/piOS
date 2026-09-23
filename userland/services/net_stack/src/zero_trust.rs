@@ -62,7 +62,10 @@ mod tests {
 
         mgr.update_score(2, -60); // score drops to 40
         assert!(!mgr.is_trusted(2));
-        assert_eq!(mgr.restrict_capabilities(2), alloc::vec!["network_access_restricted"]);
+        assert_eq!(
+            mgr.restrict_capabilities(2),
+            alloc::vec!["network_access_restricted"]
+        );
 
         mgr.update_score(2, 20); // score up to 60
         assert!(mgr.is_trusted(2));

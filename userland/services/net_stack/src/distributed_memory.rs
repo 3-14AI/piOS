@@ -77,7 +77,10 @@ impl DsmMessage {
                     return None;
                 }
                 let payload = data[13..13 + len].to_vec();
-                Some(Self::WriteRequest { addr, data: payload })
+                Some(Self::WriteRequest {
+                    addr,
+                    data: payload,
+                })
             }
             3 => {
                 if data.len() < 2 {
@@ -107,22 +110,39 @@ impl DistributedMemoryManager {
         }
     }
 
-    pub fn connect_to_node(&mut self, stack: &mut WasmNetStack, addr: IpAddress, port: u16) -> Result<(), &'static str> {
+    pub fn connect_to_node(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        port: u16,
+    ) -> Result<(), &'static str> {
         let handle = stack.add_tcp_socket();
         let socket = stack.sockets.get_mut::<TcpSocket>(handle);
-        socket.connect(stack.interface.context(), (addr, port), port + 2)
+        socket
+            .connect(stack.interface.context(), (addr, port), port + 2)
             .map_err(|_| "Failed to connect for DSM")?;
         self.connections.insert(addr, handle);
         Ok(())
     }
 
-    pub fn read_remote_memory(&mut self, stack: &mut WasmNetStack, addr: IpAddress, remote_addr: u64, size: u32) -> Result<Vec<u8>, &'static str> {
+    pub fn read_remote_memory(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        remote_addr: u64,
+        size: u32,
+    ) -> Result<Vec<u8>, &'static str> {
         let handle = self.connections.get(&addr).ok_or("Node not connected")?;
         let socket = stack.sockets.get_mut::<TcpSocket>(*handle);
 
-        let req = DsmMessage::ReadRequest { addr: remote_addr, size };
+        let req = DsmMessage::ReadRequest {
+            addr: remote_addr,
+            size,
+        };
         if socket.can_send() {
-            socket.send_slice(&req.serialize()).map_err(|_| "Failed to send read request")?;
+            socket
+                .send_slice(&req.serialize())
+                .map_err(|_| "Failed to send read request")?;
         } else {
             return Err("Socket cannot send");
         }
@@ -131,13 +151,24 @@ impl DistributedMemoryManager {
         Ok(alloc::vec![0; size as usize])
     }
 
-    pub fn write_remote_memory(&mut self, stack: &mut WasmNetStack, addr: IpAddress, remote_addr: u64, data: Vec<u8>) -> Result<(), &'static str> {
+    pub fn write_remote_memory(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        remote_addr: u64,
+        data: Vec<u8>,
+    ) -> Result<(), &'static str> {
         let handle = self.connections.get(&addr).ok_or("Node not connected")?;
         let socket = stack.sockets.get_mut::<TcpSocket>(*handle);
 
-        let req = DsmMessage::WriteRequest { addr: remote_addr, data };
+        let req = DsmMessage::WriteRequest {
+            addr: remote_addr,
+            data,
+        };
         if socket.can_send() {
-            socket.send_slice(&req.serialize()).map_err(|_| "Failed to send write request")?;
+            socket
+                .send_slice(&req.serialize())
+                .map_err(|_| "Failed to send write request")?;
         } else {
             return Err("Socket cannot send");
         }
@@ -190,7 +221,10 @@ mod tests {
 
     #[test]
     fn test_dsm_message_serialization() {
-        let req = DsmMessage::ReadRequest { addr: 0x1000, size: 256 };
+        let req = DsmMessage::ReadRequest {
+            addr: 0x1000,
+            size: 256,
+        };
         let data = req.serialize();
         if let Some(DsmMessage::ReadRequest { addr, size }) = DsmMessage::deserialize(&data) {
             assert_eq!(addr, 0x1000);
@@ -199,9 +233,16 @@ mod tests {
             panic!("Deserialization failed");
         }
 
-        let req = DsmMessage::WriteRequest { addr: 0x2000, data: alloc::vec![1, 2, 3, 4] };
+        let req = DsmMessage::WriteRequest {
+            addr: 0x2000,
+            data: alloc::vec![1, 2, 3, 4],
+        };
         let data = req.serialize();
-        if let Some(DsmMessage::WriteRequest { addr, data: parsed_data }) = DsmMessage::deserialize(&data) {
+        if let Some(DsmMessage::WriteRequest {
+            addr,
+            data: parsed_data,
+        }) = DsmMessage::deserialize(&data)
+        {
             assert_eq!(addr, 0x2000);
             assert_eq!(parsed_data, alloc::vec![1, 2, 3, 4]);
         } else {

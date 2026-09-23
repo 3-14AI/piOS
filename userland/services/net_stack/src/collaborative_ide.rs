@@ -53,11 +53,16 @@ impl IdeMessage {
                 let path = String::from_utf8(data[5..5 + path_len].to_vec()).ok()?;
 
                 let content_start = 5 + path_len;
-                let content_len = u32::from_le_bytes(data[content_start..content_start + 4].try_into().unwrap()) as usize;
+                let content_len =
+                    u32::from_le_bytes(data[content_start..content_start + 4].try_into().unwrap())
+                        as usize;
                 if data.len() < content_start + 4 + content_len {
                     return None;
                 }
-                let content = String::from_utf8(data[content_start + 4..content_start + 4 + content_len].to_vec()).ok()?;
+                let content = String::from_utf8(
+                    data[content_start + 4..content_start + 4 + content_len].to_vec(),
+                )
+                .ok()?;
 
                 Some(Self::FileUpdate { path, content })
             }
@@ -90,35 +95,58 @@ impl CollaborativeIdeClient {
         }
     }
 
-    pub fn connect_to_ide(&mut self, stack: &mut WasmNetStack, addr: IpAddress, port: u16) -> Result<(), &'static str> {
+    pub fn connect_to_ide(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        port: u16,
+    ) -> Result<(), &'static str> {
         let handle = stack.add_tcp_socket();
         let socket = stack.sockets.get_mut::<TcpSocket>(handle);
-        socket.connect(stack.interface.context(), (addr, port), port + 3)
+        socket
+            .connect(stack.interface.context(), (addr, port), port + 3)
             .map_err(|_| "Failed to connect for IDE")?;
         self.connections.insert(addr, handle);
         Ok(())
     }
 
-    pub fn send_file_update(&mut self, stack: &mut WasmNetStack, addr: IpAddress, path: String, content: String) -> Result<(), &'static str> {
+    pub fn send_file_update(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        path: String,
+        content: String,
+    ) -> Result<(), &'static str> {
         let handle = self.connections.get(&addr).ok_or("Node not connected")?;
         let socket = stack.sockets.get_mut::<TcpSocket>(*handle);
 
         let req = IdeMessage::FileUpdate { path, content };
         if socket.can_send() {
-            socket.send_slice(&req.serialize()).map_err(|_| "Failed to send IDE update")?;
+            socket
+                .send_slice(&req.serialize())
+                .map_err(|_| "Failed to send IDE update")?;
         } else {
             return Err("Socket cannot send");
         }
         Ok(())
     }
 
-    pub fn send_cursor_move(&mut self, stack: &mut WasmNetStack, addr: IpAddress, user_id: u32, line: u32, col: u32) -> Result<(), &'static str> {
+    pub fn send_cursor_move(
+        &mut self,
+        stack: &mut WasmNetStack,
+        addr: IpAddress,
+        user_id: u32,
+        line: u32,
+        col: u32,
+    ) -> Result<(), &'static str> {
         let handle = self.connections.get(&addr).ok_or("Node not connected")?;
         let socket = stack.sockets.get_mut::<TcpSocket>(*handle);
 
         let req = IdeMessage::CursorMove { user_id, line, col };
         if socket.can_send() {
-            socket.send_slice(&req.serialize()).map_err(|_| "Failed to send cursor move")?;
+            socket
+                .send_slice(&req.serialize())
+                .map_err(|_| "Failed to send cursor move")?;
         } else {
             return Err("Socket cannot send");
         }
@@ -154,18 +182,28 @@ mod tests {
 
     #[test]
     fn test_ide_message_serialization() {
-        let msg = IdeMessage::FileUpdate { path: "main.rs".to_string(), content: "fn main() {}".to_string() };
+        let msg = IdeMessage::FileUpdate {
+            path: "main.rs".to_string(),
+            content: "fn main() {}".to_string(),
+        };
         let serialized = msg.serialize();
-        if let Some(IdeMessage::FileUpdate { path, content }) = IdeMessage::deserialize(&serialized) {
+        if let Some(IdeMessage::FileUpdate { path, content }) = IdeMessage::deserialize(&serialized)
+        {
             assert_eq!(path, "main.rs");
             assert_eq!(content, "fn main() {}");
         } else {
             panic!("Deserialization failed");
         }
 
-        let msg2 = IdeMessage::CursorMove { user_id: 1, line: 10, col: 5 };
+        let msg2 = IdeMessage::CursorMove {
+            user_id: 1,
+            line: 10,
+            col: 5,
+        };
         let serialized2 = msg2.serialize();
-        if let Some(IdeMessage::CursorMove { user_id, line, col }) = IdeMessage::deserialize(&serialized2) {
+        if let Some(IdeMessage::CursorMove { user_id, line, col }) =
+            IdeMessage::deserialize(&serialized2)
+        {
             assert_eq!(user_id, 1);
             assert_eq!(line, 10);
             assert_eq!(col, 5);

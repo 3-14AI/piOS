@@ -39,7 +39,8 @@ impl NlDebugger {
             return "I couldn't find that variable.".to_string();
         }
 
-        "I'm not sure how to answer that yet. Try asking 'what is the value of <variable>'.".to_string()
+        "I'm not sure how to answer that yet. Try asking 'what is the value of <variable>'."
+            .to_string()
     }
 }
 
