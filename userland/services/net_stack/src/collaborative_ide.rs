@@ -86,6 +86,12 @@ pub struct CollaborativeIdeClient {
     pub cursors: BTreeMap<u32, (u32, u32)>, // user_id -> (line, col)
 }
 
+impl Default for CollaborativeIdeClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CollaborativeIdeClient {
     pub fn new() -> Self {
         Self {

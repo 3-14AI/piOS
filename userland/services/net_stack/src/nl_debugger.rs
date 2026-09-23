@@ -6,6 +6,12 @@ pub struct NlDebugger {
     variables: alloc::collections::BTreeMap<String, u64>,
 }
 
+impl Default for NlDebugger {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NlDebugger {
     pub fn new() -> Self {
         Self {

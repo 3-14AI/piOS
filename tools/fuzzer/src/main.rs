@@ -16,7 +16,7 @@ fuzz_target!(|data: &[u8]| {
             }
         }
 
-        let fs = ext4::Ext4::new();
+        let mut fs = ext4::Ext4::new();
         let _ = fs.mount();
     }
 });
