@@ -56,3 +56,6 @@ For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integrati
 
 ## Verifiable Standard Library
 *   **WASM Enhancements:** The kernel exposes verifiable standard library wrappers (e.g., `VerifiableVec`, `VerifiableMap`) in `kernel/src/wasm/verus_std_env.rs` for AI-generated code. Use these abstractions when generating applications to ensure formal verifiability with Verus before compiling with Cranelift.
+
+* The `userland/services/net_stack` module has been expanded to include Distributed Shared Memory (`distributed_memory.rs`), Zero Trust Agent Sandboxing (`zero_trust.rs`), AI-driven Malware Analysis (`malware_analysis.rs`), Collaborative IDE (`collaborative_ide.rs`), and Natural Language Debugger (`nl_debugger.rs`).
+* Always ensure that custom WASM services utilizing AI models or natural language processing correctly implement `#![no_std]` paradigms and verify dependencies before exposing new capabilities to userland applications.
