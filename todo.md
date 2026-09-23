@@ -81,12 +81,28 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 38: Distributed Storage and Memory
 - [x] **WP-169: Swarm Distributed VFS.** Implement a Virtual File System driver that distributes chunks of files across multiple nodes in the swarm, ensuring redundancy and fast parallel reads.
-- [ ] **WP-170: Distributed Shared Memory.** Extend the memory manager to support mapping remote node memory segments transparently for distributed WASM applications.
+- [x] **WP-170: Distributed Shared Memory.** Extend the memory manager to support mapping remote node memory segments transparently for distributed WASM applications.
 
 ## Phase 39: Security and Trust
-- [ ] **WP-171: Zero Trust Agent Sandboxing.** Implement fine-grained capability restrictions for WASM agents based on a cryptographic trust score maintained by the Swarm Consensus.
-- [ ] **WP-172: AI-driven Malware Analysis.** Use the local AI models to heuristically analyze new WASM binaries dynamically for malicious behavior before they are allowed to execute.
+- [x] **WP-171: Zero Trust Agent Sandboxing.** Implement fine-grained capability restrictions for WASM agents based on a cryptographic trust score maintained by the Swarm Consensus.
+- [x] **WP-172: AI-driven Malware Analysis.** Use the local AI models to heuristically analyze new WASM binaries dynamically for malicious behavior before they are allowed to execute.
 
 ## Phase 40: Next-Gen Developer Experience
-- [ ] **WP-173: Real-time Collaborative IDE.** Extend the In-OS IDE to support multiple agents and users editing the same codebase simultaneously, synchronized via Swarm Synchronization.
-- [ ] **WP-174: Natural Language Debugger.** Create a debugging tool that allows developers to ask questions about the state of their program in natural language, utilizing the AI models to inspect memory and variables.
+- [x] **WP-173: Real-time Collaborative IDE.** Extend the In-OS IDE to support multiple agents and users editing the same codebase simultaneously, synchronized via Swarm Synchronization.
+- [x] **WP-174: Natural Language Debugger.** Create a debugging tool that allows developers to ask questions about the state of their program in natural language, utilizing the AI models to inspect memory and variables.
+
+## Phase 41: Advanced Hardware Bootstrapping
+- [ ] **WP-175: Bare-metal x86-64 ISO Builder.** Implement a robust `mkisofs`-based toolchain within piOS to natively generate a bootable ISO with a signed UEFI bootloader and kernel payload.
+- [ ] **WP-176: ACPI Table Parser.** Write a `#![no_std]` ACPI parser to discover memory regions, CPUs, and power states on physical hardware, replacing hardcoded QEMU offsets.
+
+## Phase 42: Self-Healing System Daemons
+- [ ] **WP-177: AI-Driven Init System.** Replace the static initialization sequence with a dependency-aware WASM supervisor that uses semantic reasoning to order service startup and recover from crashes.
+- [ ] **WP-178: Real-time File System Journaling.** Introduce a crash-resistant journaling layer to SemanticFS to ensure zero data loss during abrupt power failures.
+
+## Phase 43: End-User Application Ecosystem
+- [ ] **WP-179: Native WASM Web Browser.** Port a lightweight HTML/CSS renderer (e.g., servo components) to WASI, allowing users to browse the web entirely within the Slint GUI environment.
+- [ ] **WP-180: Natural Language Terminal Emulator.** Implement a fully-featured terminal emulator that intercepts standard POSIX commands (ls, cat, grep) and provides AI-augmented suggestions and autocompletion.
+
+## Phase 44: Formal Verification Scaling
+- [ ] **WP-181: Verus-Verified Network Stack.** Iteratively apply Verus specifications to the core `smoltcp` port to mathematically prove the absence of memory leaks and buffer overflows in packet processing.
+- [ ] **WP-182: Automated Proof Synthesis.** Extend `wasi_ephemeral_compiler` to not just compile, but use the local LLM to automatically generate Verus proof annotations for user-written Rust code.
