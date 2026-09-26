@@ -93,7 +93,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 41: Advanced Hardware Bootstrapping
 - [ ] **WP-175: Bare-metal x86-64 ISO Builder.** Implement a robust `mkisofs`-based toolchain within piOS to natively generate a bootable ISO with a signed UEFI bootloader and kernel payload.
-- [ ] **WP-176: ACPI Table Parser.** Write a `#![no_std]` ACPI parser to discover memory regions, CPUs, and power states on physical hardware, replacing hardcoded QEMU offsets.
+- [x] **WP-176: ACPI Table Parser.** Write a `#![no_std]` ACPI parser to discover memory regions, CPUs, and power states on physical hardware, replacing hardcoded QEMU offsets.
 
 ## Phase 42: Self-Healing System Daemons
 - [ ] **WP-177: AI-Driven Init System.** Replace the static initialization sequence with a dependency-aware WASM supervisor that uses semantic reasoning to order service startup and recover from crashes.
