@@ -153,7 +153,9 @@ impl AcpiTables {
 
                 for i in 0..entries_count {
                     let entry_addr = unsafe { core::ptr::read_unaligned(entries_base.add(i)) };
-                    let entry_header = unsafe { core::ptr::read_unaligned(entry_addr as usize as *const SdtHeader) };
+                    let entry_header = unsafe {
+                        core::ptr::read_unaligned(entry_addr as usize as *const SdtHeader)
+                    };
                     if &entry_header.signature == b"FACP" {
                         fadt_address = Some(entry_addr);
                     } else if &entry_header.signature == b"APIC" {
@@ -171,7 +173,9 @@ impl AcpiTables {
 
                 for i in 0..entries_count {
                     let entry_addr = unsafe { core::ptr::read_unaligned(entries_base.add(i)) };
-                    let entry_header = unsafe { core::ptr::read_unaligned(entry_addr as usize as *const SdtHeader) };
+                    let entry_header = unsafe {
+                        core::ptr::read_unaligned(entry_addr as usize as *const SdtHeader)
+                    };
                     if &entry_header.signature == b"FACP" {
                         fadt_address = Some(entry_addr as u64);
                     } else if &entry_header.signature == b"APIC" {
