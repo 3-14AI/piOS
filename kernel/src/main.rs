@@ -10,6 +10,7 @@ use uefi::prelude::*;
 use uefi::table::boot::{MemoryDescriptor, MemoryType};
 
 // We use the library crate 'kernel' for shared definitions and verified code.
+use kernel::acpi::AcpiTables;
 use kernel::boot;
 use kernel::verifier;
 
@@ -21,6 +22,46 @@ fn efi_main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Statu
         loop {}
     }
     log::info!("Hello from piOS Boot Stub!");
+
+    let mut acpi_rsdp = None;
+    for entry in system_table.config_table() {
+        if entry.guid == uefi::table::cfg::ACPI2_GUID || entry.guid == uefi::table::cfg::ACPI_GUID {
+            acpi_rsdp = Some(entry.address as usize);
+            break;
+        }
+    }
+
+    let mut pm1a_cnt_blk = 0;
+    let mut slp_typa = 0;
+    let mut slp_typb = 0;
+
+    if let Some(rsdp_addr) = acpi_rsdp {
+        log::info!("Found ACPI RSDP at {:#x}", rsdp_addr);
+        #[cfg(not(feature = "verus"))]
+        {
+            let tables = AcpiTables::parse_from_rsdp(rsdp_addr);
+            if tables.valid {
+                log::info!(
+                    "Parsed ACPI tables: FADT={:x?} MADT={:x?}",
+                    tables.fadt_address,
+                    tables.madt_address
+                );
+                if let Some(pm1a) = tables.pm1a_control_block {
+                    pm1a_cnt_blk = pm1a as u16;
+                }
+                if let Some(a) = tables.slp_typa {
+                    slp_typa = a;
+                }
+                if let Some(b) = tables.slp_typb {
+                    slp_typb = b;
+                }
+            } else {
+                log::warn!("Invalid ACPI tables");
+            }
+        }
+    } else {
+        log::warn!("ACPI tables not found in UEFI config table");
+    }
 
     // 0. Load initrd
     let mut initrd_addr = 0;
@@ -113,10 +154,18 @@ fn efi_main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Statu
     verifier::kernel_main(&boot_info);
 
     // 4. Run simple tests and signal QEMU to exit
-    run_qemu_tests();
+    run_qemu_tests(pm1a_cnt_blk, slp_typa, slp_typb);
 
     // 5. Spin
     loop {}
+}
+
+#[cfg(target_arch = "x86_64")]
+#[cfg(not(tarpaulin_include))]
+fn outw(port: u16, val: u16) {
+    unsafe {
+        core::arch::asm!("out dx, ax", in("dx") port, in("ax") val);
+    }
 }
 
 #[cfg(target_arch = "x86_64")]
@@ -146,13 +195,17 @@ fn write_serial(s: &str) {
 
 #[cfg(target_arch = "x86_64")]
 #[cfg(not(tarpaulin_include))]
-fn run_qemu_tests() {
+fn run_qemu_tests(pm1a_cnt_blk: u16, slp_typa: u8, _slp_typb: u8) {
     write_serial("\nRunning QEMU Integration Tests...\n");
     // TODO: add real tests here
     write_serial("[ok] Kernel booted successfully\n");
 
-    // Shutdown via isa-debug-exit
-    outb(0xf4, 0x10);
+    // Shutdown via ACPI if available, else fallback to QEMU debug exit
+    if pm1a_cnt_blk != 0 {
+        outw(pm1a_cnt_blk, (slp_typa as u16) << 10 | 1 << 13);
+    } else {
+        outb(0xf4, 0x10);
+    }
 }
 
 #[cfg(any(target_arch = "riscv64", target_arch = "riscv32"))]
@@ -172,6 +225,12 @@ pub extern "C" fn _start() -> ! {
     verifier::kernel_main(&boot_info);
 
     loop {}
+}
+
+#[cfg(any(target_arch = "riscv64", target_arch = "riscv32"))]
+#[cfg(not(tarpaulin_include))]
+fn run_qemu_tests(_pm1a_cnt_blk: u16, _slp_typa: u8, _slp_typb: u8) {
+    // riscv fallback stub
 }
 
 #[no_mangle]
