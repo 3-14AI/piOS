@@ -96,7 +96,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-176: ACPI Table Parser.** Write a `#![no_std]` ACPI parser to discover memory regions, CPUs, and power states on physical hardware, replacing hardcoded QEMU offsets.
 
 ## Phase 42: Self-Healing System Daemons
-- [ ] **WP-177: AI-Driven Init System.** Replace the static initialization sequence with a dependency-aware WASM supervisor that uses semantic reasoning to order service startup and recover from crashes.
+- [x] **WP-177: AI-Driven Init System.** Replace the static initialization sequence with a dependency-aware WASM supervisor that uses semantic reasoning to order service startup and recover from crashes.
 - [ ] **WP-178: Real-time File System Journaling.** Introduce a crash-resistant journaling layer to SemanticFS to ensure zero data loss during abrupt power failures.
 
 ## Phase 43: End-User Application Ecosystem

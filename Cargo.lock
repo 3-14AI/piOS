@@ -3108,6 +3108,7 @@ dependencies = [
 name = "init"
 version = "0.1.0"
 dependencies = [
+ "inference_runtime",
  "nl_sh",
  "pios-api",
 ]
