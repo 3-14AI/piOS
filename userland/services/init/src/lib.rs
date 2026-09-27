@@ -1,12 +1,12 @@
 #![no_std]
 extern crate alloc;
 
+use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use nl_sh::NlShell;
 use inference_runtime::{InferenceEngine, Model, Tensor};
-use alloc::boxed::Box;
+use nl_sh::NlShell;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ServiceState {
@@ -270,8 +270,14 @@ mod tests {
 
     #[test]
     fn test_parse_semantic_deps() {
-        assert_eq!(parse_semantic_deps("dependencies=db,cache\0"), alloc::vec!["db", "cache"]);
-        assert_eq!(parse_semantic_deps("dependencies=db  ,  cache \0"), alloc::vec!["db", "cache"]);
+        assert_eq!(
+            parse_semantic_deps("dependencies=db,cache\0"),
+            alloc::vec!["db", "cache"]
+        );
+        assert_eq!(
+            parse_semantic_deps("dependencies=db  ,  cache \0"),
+            alloc::vec!["db", "cache"]
+        );
         assert_eq!(parse_semantic_deps("unknown"), alloc::vec![] as Vec<String>);
     }
 
