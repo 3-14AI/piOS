@@ -226,10 +226,11 @@ impl InitManager {
         for name in self.services.keys().cloned().collect::<Vec<_>>() {
             let state = self.services.get(&name).unwrap().state;
             let restart = self.services.get(&name).unwrap().unit.restart_on_failure;
-            if state == ServiceState::Failed && !restart {
-                if self.semantic_provider.analyze_crash(&name) {
-                    to_restart.push(name);
-                }
+            if state == ServiceState::Failed
+                && !restart
+                && self.semantic_provider.analyze_crash(&name)
+            {
+                to_restart.push(name);
             }
         }
 
