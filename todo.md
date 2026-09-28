@@ -92,7 +92,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-174: Natural Language Debugger.** Create a debugging tool that allows developers to ask questions about the state of their program in natural language, utilizing the AI models to inspect memory and variables.
 
 ## Phase 41: Advanced Hardware Bootstrapping
-- [ ] **WP-175: Bare-metal x86-64 ISO Builder.** Implement a robust `mkisofs`-based toolchain within piOS to natively generate a bootable ISO with a signed UEFI bootloader and kernel payload.
+- [x] **WP-175: Bare-metal x86-64 ISO Builder.** Implement a robust `mkisofs`-based toolchain within piOS to natively generate a bootable ISO with a signed UEFI bootloader and kernel payload.
 - [x] **WP-176: ACPI Table Parser.** Write a `#![no_std]` ACPI parser to discover memory regions, CPUs, and power states on physical hardware, replacing hardcoded QEMU offsets.
 
 ## Phase 42: Self-Healing System Daemons
