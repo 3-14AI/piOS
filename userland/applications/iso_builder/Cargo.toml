@@ -1,0 +1,11 @@
+[package]
+name = "iso_builder"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[lib]
+name = "iso_builder"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
