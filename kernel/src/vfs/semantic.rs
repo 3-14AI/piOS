@@ -1,5 +1,6 @@
 extern crate alloc;
 
+use crate::vfs::journal::{JournalEntry, SemanticJournal};
 use alloc::string::String;
 use alloc::vec::Vec;
 use inference_runtime::{InferenceEngine, Model, Tensor};
@@ -9,6 +10,8 @@ pub struct SemanticSearch {
     db: VectorDb,
     engine: InferenceEngine,
     model: Model,
+    journal: SemanticJournal,
+    is_recovering: bool,
 }
 
 impl SemanticSearch {
@@ -23,6 +26,8 @@ impl SemanticSearch {
             db: VectorDb::new(),
             engine,
             model,
+            journal: SemanticJournal::new(),
+            is_recovering: false,
         })
     }
 
@@ -63,9 +68,16 @@ impl SemanticSearch {
             metadata: Some(alloc::string::String::from(content)),
         };
 
+        if !self.is_recovering {
+            let tx = self.journal.begin_tx();
+            self.journal.log_add_file(inode, content);
+            self.journal.commit_tx(tx);
+        }
+
         self.db
             .insert(record)
             .map_err(|_| "Failed to insert into vector DB")?;
+
         Ok(())
     }
 
@@ -95,6 +107,24 @@ impl SemanticSearch {
             }
         }
         Err("Path not found or not a semantic path")
+    }
+
+    pub fn recover_from_journal(&mut self) -> Result<(), &'static str> {
+        let mut db_updates = Vec::new();
+
+        self.journal.recover(|entry| {
+            if let JournalEntry::AddFile(inode, content) = entry {
+                db_updates.push((*inode, content.clone()));
+            }
+        })?;
+
+        self.is_recovering = true;
+        for (inode, content) in db_updates {
+            let _ = self.index_file(inode, &content);
+        }
+        self.is_recovering = false;
+
+        Ok(())
     }
 }
 
@@ -132,5 +162,12 @@ mod tests {
 
         let err = search.resolve_path("/normal/path");
         assert!(err.is_err());
+    }
+
+    #[test]
+    fn test_journal_recovery() {
+        let mut search = SemanticSearch::new().unwrap();
+        assert!(search.index_file(1, "important data").is_ok());
+        assert!(search.recover_from_journal().is_ok());
     }
 }

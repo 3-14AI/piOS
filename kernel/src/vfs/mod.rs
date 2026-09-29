@@ -270,6 +270,7 @@ pub mod dynamic_fs;
 pub mod ext4;
 #[cfg(not(feature = "verus"))]
 pub mod fat32;
+pub mod journal;
 #[cfg(not(feature = "verus"))]
 pub mod prefetch;
 #[cfg(not(feature = "verus"))]
