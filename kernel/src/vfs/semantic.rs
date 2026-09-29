@@ -1,10 +1,10 @@
 extern crate alloc;
 
+use crate::vfs::journal::{JournalEntry, SemanticJournal};
 use alloc::string::String;
 use alloc::vec::Vec;
 use inference_runtime::{InferenceEngine, Model, Tensor};
 use vector_db::{VectorDb, VectorRecord};
-use crate::vfs::journal::{SemanticJournal, JournalEntry};
 
 pub struct SemanticSearch {
     db: VectorDb,

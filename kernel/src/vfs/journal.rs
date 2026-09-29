@@ -33,7 +33,8 @@ impl SemanticJournal {
 
     pub fn log_add_file(&mut self, inode: u64, content: &str) {
         if !self.is_recovering {
-            self.entries.push(JournalEntry::AddFile(inode, String::from(content)));
+            self.entries
+                .push(JournalEntry::AddFile(inode, String::from(content)));
         }
     }
 
@@ -45,7 +46,8 @@ impl SemanticJournal {
 
     pub fn log_update_file(&mut self, inode: u64, content: &str) {
         if !self.is_recovering {
-            self.entries.push(JournalEntry::UpdateFile(inode, String::from(content)));
+            self.entries
+                .push(JournalEntry::UpdateFile(inode, String::from(content)));
         }
     }
 
