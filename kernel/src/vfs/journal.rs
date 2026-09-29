@@ -14,6 +14,12 @@ pub struct SemanticJournal {
     is_recovering: bool,
 }
 
+impl Default for SemanticJournal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SemanticJournal {
     pub fn new() -> Self {
         Self {
