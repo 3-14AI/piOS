@@ -274,6 +274,7 @@ pub mod fat32;
 pub mod prefetch;
 #[cfg(not(feature = "verus"))]
 pub mod semantic;
+pub mod journal;
 #[cfg(not(feature = "verus"))]
 pub mod swarm_vfs;
 #[cfg(not(feature = "verus"))]
