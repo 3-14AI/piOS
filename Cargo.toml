@@ -19,7 +19,7 @@ members = [
     "userland/services/package_manager",
     "libs/libc_compat",
     "userland/applications/hello_world",
-    "userland/applications/pkg_cli", "userland/applications/nl_term",
+    "userland/applications/pkg_cli",
     "userland/services/installer",
     "userland/applications/coreutils",
     "userland/applications/llm_runner",
