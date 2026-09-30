@@ -105,4 +105,4 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 44: Formal Verification Scaling
 - [ ] **WP-181: Verus-Verified Network Stack.** Iteratively apply Verus specifications to the core `smoltcp` port to mathematically prove the absence of memory leaks and buffer overflows in packet processing.
-- [ ] **WP-182: Automated Proof Synthesis.** Extend `wasi_ephemeral_compiler` to not just compile, but use the local LLM to automatically generate Verus proof annotations for user-written Rust code.
+- [x] **WP-182: Automated Proof Synthesis.** Extend `wasi_ephemeral_compiler` to not just compile, but use the local LLM to automatically generate Verus proof annotations for user-written Rust code.
