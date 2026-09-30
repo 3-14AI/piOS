@@ -42,7 +42,6 @@ pub fn wasi_ephemeral_compiler(caller: Caller<'_, WasiCtx>, code_ptr: i32, code_
         return WASI_ERRNO_BADF;
     }
 
-
     if let Ok(code_str) = core::str::from_utf8(&code_buf) {
         // WP-182: Automated Proof Synthesis
         // Use local LLM to automatically generate Verus proof annotations for user-written Rust code
@@ -50,13 +49,15 @@ pub fn wasi_ephemeral_compiler(caller: Caller<'_, WasiCtx>, code_ptr: i32, code_
         if let Ok(model) = engine.load_model_by_name("verus_proof_generator") {
             if let Ok(ctx) = engine.init_execution_context(&model) {
                 let tensor_data = code_str.as_bytes().to_vec();
-                let tensor = inference_runtime::Tensor::new(tensor_data, alloc::vec![code_str.len()]);
+                let tensor =
+                    inference_runtime::Tensor::new(tensor_data, alloc::vec![code_str.len()]);
                 let _ = engine.set_input(ctx, 0, &tensor);
                 let _ = engine.compute(ctx);
 
                 let mut out_buf = alloc::vec![0u8; 1024];
                 if let Ok(bytes_written) = engine.get_output(ctx, 0, &mut out_buf) {
-                    let _generated_proof = core::str::from_utf8(&out_buf[..bytes_written]).unwrap_or("");
+                    let _generated_proof =
+                        core::str::from_utf8(&out_buf[..bytes_written]).unwrap_or("");
                     // We simulate merging the generated proof annotations back into the code
                 }
             }
