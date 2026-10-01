@@ -54,11 +54,11 @@ impl FederatedMessage {
                 }
                 let mut model_bytes = [0u8; 8];
                 model_bytes.copy_from_slice(&bytes[1..9]);
-                let model_id = usize::from_le_bytes(model_bytes);
+                let model_id = u64::from_le_bytes(model_bytes) as usize;
 
                 let mut node_bytes = [0u8; 8];
                 node_bytes.copy_from_slice(&bytes[9..17]);
-                let node_id = usize::from_le_bytes(node_bytes);
+                let node_id = u64::from_le_bytes(node_bytes) as usize;
 
                 let weights = bytes[17..].to_vec();
 
@@ -74,11 +74,11 @@ impl FederatedMessage {
                 }
                 let mut model_bytes = [0u8; 8];
                 model_bytes.copy_from_slice(&bytes[1..9]);
-                let model_id = usize::from_le_bytes(model_bytes);
+                let model_id = u64::from_le_bytes(model_bytes) as usize;
 
                 let mut version_bytes = [0u8; 8];
                 version_bytes.copy_from_slice(&bytes[9..17]);
-                let version = usize::from_le_bytes(version_bytes);
+                let version = u64::from_le_bytes(version_bytes) as usize;
 
                 let global_weights = bytes[17..].to_vec();
 
