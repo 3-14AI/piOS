@@ -206,7 +206,7 @@ mod tests {
 
         let results = daemon.query_history("Screenshot", 1).unwrap();
         // The mock engine doesn't return anything meaningful but it won't fail
-        if results.len() > 0 {
+        if !results.is_empty() {
             assert_eq!(results.len(), 1);
         }
     }
