@@ -1,4 +1,5 @@
 #![cfg_attr(not(test), no_std)]
+#![allow(clippy::empty_loop)]
 
 extern crate alloc;
 
@@ -227,7 +228,7 @@ pub fn run() {
 
             let suggestion = term
                 .get_autocomplete_suggestion(trimmed)
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             if !suggestion.is_empty() {
                 let msg = format!("AI Suggestion: {}\n", suggestion);
                 write_stdout(&msg);
