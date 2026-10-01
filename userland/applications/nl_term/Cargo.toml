@@ -1,0 +1,12 @@
+[package]
+name = "nl_term"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+
+[lib]
+name = "nl_term"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]

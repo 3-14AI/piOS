@@ -101,7 +101,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 43: End-User Application Ecosystem
 - [ ] **WP-179: Native WASM Web Browser.** Port a lightweight HTML/CSS renderer (e.g., servo components) to WASI, allowing users to browse the web entirely within the Slint GUI environment.
-- [ ] **WP-180: Natural Language Terminal Emulator.** Implement a fully-featured terminal emulator that intercepts standard POSIX commands (ls, cat, grep) and provides AI-augmented suggestions and autocompletion.
+- [x] **WP-180: Natural Language Terminal Emulator.** Implement a fully-featured terminal emulator that intercepts standard POSIX commands (ls, cat, grep) and provides AI-augmented suggestions and autocompletion.
 
 ## Phase 44: Formal Verification Scaling
 - [ ] **WP-181: Verus-Verified Network Stack.** Iteratively apply Verus specifications to the core `smoltcp` port to mathematically prove the absence of memory leaks and buffer overflows in packet processing.
