@@ -9,4 +9,4 @@ inference_runtime = { path = "../../../libs/inference_runtime" }
 [lib]
 name = "nl_term"
 path = "src/lib.rs"
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
