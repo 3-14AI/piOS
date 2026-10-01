@@ -7,11 +7,6 @@ edition = "2021"
 name = "ids_ips"
 path = "src/lib.rs"
 
-[[bin]]
-name = "ids_ips"
-path = "src/main.rs"
-test = false
-
 [dependencies]
 inference_runtime = { path = "../../../libs/inference_runtime" }
 

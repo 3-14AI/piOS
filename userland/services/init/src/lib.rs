@@ -257,11 +257,7 @@ mod tests {
         }
 
         fn analyze_crash(&mut self, name: &str) -> bool {
-            if name == "critical_daemon" {
-                true
-            } else {
-                false
-            }
+            name == "critical_daemon"
         }
     }
 
@@ -284,9 +280,9 @@ mod tests {
 
     #[test]
     fn test_parse_semantic_restart() {
-        assert_eq!(parse_semantic_restart("restart=true\0"), true);
-        assert_eq!(parse_semantic_restart("restart=false\0"), false);
-        assert_eq!(parse_semantic_restart("unknown"), false);
+        assert!(parse_semantic_restart("restart=true\0"));
+        assert!(!parse_semantic_restart("restart=false\0"));
+        assert!(!parse_semantic_restart("unknown"));
     }
 
     #[test]

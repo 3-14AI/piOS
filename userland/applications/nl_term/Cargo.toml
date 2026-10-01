@@ -1,14 +1,12 @@
 [package]
-name = "nl_desktop"
+name = "nl_term"
 version = "0.1.0"
 edition = "2021"
-
-[lib]
-name = "nl_desktop"
-path = "src/lib.rs"
 
 [dependencies]
 inference_runtime = { path = "../../../libs/inference_runtime" }
 
-[lints]
-workspace = true
+[lib]
+name = "nl_term"
+path = "src/lib.rs"
+crate-type = ["rlib"]

@@ -144,89 +144,6 @@ impl ConsensusMessage {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_initial_state() {
-        let mut stack = WasmNetStack::new();
-        let consensus = SwarmConsensus::new(&mut stack, 1, 9999);
-        assert_eq!(consensus.state, SwarmState::Follower);
-        assert_eq!(consensus.current_term, 0);
-    }
-
-    #[test]
-    fn test_start_election() {
-        let mut stack = WasmNetStack::new();
-        let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
-        consensus.start_election(&mut stack);
-        assert_eq!(consensus.state, SwarmState::Candidate);
-        assert_eq!(consensus.current_term, 1);
-        assert_eq!(consensus.voted_for, Some(1));
-    }
-
-    #[test]
-    fn test_process_vote() {
-        let mut stack = WasmNetStack::new();
-        let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
-        consensus.start_election(&mut stack); // Becomes Candidate, term 1, 1 vote
-
-        let vote_msg = ConsensusMessage::Vote {
-            term: 1,
-            voter_id: 2,
-            vote_granted: true,
-        };
-        consensus.process_packet(&mut stack, &vote_msg.serialize(), 3);
-        // With cluster_size 3, > 1 vote needed (1 self + 1 from node 2 = 2 votes)
-        assert_eq!(consensus.state, SwarmState::Leader);
-    }
-
-    #[test]
-    fn test_process_request_vote_as_follower() {
-        let mut stack = WasmNetStack::new();
-        let mut consensus = SwarmConsensus::new(&mut stack, 2, 9999);
-
-        let request = ConsensusMessage::RequestVote {
-            term: 1,
-            candidate_id: 1,
-        };
-        consensus.process_packet(&mut stack, &request.serialize(), 3);
-
-        assert_eq!(consensus.current_term, 1);
-        assert_eq!(consensus.voted_for, Some(1));
-    }
-
-    #[test]
-    fn test_propose_task() {
-        let mut stack = WasmNetStack::new();
-        let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
-        consensus.state = SwarmState::Leader;
-
-        assert!(consensus
-            .propose_task(&mut stack, 42, alloc::vec![1, 2, 3])
-            .is_ok());
-    }
-
-    #[test]
-    fn test_receive_task_proposal() {
-        let mut stack = WasmNetStack::new();
-        let mut consensus = SwarmConsensus::new(&mut stack, 2, 9999);
-
-        let proposal = ConsensusMessage::ProposeTask {
-            term: 1,
-            leader_id: 1,
-            task_id: 42,
-            task_payload: alloc::vec![1, 2, 3],
-        };
-
-        consensus.process_packet(&mut stack, &proposal.serialize(), 3);
-
-        assert_eq!(consensus.current_term, 1);
-        assert_eq!(consensus.state, SwarmState::Follower); // Should remain/become follower
-    }
-}
-
 pub struct SwarmConsensus {
     pub node_id: u32,
     pub state: SwarmState,
@@ -364,5 +281,87 @@ impl SwarmConsensus {
                 }
             }
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_initial_state() {
+        let mut stack = WasmNetStack::new();
+        let consensus = SwarmConsensus::new(&mut stack, 1, 9999);
+        assert_eq!(consensus.state, SwarmState::Follower);
+        assert_eq!(consensus.current_term, 0);
+    }
+
+    #[test]
+    fn test_start_election() {
+        let mut stack = WasmNetStack::new();
+        let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
+        consensus.start_election(&mut stack);
+        assert_eq!(consensus.state, SwarmState::Candidate);
+        assert_eq!(consensus.current_term, 1);
+        assert_eq!(consensus.voted_for, Some(1));
+    }
+
+    #[test]
+    fn test_process_vote() {
+        let mut stack = WasmNetStack::new();
+        let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
+        consensus.start_election(&mut stack); // Becomes Candidate, term 1, 1 vote
+
+        let vote_msg = ConsensusMessage::Vote {
+            term: 1,
+            voter_id: 2,
+            vote_granted: true,
+        };
+        consensus.process_packet(&mut stack, &vote_msg.serialize(), 3);
+        // With cluster_size 3, > 1 vote needed (1 self + 1 from node 2 = 2 votes)
+        assert_eq!(consensus.state, SwarmState::Leader);
+    }
+
+    #[test]
+    fn test_process_request_vote_as_follower() {
+        let mut stack = WasmNetStack::new();
+        let mut consensus = SwarmConsensus::new(&mut stack, 2, 9999);
+
+        let request = ConsensusMessage::RequestVote {
+            term: 1,
+            candidate_id: 1,
+        };
+        consensus.process_packet(&mut stack, &request.serialize(), 3);
+
+        assert_eq!(consensus.current_term, 1);
+        assert_eq!(consensus.voted_for, Some(1));
+    }
+
+    #[test]
+    fn test_propose_task() {
+        let mut stack = WasmNetStack::new();
+        let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
+        consensus.state = SwarmState::Leader;
+
+        assert!(consensus
+            .propose_task(&mut stack, 42, alloc::vec![1, 2, 3])
+            .is_ok());
+    }
+
+    #[test]
+    fn test_receive_task_proposal() {
+        let mut stack = WasmNetStack::new();
+        let mut consensus = SwarmConsensus::new(&mut stack, 2, 9999);
+
+        let proposal = ConsensusMessage::ProposeTask {
+            term: 1,
+            leader_id: 1,
+            task_id: 42,
+            task_payload: alloc::vec![1, 2, 3],
+        };
+
+        consensus.process_packet(&mut stack, &proposal.serialize(), 3);
+
+        assert_eq!(consensus.current_term, 1);
+        assert_eq!(consensus.state, SwarmState::Follower); // Should remain/become follower
     }
 }
