@@ -6,7 +6,7 @@ edition = "2021"
 [lib]
 name = "web_browser"
 path = "src/lib.rs"
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [lints]
 workspace = true
