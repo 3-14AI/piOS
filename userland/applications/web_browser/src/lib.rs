@@ -4,8 +4,8 @@
 
 extern crate alloc;
 
-use alloc::string::String;
 use alloc::format;
+use alloc::string::String;
 
 #[cfg(not(test))]
 #[panic_handler]
