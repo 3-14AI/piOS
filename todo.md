@@ -100,7 +100,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-178: Real-time File System Journaling.** Introduce a crash-resistant journaling layer to SemanticFS to ensure zero data loss during abrupt power failures.
 
 ## Phase 43: End-User Application Ecosystem
-- [ ] **WP-179: Native WASM Web Browser.** Port a lightweight HTML/CSS renderer (e.g., servo components) to WASI, allowing users to browse the web entirely within the Slint GUI environment.
+- [x] **WP-179: Native WASM Web Browser.** Port a lightweight HTML/CSS renderer (e.g., servo components) to WASI, allowing users to browse the web entirely within the Slint GUI environment.
 - [x] **WP-180: Natural Language Terminal Emulator.** Implement a fully-featured terminal emulator that intercepts standard POSIX commands (ls, cat, grep) and provides AI-augmented suggestions and autocompletion.
 
 ## Phase 44: Formal Verification Scaling
