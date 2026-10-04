@@ -38,6 +38,9 @@ verus! {
 }
 
 #[cfg(not(feature = "verus"))]
+use crate::nvme::BlockDevice;
+
+#[cfg(not(feature = "verus"))]
 #[derive(Debug, Clone, Copy)]
 pub struct Ext4Superblock {
     pub inodes_count: u32,
@@ -103,7 +106,7 @@ impl Ext4Superblock {
 
 #[cfg(not(feature = "verus"))]
 pub struct Ext4 {
-    pub block_device: Option<crate::virtio_blk::VirtioBlkDriver>,
+    pub block_device: Option<crate::nvme::NvmeDriver>,
     pub mounted: bool,
     pub superblock: Option<Ext4Superblock>,
 }
@@ -118,7 +121,7 @@ impl Ext4 {
         }
     }
 
-    pub fn new_with_device(dev: crate::virtio_blk::VirtioBlkDriver) -> Self {
+    pub fn new_with_device(dev: crate::nvme::NvmeDriver) -> Self {
         Ext4 {
             block_device: Some(dev),
             mounted: false,
@@ -166,7 +169,7 @@ impl Ext4 {
 
     pub fn read_block(&mut self, block: u64, _buffer: &mut [u8]) -> Result<(), ()> {
         if let Some(dev) = &mut self.block_device {
-            if dev.read_sector(block, 0) {
+            if dev.read_sector(block, _buffer.as_mut_ptr() as usize) {
                 // In a real implementation, we would wait for the DMA transfer to complete
                 return Ok(());
             }
@@ -176,7 +179,7 @@ impl Ext4 {
 
     pub fn write_block(&mut self, block: u64, _buffer: &[u8]) -> Result<(), ()> {
         if let Some(dev) = &mut self.block_device {
-            if block < dev.capacity {
+            if dev.write_sector(block, _buffer.as_ptr() as usize) {
                 return Ok(());
             }
         }
@@ -221,7 +224,7 @@ mod tests {
     fn test_ext4_fsck_failure_with_device() {
         let mut mmio_mock = [0u64; 1024];
         let base_addr = mmio_mock.as_mut_ptr() as usize;
-        let drv = crate::virtio_blk::VirtioBlkDriver::new(4, 100, base_addr, (0, 2, 0));
+        let drv = crate::nvme::NvmeDriver::new(100, 16, base_addr);
         let mut fs_dev = Ext4::new_with_device(drv);
 
         // read_block returns Ok, but buffer is zeroes, so parsing magic 0xEF53 fails
@@ -233,7 +236,7 @@ mod tests {
     fn test_ext4_read_write() {
         let mut mmio_mock = [0u64; 1024];
         let base_addr = mmio_mock.as_mut_ptr() as usize;
-        let drv = crate::virtio_blk::VirtioBlkDriver::new(4, 100, base_addr, (0, 2, 0));
+        let drv = crate::nvme::NvmeDriver::new(100, 16, base_addr);
         let mut fs_dev = Ext4::new_with_device(drv);
 
         let mut buf = [0u8; 512];
