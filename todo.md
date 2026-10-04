@@ -110,4 +110,8 @@ To achieve the overarching goal of a "fully functional operating system with nat
 ## Phase 45: Real Hardware GUI and Applications
 - [ ] **WP-183: Real Hardware Native GUI Desktop.** Boot physical hardware with real graphics drivers to display the generative UI composite rendering, completely detached from QEMU or virtio.
 - [ ] **WP-184: Real World Network and File Operations.** Launch the browser application on real hardware through a real WiFi/Ethernet driver to download files directly onto an NVMe storage drive with a journaling filesystem (SemanticFS/ext4).
+  - [ ] **WP-184.2:** Implement filesystem driver on top of BlockDevice.
+    - [x] **WP-184.2.1:** Implement filesystem interface.
+    - [ ] **WP-184.2.2:** Support journaling.
+    - [ ] **WP-184.2.3:** Implement mounting operation.
 - [ ] **WP-185: Autopoiesis on Bare Metal.** Demonstrate end-to-end OS self-modification (autopoiesis) where an agent observes a missing feature natively (e.g. unsupported USB webcam), researches the spec via the native browser/LLM API, writes driver code, verifies it with the Verus daemon, compiles it with Cranelift, and hot-swaps it into the running kernel without rebooting.

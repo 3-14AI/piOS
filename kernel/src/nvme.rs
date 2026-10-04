@@ -99,6 +99,7 @@ verus! {
 
     pub trait BlockDevice {
         fn read_sector(&mut self, sector: u64, buffer_addr: usize) -> bool;
+        fn write_sector(&mut self, sector: u64, buffer_addr: usize) -> bool;
     }
 
     pub struct NvmeDriver {
@@ -152,11 +153,27 @@ verus! {
                 true
             }
         }
+
+        pub fn write_sector(&mut self, sector: u64, _buffer_addr: usize) -> (success: bool)
+            ensures
+                self.capacity == old(self).capacity,
+                self.initialized == old(self).initialized,
+                success ==> sector < self.capacity
+        {
+            if sector >= self.capacity {
+                false
+            } else {
+                true
+            }
+        }
     }
 
     impl BlockDevice for NvmeDriver {
         fn read_sector(&mut self, sector: u64, buffer_addr: usize) -> bool {
             self.read_sector(sector, buffer_addr)
+        }
+        fn write_sector(&mut self, sector: u64, buffer_addr: usize) -> bool {
+            self.write_sector(sector, buffer_addr)
         }
     }
 }
@@ -211,6 +228,7 @@ impl NvmeQueue {
 #[cfg(not(feature = "verus"))]
 pub trait BlockDevice {
     fn read_sector(&mut self, sector: u64, buffer_addr: usize) -> bool;
+    fn write_sector(&mut self, sector: u64, buffer_addr: usize) -> bool;
 }
 
 #[cfg(not(feature = "verus"))]
@@ -366,12 +384,42 @@ impl NvmeDriver {
 
         true
     }
+
+    pub fn write_sector(&mut self, sector: u64, buffer_addr: usize) -> bool {
+        if sector >= self.capacity {
+            return false;
+        }
+
+        // Format SQ Entry
+        let tail = self.sub_queue.tail as usize;
+        self.sq_entries[tail].opcode = 1; // Write
+        self.sq_entries[tail].prp1 = buffer_addr as u64;
+        self.sq_entries[tail].cdw10 = sector as u32;
+        self.sq_entries[tail].cdw12 = 0; // 1 sector
+
+        // Mocking DMA write from buffer (no operation needed for mock, just simulate time)
+
+        // Enqueue command and completion
+        let _ = self.sub_queue.enqueue();
+        let _ = self.cpl_queue.enqueue();
+
+        // Ring Submission Queue Tail Doorbell
+        unsafe {
+            let doorbell_ptr = (self.mmio_base + 0x1000 + (2 * 4)) as *mut u32;
+            core::ptr::write_volatile(doorbell_ptr, self.sub_queue.tail as u32);
+        }
+
+        true
+    }
 }
 
 #[cfg(not(feature = "verus"))]
 impl BlockDevice for NvmeDriver {
     fn read_sector(&mut self, sector: u64, buffer_addr: usize) -> bool {
         self.read_sector(sector, buffer_addr)
+    }
+    fn write_sector(&mut self, sector: u64, buffer_addr: usize) -> bool {
+        self.write_sector(sector, buffer_addr)
     }
 }
 
