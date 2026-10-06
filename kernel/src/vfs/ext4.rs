@@ -105,10 +105,71 @@ impl Ext4Superblock {
 }
 
 #[cfg(not(feature = "verus"))]
+pub enum Ext4JournalEntry {
+    BlockWrite(u64, alloc::vec::Vec<u8>),
+}
+
+#[cfg(not(feature = "verus"))]
+pub struct Ext4Journal {
+    pub entries: alloc::vec::Vec<Ext4JournalEntry>,
+    pub is_recovering: bool,
+    pub max_entries: usize,
+}
+
+#[cfg(not(feature = "verus"))]
+impl Default for Ext4Journal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+impl Ext4Journal {
+    pub fn new() -> Self {
+        Self {
+            entries: alloc::vec![],
+            is_recovering: false,
+            max_entries: 1024,
+        }
+    }
+
+    pub fn log_write(&mut self, block: u64, data: &[u8]) {
+        if !self.is_recovering {
+            if self.entries.len() >= self.max_entries {
+                // Mock log rotation / flushing by clearing older entries
+                self.entries.clear();
+            }
+            self.entries.push(Ext4JournalEntry::BlockWrite(
+                block,
+                alloc::vec::Vec::from(data),
+            ));
+        }
+    }
+
+    pub fn recover<F>(&mut self, mut apply: F) -> Result<(), ()>
+    where
+        F: FnMut(&Ext4JournalEntry),
+    {
+        self.is_recovering = true;
+        for entry in &self.entries {
+            apply(entry);
+        }
+        self.is_recovering = false;
+        Ok(())
+    }
+
+    pub fn flush(&mut self) -> Result<(), ()> {
+        self.entries.clear();
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 pub struct Ext4 {
     pub block_device: Option<crate::nvme::NvmeDriver>,
     pub mounted: bool,
     pub superblock: Option<Ext4Superblock>,
+    pub ext4_journal: Ext4Journal,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -118,6 +179,7 @@ impl Ext4 {
             block_device: None,
             mounted: false,
             superblock: None,
+            ext4_journal: Ext4Journal::new(),
         }
     }
 
@@ -126,6 +188,7 @@ impl Ext4 {
             block_device: Some(dev),
             mounted: false,
             superblock: None,
+            ext4_journal: Ext4Journal::new(),
         }
     }
 
@@ -178,6 +241,7 @@ impl Ext4 {
     }
 
     pub fn write_block(&mut self, block: u64, _buffer: &[u8]) -> Result<(), ()> {
+        self.ext4_journal.log_write(block, _buffer);
         if let Some(dev) = &mut self.block_device {
             if dev.write_sector(block, _buffer.as_ptr() as usize) {
                 return Ok(());
