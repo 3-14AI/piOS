@@ -117,6 +117,13 @@ pub struct Ext4Journal {
 }
 
 #[cfg(not(feature = "verus"))]
+impl Default for Ext4Journal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 impl Ext4Journal {
     pub fn new() -> Self {
         Self {
@@ -132,7 +139,10 @@ impl Ext4Journal {
                 // Mock log rotation / flushing by clearing older entries
                 self.entries.clear();
             }
-            self.entries.push(Ext4JournalEntry::BlockWrite(block, alloc::vec::Vec::from(data)));
+            self.entries.push(Ext4JournalEntry::BlockWrite(
+                block,
+                alloc::vec::Vec::from(data),
+            ));
         }
     }
 
