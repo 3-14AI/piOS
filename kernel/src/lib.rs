@@ -108,6 +108,11 @@ pub mod boot {
         pub descriptor_version: u32,
         pub initrd_addr: usize,
         pub initrd_size: usize,
+        pub fb_addr: u64,
+        pub fb_size: u64,
+        pub fb_width: u32,
+        pub fb_height: u32,
+        pub fb_stride: u32,
     }
 }
 
@@ -304,6 +309,11 @@ mod tests {
             descriptor_version: 0,
             initrd_addr: 0,
             initrd_size: 0,
+            fb_addr: 0,
+            fb_size: 0,
+            fb_width: 0,
+            fb_height: 0,
+            fb_stride: 0,
         };
         assert_eq!(_info.memory_map_len, 0);
 
@@ -327,6 +337,11 @@ mod tests {
             descriptor_version: 0,
             initrd_addr: 0,
             initrd_size: 0,
+            fb_addr: 0,
+            fb_size: 0,
+            fb_width: 0,
+            fb_height: 0,
+            fb_stride: 0,
         };
         verifier::kernel_main(&info);
     }
