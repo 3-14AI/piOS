@@ -364,9 +364,9 @@ pub fn sys_get_framebuffer(mut caller: Caller<'_, WasiCtx>, fb_info_ptr: i32) ->
         let fb = fb_mutex.lock();
 
         let mut info_buf = [0u8; 24]; // 5 * 4 bytes for u32 fields + 1 byte for bpp + 3 padding
-        let width_bytes = (fb.width as u32).to_le_bytes();
-        let height_bytes = (fb.height as u32).to_le_bytes();
-        let stride_bytes = (fb.stride as u32).to_le_bytes();
+        let width_bytes = fb.width.to_le_bytes();
+        let height_bytes = fb.height.to_le_bytes();
+        let stride_bytes = fb.stride.to_le_bytes();
         info_buf[0..4].copy_from_slice(&width_bytes);
         info_buf[4..8].copy_from_slice(&height_bytes);
         info_buf[8..12].copy_from_slice(&stride_bytes);
@@ -413,7 +413,7 @@ pub fn sys_flush_framebuffer(caller: Caller<'_, WasiCtx>, buf_ptr: i32, buf_len:
             if memory
                 .read(
                     &caller,
-                    (buf_ptr as usize) + current_offset,
+                    (buf_ptr as u32 as usize) + current_offset,
                     &mut temp_buf[..to_read],
                 )
                 .is_err()
