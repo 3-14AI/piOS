@@ -7,11 +7,134 @@ pub struct GenerativeUI {
     app: AppWindow,
     desktop_ai: NlDesktop,
     vision_model: VisionModel,
+    #[cfg(not(test))]
+    #[allow(dead_code)]
+    _timer: Option<slint::Timer>,
+}
+
+#[cfg(target_arch = "wasm32")]
+#[link(wasm_import_module = "wasi_snapshot_preview1")]
+extern "C" {
+    fn sys_get_framebuffer(fb_info_ptr: *mut u8) -> i32;
+    fn sys_flush_framebuffer(buf_ptr: *const u8, buf_len: i32) -> i32;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn sys_get_framebuffer(_fb_info_ptr: *mut u8) -> i32 {
+    0 // WASI_ERRNO_SUCCESS
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn sys_flush_framebuffer(_buf_ptr: *const u8, _buf_len: i32) -> i32 {
+    0 // WASI_ERRNO_SUCCESS
+}
+
+use std::rc::Rc;
+use slint::platform::software_renderer::{MinimalSoftwareWindow, RepaintBufferType};
+use slint::Rgb8Pixel;
+
+struct HardwarePlatform {
+    window: Rc<MinimalSoftwareWindow>,
+}
+
+impl slint::platform::Platform for HardwarePlatform {
+    fn create_window_adapter(
+        &self,
+    ) -> Result<Rc<dyn slint::platform::WindowAdapter>, slint::PlatformError> {
+        Ok(self.window.clone())
+    }
+
+    fn duration_since_start(&self) -> core::time::Duration {
+        // We use Instant::now() which maps to clock_time_get(MONOTONIC) in WASI.
+        // If it fails or is unavailable in our specific `#![no_std]` environment,
+        // we fallback to a static tick counter to ensure Slint timers advance.
+        #[cfg(target_arch = "wasm32")]
+        {
+            static START_TIME: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+            let start = START_TIME.get_or_init(|| std::time::Instant::now());
+            start.elapsed()
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            core::time::Duration::default()
+        }
+    }
+}
+
+fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)> {
+    let mut fb_info = [0u8; 24];
+    let res = unsafe { sys_get_framebuffer(fb_info.as_mut_ptr()) };
+
+    if res == 0 {
+        let mut width_buf = [0u8; 4];
+        let mut height_buf = [0u8; 4];
+        let mut stride_buf = [0u8; 4];
+        width_buf.copy_from_slice(&fb_info[0..4]);
+        height_buf.copy_from_slice(&fb_info[4..8]);
+        stride_buf.copy_from_slice(&fb_info[8..12]);
+        let width = u32::from_le_bytes(width_buf) as usize;
+        let height = u32::from_le_bytes(height_buf) as usize;
+        let stride = u32::from_le_bytes(stride_buf) as usize;
+
+        let window = MinimalSoftwareWindow::new(RepaintBufferType::ReusedBuffer);
+        window.set_size(slint::PhysicalSize::new(width as u32, height as u32));
+
+        let platform = HardwarePlatform { window: window.clone() };
+        let _ = slint::platform::set_platform(Box::new(platform));
+
+        let timer = slint::Timer::default();
+        let window_clone = window.clone();
+
+        // Allocate buffer once and map to 32bpp for the kernel driver
+        let mut render_buf = vec![Rgb8Pixel::default(); stride * height];
+        let mut mapped_buf = vec![0u8; stride * height * 4];
+
+        timer.start(
+            slint::TimerMode::Repeated,
+            core::time::Duration::from_millis(16),
+            move || {
+                window_clone.draw_if_needed(|renderer| {
+                    renderer.render(render_buf.as_mut_slice(), stride);
+
+                    let mut i = 0;
+                    for p in &render_buf {
+                        mapped_buf[i] = p.b;
+                        mapped_buf[i + 1] = p.g;
+                        mapped_buf[i + 2] = p.r;
+                        mapped_buf[i + 3] = 255; // Alpha
+                        i += 4;
+                    }
+
+                    unsafe {
+                        sys_flush_framebuffer(
+                            mapped_buf.as_ptr(),
+                            mapped_buf.len() as i32
+                        );
+                    }
+                });
+            }
+        );
+
+        Some((window, timer))
+    } else {
+        None
+    }
 }
 
 impl GenerativeUI {
     pub fn new() -> Result<Self, slint::PlatformError> {
+        #[cfg(not(test))]
+        let baremetal_info = init_baremetal_platform();
+
         let app = AppWindow::new()?;
+
+        #[cfg(not(test))]
+        let _timer = if let Some((_, t)) = baremetal_info {
+            Some(t)
+        } else {
+            None
+        };
+
         let mut desktop_ai = NlDesktop::new();
         let _ = desktop_ai.init();
         let vision_model = VisionModel::new(1, "gui_vision_model");
@@ -19,6 +142,8 @@ impl GenerativeUI {
             app,
             desktop_ai,
             vision_model,
+            #[cfg(not(test))]
+            _timer,
         })
     }
 

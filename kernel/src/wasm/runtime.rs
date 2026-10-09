@@ -137,6 +137,16 @@ impl WasmRuntime {
             )?;
             linker.define(
                 "wasi_snapshot_preview1",
+                "sys_get_framebuffer",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_get_framebuffer),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
+                "sys_flush_framebuffer",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_flush_framebuffer),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
                 "wasi_ephemeral_compiler",
                 Func::wrap(&mut store, wasi_ephemeral_compiler),
             )?;

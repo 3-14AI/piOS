@@ -79,6 +79,9 @@ pub struct FramebufferDriver {
 }
 
 #[cfg(not(feature = "verus"))]
+pub static FRAMEBUFFER: spin::Once<spin::Mutex<FramebufferDriver>> = spin::Once::new();
+
+#[cfg(not(feature = "verus"))]
 impl FramebufferDriver {
     pub fn new(
         width: u32,
