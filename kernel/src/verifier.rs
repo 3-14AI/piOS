@@ -19,6 +19,11 @@ verus! {
         if boot_info.fb_addr > 0 {
             let mut fb = crate::gpu::FramebufferDriver::new(boot_info.fb_width, boot_info.fb_height, boot_info.fb_stride, boot_info.fb_addr, boot_info.fb_size, 32);
             fb.write_pixel(0, 0, 0xFFFFFFFF);
+
+            #[cfg(not(feature = "verus"))]
+            {
+                crate::gpu::FRAMEBUFFER.call_once(|| spin::Mutex::new(fb));
+            }
         }
 
         // This is the verified kernel entry point.

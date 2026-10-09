@@ -354,6 +354,96 @@ pub fn fd_seek(
 }
 
 #[cfg(not(feature = "verus"))]
+pub fn sys_get_framebuffer(mut caller: Caller<'_, WasiCtx>, fb_info_ptr: i32) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    if let Some(fb_mutex) = crate::gpu::FRAMEBUFFER.get() {
+        let fb = fb_mutex.lock();
+
+        let mut info_buf = [0u8; 24]; // 5 * 4 bytes for u32 fields + 1 byte for bpp + 3 padding
+        let width_bytes = fb.width.to_le_bytes();
+        let height_bytes = fb.height.to_le_bytes();
+        let stride_bytes = fb.stride.to_le_bytes();
+        info_buf[0..4].copy_from_slice(&width_bytes);
+        info_buf[4..8].copy_from_slice(&height_bytes);
+        info_buf[8..12].copy_from_slice(&stride_bytes);
+
+        let bpp_bytes = (fb.bpp as u32).to_le_bytes();
+        info_buf[12..16].copy_from_slice(&bpp_bytes);
+
+        if memory
+            .write(&mut caller, fb_info_ptr as usize, &info_buf)
+            .is_err()
+        {
+            return WASI_ERRNO_BADF;
+        }
+
+        WASI_ERRNO_SUCCESS
+    } else {
+        WASI_ERRNO_BADF
+    }
+}
+
+#[cfg(not(feature = "verus"))]
+pub fn sys_flush_framebuffer(caller: Caller<'_, WasiCtx>, buf_ptr: i32, buf_len: i32) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    if let Some(fb_mutex) = crate::gpu::FRAMEBUFFER.get() {
+        let fb = fb_mutex.lock();
+        let expected_size = (fb.stride * fb.height * (fb.bpp as u32 / 8)) as usize;
+
+        if buf_len <= 0 || buf_len as usize > expected_size {
+            return WASI_ERRNO_INVAL;
+        }
+
+        // Chunked read to prevent massive kernel allocations and out of memory panics
+        let mut bytes_left = buf_len as usize;
+        let mut current_offset = 0;
+        let chunk_size = 4096;
+        let mut temp_buf = alloc::vec![0u8; chunk_size];
+
+        while bytes_left > 0 {
+            let to_read = core::cmp::min(bytes_left, chunk_size);
+            if memory
+                .read(
+                    &caller,
+                    (buf_ptr as u32 as usize) + current_offset,
+                    &mut temp_buf[..to_read],
+                )
+                .is_err()
+            {
+                return WASI_ERRNO_BADF;
+            }
+
+            let allowed_read =
+                core::cmp::min(to_read, expected_size.saturating_sub(current_offset));
+            if allowed_read > 0 && fb.base_address > 0 {
+                unsafe {
+                    core::ptr::copy_nonoverlapping(
+                        temp_buf.as_ptr(),
+                        (fb.base_address as *mut u8).add(current_offset),
+                        allowed_read,
+                    );
+                }
+            }
+
+            current_offset += to_read;
+            bytes_left -= to_read;
+        }
+
+        WASI_ERRNO_SUCCESS
+    } else {
+        WASI_ERRNO_BADF
+    }
+}
+
+#[cfg(not(feature = "verus"))]
 pub fn sys_intent(
     mut caller: Caller<'_, WasiCtx>,
     intent_ptr: i32,
