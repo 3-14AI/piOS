@@ -16,6 +16,11 @@ verus! {
     pub fn kernel_main(boot_info: &crate::boot::BootInfo) {
         // requires(valid_boot_info(_boot_info)); // precondition
 
+        if boot_info.fb_addr > 0 {
+            let mut fb = crate::gpu::FramebufferDriver::new(boot_info.fb_width, boot_info.fb_height, boot_info.fb_stride, boot_info.fb_addr, boot_info.fb_size, 32);
+            fb.write_pixel(0, 0, 0xFFFFFFFF);
+        }
+
         // This is the verified kernel entry point.
         // It runs in `exec` mode.
         // We cannot print here yet without a verified driver.

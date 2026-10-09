@@ -21,6 +21,11 @@ pub struct BootInfo {
     pub descriptor_version: u32,
     pub initrd_addr: usize,
     pub initrd_size: usize,
+    pub fb_addr: u64,
+    pub fb_size: u64,
+    pub fb_width: u32,
+    pub fb_height: u32,
+    pub fb_stride: u32,
 }
 
 }

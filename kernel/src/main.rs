@@ -68,6 +68,25 @@ fn efi_main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Statu
     let mut initrd_size = 0;
 
     let bs = system_table.boot_services();
+    let mut fb_addr = 0;
+    let mut fb_size = 0;
+    let mut fb_width = 0;
+    let mut fb_height = 0;
+    let mut fb_stride = 0;
+    if let Ok(handle) = bs.get_handle_for_protocol::<uefi::proto::console::gop::GraphicsOutput>() {
+        if let Ok(mut gop) =
+            bs.open_protocol_exclusive::<uefi::proto::console::gop::GraphicsOutput>(handle)
+        {
+            let info = gop.current_mode_info();
+            let (width, height) = info.resolution();
+            fb_width = width as u32;
+            fb_height = height as u32;
+            fb_stride = info.stride() as u32;
+            let mut fb = gop.frame_buffer();
+            fb_addr = fb.as_mut_ptr() as u64;
+            fb_size = fb.size() as u64;
+        }
+    }
     if let Ok(fs_handle) = bs.get_handle_for_protocol::<uefi::proto::media::fs::SimpleFileSystem>()
     {
         if let Ok(mut fs) =
@@ -148,6 +167,11 @@ fn efi_main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Statu
         descriptor_version: 1, // Assume version 1 as uefi-rs abstracts it away
         initrd_addr,
         initrd_size,
+        fb_addr,
+        fb_size,
+        fb_width,
+        fb_height,
+        fb_stride,
     };
 
     // 3. Pass control to verified kernel
