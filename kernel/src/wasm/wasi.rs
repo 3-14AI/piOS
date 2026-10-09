@@ -374,7 +374,10 @@ pub fn sys_get_framebuffer(mut caller: Caller<'_, WasiCtx>, fb_info_ptr: i32) ->
         let bpp_bytes = (fb.bpp as u32).to_le_bytes();
         info_buf[12..16].copy_from_slice(&bpp_bytes);
 
-        if memory.write(&mut caller, fb_info_ptr as usize, &info_buf).is_err() {
+        if memory
+            .write(&mut caller, fb_info_ptr as usize, &info_buf)
+            .is_err()
+        {
             return WASI_ERRNO_BADF;
         }
 
@@ -393,7 +396,7 @@ pub fn sys_flush_framebuffer(caller: Caller<'_, WasiCtx>, buf_ptr: i32, buf_len:
 
     if let Some(fb_mutex) = crate::gpu::FRAMEBUFFER.get() {
         let fb = fb_mutex.lock();
-        let expected_size = (fb.stride * fb.height * (fb.bpp as u64 / 8)) as usize;
+        let expected_size = (fb.stride * fb.height * (fb.bpp as u32 / 8)) as usize;
 
         if buf_len <= 0 || buf_len as usize > expected_size {
             return WASI_ERRNO_INVAL;
@@ -407,11 +410,19 @@ pub fn sys_flush_framebuffer(caller: Caller<'_, WasiCtx>, buf_ptr: i32, buf_len:
 
         while bytes_left > 0 {
             let to_read = core::cmp::min(bytes_left, chunk_size);
-            if memory.read(&caller, (buf_ptr as usize) + current_offset, &mut temp_buf[..to_read]).is_err() {
+            if memory
+                .read(
+                    &caller,
+                    (buf_ptr as usize) + current_offset,
+                    &mut temp_buf[..to_read],
+                )
+                .is_err()
+            {
                 return WASI_ERRNO_BADF;
             }
 
-            let allowed_read = core::cmp::min(to_read, expected_size.saturating_sub(current_offset));
+            let allowed_read =
+                core::cmp::min(to_read, expected_size.saturating_sub(current_offset));
             if allowed_read > 0 && fb.base_address > 0 {
                 unsafe {
                     core::ptr::copy_nonoverlapping(

@@ -29,9 +29,9 @@ unsafe fn sys_flush_framebuffer(_buf_ptr: *const u8, _buf_len: i32) -> i32 {
     0 // WASI_ERRNO_SUCCESS
 }
 
-use std::rc::Rc;
 use slint::platform::software_renderer::{MinimalSoftwareWindow, RepaintBufferType};
 use slint::Rgb8Pixel;
+use std::rc::Rc;
 
 struct HardwarePlatform {
     window: Rc<MinimalSoftwareWindow>,
@@ -79,7 +79,9 @@ fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)
         let window = MinimalSoftwareWindow::new(RepaintBufferType::ReusedBuffer);
         window.set_size(slint::PhysicalSize::new(width as u32, height as u32));
 
-        let platform = HardwarePlatform { window: window.clone() };
+        let platform = HardwarePlatform {
+            window: window.clone(),
+        };
         let _ = slint::platform::set_platform(Box::new(platform));
 
         let timer = slint::Timer::default();
@@ -106,13 +108,10 @@ fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)
                     }
 
                     unsafe {
-                        sys_flush_framebuffer(
-                            mapped_buf.as_ptr(),
-                            mapped_buf.len() as i32
-                        );
+                        sys_flush_framebuffer(mapped_buf.as_ptr(), mapped_buf.len() as i32);
                     }
                 });
-            }
+            },
         );
 
         Some((window, timer))
