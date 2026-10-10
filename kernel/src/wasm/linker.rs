@@ -109,6 +109,12 @@ impl WasmComponentLinker {
         #[cfg(not(feature = "verus"))]
         linker.define(
             "wasi_snapshot_preview1",
+            "sys_poll_input_event",
+            wasmi::Func::wrap(&mut store, crate::wasm::wasi::sys_poll_input_event),
+        )?;
+        #[cfg(not(feature = "verus"))]
+        linker.define(
+            "wasi_snapshot_preview1",
             "wasi_ephemeral_compiler",
             wasmi::Func::wrap(&mut store, wasi_ephemeral_compiler),
         )?;

@@ -151,6 +151,13 @@ impl HidInputDriver {
 }
 
 #[cfg(not(feature = "verus"))]
+extern crate alloc;
+
+#[cfg(not(feature = "verus"))]
+pub static INPUT_EVENTS: spin::Mutex<alloc::vec::Vec<InputEvent>> =
+    spin::Mutex::new(alloc::vec::Vec::new());
+
+#[cfg(not(feature = "verus"))]
 #[derive(Debug)]
 pub struct UsbHidDriver {
     pub endpoint_addr: u8,
@@ -181,7 +188,13 @@ impl UsbHidDriver {
                     let keycode = report[2];
 
                     if keycode != 0 {
-                        self.last_event = Some(InputEvent::new(EventType::Key, keycode as u16, 1));
+                        let event = InputEvent::new(EventType::Key, keycode as u16, 1);
+                        INPUT_EVENTS.lock().push(InputEvent::new(
+                            EventType::Key,
+                            keycode as u16,
+                            1,
+                        ));
+                        self.last_event = Some(event);
                     }
                 }
             }
@@ -200,7 +213,7 @@ impl Default for HidInputDriver {
 }
 
 #[cfg(not(feature = "verus"))]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum EventType {
     Sync,
     Key,
@@ -209,7 +222,7 @@ pub enum EventType {
 }
 
 #[cfg(not(feature = "verus"))]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InputEvent {
     pub event_type: EventType,
     pub code: u16,
