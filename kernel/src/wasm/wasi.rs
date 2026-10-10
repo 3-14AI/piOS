@@ -3,6 +3,7 @@ use alloc::vec::Vec;
 use wasmi::Caller;
 
 pub const WASI_ERRNO_SUCCESS: i32 = 0;
+pub const WASI_ERRNO_AGAIN: i32 = 6;
 pub const WASI_ERRNO_BADF: i32 = 8;
 pub const WASI_ERRNO_INVAL: i32 = 28;
 pub const WASI_ERRNO_NOSYS: i32 = 52;
@@ -441,6 +442,47 @@ pub fn sys_flush_framebuffer(caller: Caller<'_, WasiCtx>, buf_ptr: i32, buf_len:
     } else {
         WASI_ERRNO_BADF
     }
+}
+
+
+
+#[cfg(not(feature = "verus"))]
+pub fn sys_poll_input_event(mut caller: Caller<'_, WasiCtx>, event_ptr: i32) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    let mut events = crate::input::INPUT_EVENTS.lock();
+    if events.is_empty() {
+        return WASI_ERRNO_AGAIN;
+    }
+
+    let event = events.remove(0);
+
+    // event_type: u32, code: u16, value: i32 -> total 10 bytes
+    // Let's use 12 bytes to align:
+    // event_type (4 bytes), code (2 bytes), value (4 bytes), padding (2 bytes)
+
+    let mut buf = [0u8; 12];
+
+    let ev_type = match event.event_type {
+        crate::input::EventType::Sync => 0u32,
+        crate::input::EventType::Key => 1u32,
+        crate::input::EventType::Rel => 2u32,
+        crate::input::EventType::Abs => 3u32,
+    };
+
+    buf[0..4].copy_from_slice(&ev_type.to_le_bytes());
+    buf[4..6].copy_from_slice(&event.code.to_le_bytes());
+    // bytes 6, 7 are padding
+    buf[8..12].copy_from_slice(&event.value.to_le_bytes());
+
+    if memory.write(&mut caller, event_ptr as u32 as usize, &buf).is_err() {
+        return WASI_ERRNO_BADF;
+    }
+
+    WASI_ERRNO_SUCCESS
 }
 
 #[cfg(not(feature = "verus"))]

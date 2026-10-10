@@ -137,6 +137,11 @@ impl WasmRuntime {
             )?;
             linker.define(
                 "wasi_snapshot_preview1",
+                "sys_poll_input_event",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_poll_input_event),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
                 "sys_get_framebuffer",
                 Func::wrap(&mut store, crate::wasm::wasi::sys_get_framebuffer),
             )?;

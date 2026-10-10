@@ -17,6 +17,7 @@ pub struct GenerativeUI {
 extern "C" {
     fn sys_get_framebuffer(fb_info_ptr: *mut u8) -> i32;
     fn sys_flush_framebuffer(buf_ptr: *const u8, buf_len: i32) -> i32;
+    fn sys_poll_input_event(event_ptr: *mut u8) -> i32;
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -27,6 +28,11 @@ unsafe fn sys_get_framebuffer(_fb_info_ptr: *mut u8) -> i32 {
 #[cfg(not(target_arch = "wasm32"))]
 unsafe fn sys_flush_framebuffer(_buf_ptr: *const u8, _buf_len: i32) -> i32 {
     0 // WASI_ERRNO_SUCCESS
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn sys_poll_input_event(_event_ptr: *mut u8) -> i32 {
+    6 // WASI_ERRNO_AGAIN
 }
 
 use slint::platform::software_renderer::{MinimalSoftwareWindow, RepaintBufferType};
@@ -95,6 +101,27 @@ fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)
             slint::TimerMode::Repeated,
             core::time::Duration::from_millis(16),
             move || {
+                let mut event_buf = [0u8; 12];
+                while unsafe { sys_poll_input_event(event_buf.as_mut_ptr()) } == 0 {
+                    let ev_type = u32::from_le_bytes([event_buf[0], event_buf[1], event_buf[2], event_buf[3]]);
+                    let code = u16::from_le_bytes([event_buf[4], event_buf[5]]);
+                    let _value = i32::from_le_bytes([event_buf[8], event_buf[9], event_buf[10], event_buf[11]]);
+
+                    if ev_type == 1 { // Key
+                        // Simulate mapping standard keycodes to Slint keys or logic
+                        // For now, we can just dispatch a space key for any input if code > 0 to see interaction
+                        if code > 0 {
+                            let text = slint::SharedString::from(" ");
+                            window_clone.dispatch_event(slint::platform::WindowEvent::KeyPressed {
+                                text: text.clone(),
+                            });
+                            window_clone.dispatch_event(slint::platform::WindowEvent::KeyReleased {
+                                text: text,
+                            });
+                        }
+                    }
+                }
+
                 window_clone.draw_if_needed(|renderer| {
                     renderer.render(render_buf.as_mut_slice(), stride);
 
