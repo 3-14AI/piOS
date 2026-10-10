@@ -154,7 +154,8 @@ impl HidInputDriver {
 extern crate alloc;
 
 #[cfg(not(feature = "verus"))]
-pub static INPUT_EVENTS: spin::Mutex<alloc::vec::Vec<InputEvent>> = spin::Mutex::new(alloc::vec::Vec::new());
+pub static INPUT_EVENTS: spin::Mutex<alloc::vec::Vec<InputEvent>> =
+    spin::Mutex::new(alloc::vec::Vec::new());
 
 #[cfg(not(feature = "verus"))]
 #[derive(Debug)]
@@ -188,7 +189,11 @@ impl UsbHidDriver {
 
                     if keycode != 0 {
                         let event = InputEvent::new(EventType::Key, keycode as u16, 1);
-                        INPUT_EVENTS.lock().push(InputEvent::new(EventType::Key, keycode as u16, 1));
+                        INPUT_EVENTS.lock().push(InputEvent::new(
+                            EventType::Key,
+                            keycode as u16,
+                            1,
+                        ));
                         self.last_event = Some(event);
                     }
                 }

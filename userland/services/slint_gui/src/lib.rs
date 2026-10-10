@@ -103,11 +103,22 @@ fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)
             move || {
                 let mut event_buf = [0u8; 12];
                 while unsafe { sys_poll_input_event(event_buf.as_mut_ptr()) } == 0 {
-                    let ev_type = u32::from_le_bytes([event_buf[0], event_buf[1], event_buf[2], event_buf[3]]);
+                    let ev_type = u32::from_le_bytes([
+                        event_buf[0],
+                        event_buf[1],
+                        event_buf[2],
+                        event_buf[3],
+                    ]);
                     let code = u16::from_le_bytes([event_buf[4], event_buf[5]]);
-                    let _value = i32::from_le_bytes([event_buf[8], event_buf[9], event_buf[10], event_buf[11]]);
+                    let _value = i32::from_le_bytes([
+                        event_buf[8],
+                        event_buf[9],
+                        event_buf[10],
+                        event_buf[11],
+                    ]);
 
-                    if ev_type == 1 { // Key
+                    if ev_type == 1 {
+                        // Key
                         // Simulate mapping standard keycodes to Slint keys or logic
                         // For now, we can just dispatch a space key for any input if code > 0 to see interaction
                         if code > 0 {
@@ -115,9 +126,9 @@ fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)
                             window_clone.dispatch_event(slint::platform::WindowEvent::KeyPressed {
                                 text: text.clone(),
                             });
-                            window_clone.dispatch_event(slint::platform::WindowEvent::KeyReleased {
-                                text: text,
-                            });
+                            window_clone.dispatch_event(
+                                slint::platform::WindowEvent::KeyReleased { text: text },
+                            );
                         }
                     }
                 }

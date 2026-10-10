@@ -444,8 +444,6 @@ pub fn sys_flush_framebuffer(caller: Caller<'_, WasiCtx>, buf_ptr: i32, buf_len:
     }
 }
 
-
-
 #[cfg(not(feature = "verus"))]
 pub fn sys_poll_input_event(mut caller: Caller<'_, WasiCtx>, event_ptr: i32) -> i32 {
     let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
@@ -478,7 +476,10 @@ pub fn sys_poll_input_event(mut caller: Caller<'_, WasiCtx>, event_ptr: i32) -> 
     // bytes 6, 7 are padding
     buf[8..12].copy_from_slice(&event.value.to_le_bytes());
 
-    if memory.write(&mut caller, event_ptr as u32 as usize, &buf).is_err() {
+    if memory
+        .write(&mut caller, event_ptr as u32 as usize, &buf)
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
 
