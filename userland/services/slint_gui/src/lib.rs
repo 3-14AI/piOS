@@ -127,7 +127,7 @@ fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)
                                 text: text.clone(),
                             });
                             window_clone.dispatch_event(
-                                slint::platform::WindowEvent::KeyReleased { text: text },
+                                slint::platform::WindowEvent::KeyReleased { text },
                             );
                         }
                     }
