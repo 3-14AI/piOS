@@ -517,7 +517,10 @@ pub fn sys_net_connect(
 
     // Attempt to write the dummy fd back to userland
     // If the memory write fails or is unsupported for the pointer, fallback to standard error.
-    if memory.write(&mut caller, fd_out as u32 as usize, &dummy_fd_buf).is_err() {
+    if memory
+        .write(&mut caller, fd_out as u32 as usize, &dummy_fd_buf)
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
 
@@ -548,7 +551,10 @@ pub fn sys_net_send(
     let mut sent_out_buf = [0u8; 4];
     sent_out_buf.copy_from_slice(&buf_len.to_le_bytes());
 
-    if memory.write(&mut caller, bytes_sent_out as u32 as usize, &sent_out_buf).is_err() {
+    if memory
+        .write(&mut caller, bytes_sent_out as u32 as usize, &sent_out_buf)
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
 
@@ -582,7 +588,10 @@ pub fn sys_net_recv(
     let mut read_out_buf = [0u8; 4];
     read_out_buf.copy_from_slice(&(copy_len as i32).to_le_bytes());
 
-    if memory.write(&mut caller, bytes_read_out as u32 as usize, &read_out_buf).is_err() {
+    if memory
+        .write(&mut caller, bytes_read_out as u32 as usize, &read_out_buf)
+        .is_err()
+    {
         return WASI_ERRNO_BADF;
     }
 

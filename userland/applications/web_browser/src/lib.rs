@@ -132,15 +132,33 @@ impl WebBrowser {
 
         #[cfg(not(test))]
         unsafe {
-            if sys_net_connect(ip.as_ptr() as usize as i32, ip.len() as i32, port, &mut fd_out as *mut i32 as usize as i32) != 0 {
+            if sys_net_connect(
+                ip.as_ptr() as usize as i32,
+                ip.len() as i32,
+                port,
+                &mut fd_out as *mut i32 as usize as i32,
+            ) != 0
+            {
                 return Err(String::from("Failed to connect"));
             }
 
-            if sys_net_send(fd_out, req.as_ptr() as usize as i32, req.len() as i32, &mut bytes_sent_out as *mut i32 as usize as i32) != 0 {
+            if sys_net_send(
+                fd_out,
+                req.as_ptr() as usize as i32,
+                req.len() as i32,
+                &mut bytes_sent_out as *mut i32 as usize as i32,
+            ) != 0
+            {
                 return Err(String::from("Failed to send request"));
             }
 
-            if sys_net_recv(fd_out, recv_buf.as_mut_ptr() as usize as i32, recv_buf.len() as i32, &mut bytes_read_out as *mut i32 as usize as i32) != 0 {
+            if sys_net_recv(
+                fd_out,
+                recv_buf.as_mut_ptr() as usize as i32,
+                recv_buf.len() as i32,
+                &mut bytes_read_out as *mut i32 as usize as i32,
+            ) != 0
+            {
                 return Err(String::from("Failed to receive response"));
             }
         }
@@ -161,7 +179,10 @@ impl WebBrowser {
         let received_str = core::str::from_utf8(&recv_buf[..bytes_read_out as usize]).unwrap_or("");
 
         // Simulating saving to semanticFS/ext4 by returning a success message
-        Ok(format!("Downloaded file of size {} and saved to SemanticFS", received_str.len()))
+        Ok(format!(
+            "Downloaded file of size {} and saved to SemanticFS",
+            received_str.len()
+        ))
     }
 }
 
