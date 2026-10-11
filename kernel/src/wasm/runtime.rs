@@ -152,6 +152,21 @@ impl WasmRuntime {
             )?;
             linker.define(
                 "wasi_snapshot_preview1",
+                "sys_net_connect",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_net_connect),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
+                "sys_net_send",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_net_send),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
+                "sys_net_recv",
+                Func::wrap(&mut store, crate::wasm::wasi::sys_net_recv),
+            )?;
+            linker.define(
+                "wasi_snapshot_preview1",
                 "wasi_ephemeral_compiler",
                 Func::wrap(&mut store, wasi_ephemeral_compiler),
             )?;
