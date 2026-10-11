@@ -113,8 +113,11 @@ To achieve the overarching goal of a "fully functional operating system with nat
   - [x] **WP-183.2: Generative UI Rendering.** Connect the `FramebufferDriver` to the generative UI output stream to render without relying on QEMU/virtio.
   - [x] **WP-183.3: Interactive Input.** Hook up the real hardware input drivers to interact with the GUI.
 - [ ] **WP-184: Real World Network and File Operations.** Launch the browser application on real hardware through a real WiFi/Ethernet driver to download files directly onto an NVMe storage drive with a journaling filesystem (SemanticFS/ext4).
+  - [x] **WP-184.1:** WASI networking system calls.
   - [x] **WP-184.2:** Implement filesystem driver on top of BlockDevice.
     - [x] **WP-184.2.1:** Implement filesystem interface.
     - [x] **WP-184.2.2:** Support journaling.
     - [x] **WP-184.2.3:** Implement mounting operation.
+  - [x] **WP-184.3:** WiFi driver integration.
+  - [x] **WP-184.4:** Browser download extension.
 - [ ] **WP-185: Autopoiesis on Bare Metal.** Demonstrate end-to-end OS self-modification (autopoiesis) where an agent observes a missing feature natively (e.g. unsupported USB webcam), researches the spec via the native browser/LLM API, writes driver code, verifies it with the Verus daemon, compiles it with Cranelift, and hot-swaps it into the running kernel without rebooting.

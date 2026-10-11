@@ -487,6 +487,110 @@ pub fn sys_poll_input_event(mut caller: Caller<'_, WasiCtx>, event_ptr: i32) -> 
 }
 
 #[cfg(not(feature = "verus"))]
+pub fn sys_net_connect(
+    mut caller: Caller<'_, WasiCtx>,
+    ip_ptr: i32,
+    ip_len: i32,
+    port: i32,
+    fd_out: i32,
+) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    let mut ip_buf = alloc::vec![0u8; ip_len as usize];
+    if memory
+        .read(&caller, ip_ptr as u32 as usize, &mut ip_buf)
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+
+    let _ip_str = core::str::from_utf8(&ip_buf).unwrap_or("");
+    let _port = port;
+
+    // Mock successful connection, returning a dummy fd
+    let dummy_fd = 3i32;
+    let mut dummy_fd_buf = [0u8; 4];
+    dummy_fd_buf.copy_from_slice(&dummy_fd.to_le_bytes());
+
+    // Attempt to write the dummy fd back to userland
+    // If the memory write fails or is unsupported for the pointer, fallback to standard error.
+    if memory.write(&mut caller, fd_out as u32 as usize, &dummy_fd_buf).is_err() {
+        return WASI_ERRNO_BADF;
+    }
+
+    WASI_ERRNO_SUCCESS
+}
+
+#[cfg(not(feature = "verus"))]
+pub fn sys_net_send(
+    mut caller: Caller<'_, WasiCtx>,
+    _fd: i32,
+    buf_ptr: i32,
+    buf_len: i32,
+    bytes_sent_out: i32,
+) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    let mut buf = alloc::vec![0u8; buf_len as usize];
+    if memory
+        .read(&caller, buf_ptr as u32 as usize, &mut buf)
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+
+    let mut sent_out_buf = [0u8; 4];
+    sent_out_buf.copy_from_slice(&buf_len.to_le_bytes());
+
+    if memory.write(&mut caller, bytes_sent_out as u32 as usize, &sent_out_buf).is_err() {
+        return WASI_ERRNO_BADF;
+    }
+
+    // Mock successful send
+    WASI_ERRNO_SUCCESS
+}
+
+#[cfg(not(feature = "verus"))]
+pub fn sys_net_recv(
+    mut caller: Caller<'_, WasiCtx>,
+    _fd: i32,
+    buf_ptr: i32,
+    buf_len: i32,
+    bytes_read_out: i32,
+) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    let mock_data = b"HTTP/1.1 200 OK\r\n\r\nMock response";
+    let copy_len = core::cmp::min(buf_len as usize, mock_data.len());
+
+    if memory
+        .write(&mut caller, buf_ptr as u32 as usize, &mock_data[..copy_len])
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+
+    let mut read_out_buf = [0u8; 4];
+    read_out_buf.copy_from_slice(&(copy_len as i32).to_le_bytes());
+
+    if memory.write(&mut caller, bytes_read_out as u32 as usize, &read_out_buf).is_err() {
+        return WASI_ERRNO_BADF;
+    }
+
+    // Mock successful receive
+    WASI_ERRNO_SUCCESS
+}
+
+#[cfg(not(feature = "verus"))]
 pub fn sys_intent(
     mut caller: Caller<'_, WasiCtx>,
     intent_ptr: i32,

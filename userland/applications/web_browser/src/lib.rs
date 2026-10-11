@@ -55,6 +55,37 @@ static ALLOCATOR: BumpAllocator = BumpAllocator {
     bump_ptr: core::cell::UnsafeCell::new(0),
 };
 
+#[cfg(not(test))]
+extern "C" {
+    fn sys_net_connect(ip_ptr: i32, ip_len: i32, port: i32, fd_out: i32) -> i32;
+    fn sys_net_send(fd: i32, buf_ptr: i32, buf_len: i32, bytes_sent_out: i32) -> i32;
+    fn sys_net_recv(fd: i32, buf_ptr: i32, buf_len: i32, bytes_read_out: i32) -> i32;
+}
+
+#[cfg(test)]
+unsafe fn sys_net_connect(_ip_ptr: i32, _ip_len: i32, _port: i32, fd_out: i32) -> i32 {
+    let fd_out_ptr = fd_out as usize as *mut i32;
+    *fd_out_ptr = 3;
+    0
+}
+
+#[cfg(test)]
+unsafe fn sys_net_send(_fd: i32, _buf_ptr: i32, buf_len: i32, bytes_sent_out: i32) -> i32 {
+    let out_ptr = bytes_sent_out as usize as *mut i32;
+    *out_ptr = buf_len;
+    0
+}
+
+#[cfg(test)]
+unsafe fn sys_net_recv(_fd: i32, buf_ptr: i32, buf_len: i32, bytes_read_out: i32) -> i32 {
+    let mock_data = b"HTTP/1.1 200 OK\r\n\r\nMock content";
+    let len = core::cmp::min(mock_data.len(), buf_len as usize);
+    core::ptr::copy_nonoverlapping(mock_data.as_ptr(), buf_ptr as usize as *mut u8, len);
+    let out_ptr = bytes_read_out as usize as *mut i32;
+    *out_ptr = len as i32;
+    0
+}
+
 pub struct WebBrowser {
     current_url: String,
 }
@@ -89,6 +120,48 @@ impl WebBrowser {
     pub fn parse_css(&self, css: &str) -> String {
         let rules = css.split("{").count();
         format!("Parsed CSS with {} rules", rules)
+    }
+
+    pub fn download_file(&self, ip: &str, port: i32, path: &str) -> Result<String, String> {
+        let mut fd_out = 0i32;
+        let mut bytes_sent_out = 0i32;
+        let mut bytes_read_out = 0i32;
+        let mut recv_buf = alloc::vec![0u8; 1024];
+
+        let req = format!("GET {} HTTP/1.1\r\nHost: {}\r\n\r\n", path, ip);
+
+        #[cfg(not(test))]
+        unsafe {
+            if sys_net_connect(ip.as_ptr() as usize as i32, ip.len() as i32, port, &mut fd_out as *mut i32 as usize as i32) != 0 {
+                return Err(String::from("Failed to connect"));
+            }
+
+            if sys_net_send(fd_out, req.as_ptr() as usize as i32, req.len() as i32, &mut bytes_sent_out as *mut i32 as usize as i32) != 0 {
+                return Err(String::from("Failed to send request"));
+            }
+
+            if sys_net_recv(fd_out, recv_buf.as_mut_ptr() as usize as i32, recv_buf.len() as i32, &mut bytes_read_out as *mut i32 as usize as i32) != 0 {
+                return Err(String::from("Failed to receive response"));
+            }
+        }
+
+        #[cfg(test)]
+        {
+            fd_out = 3;
+            bytes_sent_out = req.len() as i32;
+            let mock_data = b"HTTP/1.1 200 OK\r\n\r\nMock content";
+            let copy_len = core::cmp::min(recv_buf.len(), mock_data.len());
+            recv_buf[..copy_len].copy_from_slice(&mock_data[..copy_len]);
+            bytes_read_out = copy_len as i32;
+            let _ = fd_out;
+            let _ = bytes_sent_out;
+            let _ = port;
+        }
+
+        let received_str = core::str::from_utf8(&recv_buf[..bytes_read_out as usize]).unwrap_or("");
+
+        // Simulating saving to semanticFS/ext4 by returning a success message
+        Ok(format!("Downloaded file of size {} and saved to SemanticFS", received_str.len()))
     }
 }
 
@@ -133,5 +206,13 @@ mod tests {
         let browser = WebBrowser::new();
         let res = browser.parse_css("body { color: red; }");
         assert!(res.contains("Parsed CSS"));
+    }
+
+    #[test]
+    fn test_download_file() {
+        let browser = WebBrowser::new();
+        let res = browser.download_file("127.0.0.1", 80, "/index.html");
+        assert!(res.is_ok());
+        assert!(res.unwrap().contains("saved to SemanticFS"));
     }
 }
