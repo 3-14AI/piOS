@@ -1,6 +1,7 @@
 extern crate alloc;
 
 #[cfg(not(feature = "verus"))]
+#[cfg(not(feature = "verus"))]
 use crate::wasm::wasi::sys_intent;
 use crate::wasm::wasi::{
     args_get, args_sizes_get, clock_time_get, environ_get, environ_sizes_get, fd_close,

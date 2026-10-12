@@ -64,3 +64,9 @@ For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integrati
 ## Phase 45 Focus: Bare Metal Autopoiesis and Real GUI
 1. Focus strictly on running outside of QEMU. Rely on bare metal APIs (ACPI parsing, UEFI tables) for real hardware drivers.
 2. Ensure the UI components and SemanticFS integration work locally with actual networking instead of mocked smoltcp interfaces.
+
+## Phase 46 Focus: Advanced Hardware Integration and Production Polish
+1. **Symmetric Multiprocessing (SMP):** Focus on correct APIC programming and memory synchronization. The kernel must be able to distribute tasks safely across multiple physical CPU cores.
+2. **AI Hardware Acceleration:** Prioritize real hardware offloading for inference tasks to reduce CPU load and latency.
+3. **Robust USB/Audio:** Real-world usability depends on reliable input (XHCI/HID) and output (Audio) device discovery and streaming.
+4. **OTA Updates:** The system must be capable of updating itself robustly without bricking, utilizing A/B partitioning and cryptographic validation.
