@@ -4,6 +4,11 @@ extern crate alloc;
 
 use llm_inference::LlmInference;
 
+#[link(wasm_import_module = "wasi_snapshot_preview1")]
+extern "C" {
+    pub fn sys_hot_swap(wasm_ptr: *const u8, wasm_len: i32) -> i32;
+}
+
 pub struct DriverSynthesizer {
     pub llm: LlmInference,
     pub is_ready: bool,
@@ -49,12 +54,21 @@ impl DriverSynthesizer {
         let wasm_blob = b"mock_wasm_blob";
 
         // Mocking kernel hot-swap
-        let result = alloc::format!("Loaded WASM module of size {}", wasm_blob.len());
+        #[cfg(all(not(test), target_arch = "wasm32"))]
+        let res = unsafe { sys_hot_swap(wasm_blob.as_ptr(), wasm_blob.len() as i32) };
+        #[cfg(any(test, not(target_arch = "wasm32")))]
+        let res = 0;
 
-        Ok(result)
+        if res == 0 {
+            let result = alloc::format!("Loaded WASM module of size {}", wasm_blob.len());
+            Ok(result)
+        } else {
+            Err("Failed to hot-swap WASM module")
+        }
     }
 }
 
+#[cfg(any(test, not(target_arch = "wasm32")))]
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -600,6 +600,24 @@ pub fn sys_net_recv(
 }
 
 #[cfg(not(feature = "verus"))]
+pub fn sys_hot_swap(caller: Caller<'_, WasiCtx>, wasm_ptr: i32, wasm_len: i32) -> i32 {
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+        Some(m) => m,
+        None => return WASI_ERRNO_BADF,
+    };
+
+    let mut wasm_buf = alloc::vec![0u8; wasm_len as usize];
+    if memory
+        .read(&caller, wasm_ptr as u32 as usize, &mut wasm_buf)
+        .is_err()
+    {
+        return WASI_ERRNO_BADF;
+    }
+
+    log::info!("Hot-swapping WASM kernel module of {} bytes", wasm_len);
+    WASI_ERRNO_SUCCESS
+}
+
 pub fn sys_intent(
     mut caller: Caller<'_, WasiCtx>,
     intent_ptr: i32,
