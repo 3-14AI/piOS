@@ -27,6 +27,8 @@ pub struct AcpiTables {
     pub pm1a_control_block: Option<u32>,
     pub slp_typa: Option<u8>,
     pub slp_typb: Option<u8>,
+    pub processor_apic_ids: [u8; 256],
+    pub processor_count: usize,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -39,6 +41,8 @@ impl AcpiTables {
             pm1a_control_block: None,
             slp_typa: None,
             slp_typb: None,
+            processor_apic_ids: [0; 256],
+            processor_count: 0,
         }
     }
 }
@@ -75,6 +79,30 @@ struct SdtHeader {
     oem_revision: u32,
     creator_id: u32,
     creator_revision: u32,
+}
+
+#[cfg(not(feature = "verus"))]
+#[repr(C, packed)]
+struct Madt {
+    header: SdtHeader,
+    local_apic_address: u32,
+    flags: u32,
+}
+
+#[cfg(not(feature = "verus"))]
+#[repr(C, packed)]
+struct MadtEntryHeader {
+    entry_type: u8,
+    length: u8,
+}
+
+#[cfg(not(feature = "verus"))]
+#[repr(C, packed)]
+struct ProcessorLocalApic {
+    header: MadtEntryHeader,
+    acpi_processor_id: u8,
+    apic_id: u8,
+    flags: u32,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -133,6 +161,8 @@ impl AcpiTables {
                 pm1a_control_block: None,
                 slp_typa: None,
                 slp_typb: None,
+                processor_apic_ids: [0; 256],
+                processor_count: 0,
             };
         }
 
@@ -195,6 +225,39 @@ impl AcpiTables {
             slp_typb = Some(5);
         }
 
+        let mut processor_apic_ids = [0; 256];
+        let mut processor_count = 0;
+
+        if let Some(madt_addr) = madt_address {
+            let madt = unsafe { core::ptr::read_unaligned(madt_addr as usize as *const Madt) };
+            let madt_end = madt_addr as usize + madt.header.length as usize;
+            let mut current_entry = madt_addr as usize + core::mem::size_of::<Madt>();
+
+            while current_entry < madt_end {
+                let entry_header =
+                    unsafe { core::ptr::read_unaligned(current_entry as *const MadtEntryHeader) };
+                if entry_header.length == 0 {
+                    break;
+                }
+                if entry_header.entry_type == 0 {
+                    // Processor Local APIC
+                    if entry_header.length as usize >= core::mem::size_of::<ProcessorLocalApic>() {
+                        let proc_apic = unsafe {
+                            core::ptr::read_unaligned(current_entry as *const ProcessorLocalApic)
+                        };
+                        // Check if processor is enabled (bit 0 of flags) or online capable (bit 1 of flags)
+                        if ((proc_apic.flags & 1) != 0 || (proc_apic.flags & 2) != 0)
+                            && processor_count < 256
+                        {
+                            processor_apic_ids[processor_count] = proc_apic.apic_id;
+                            processor_count += 1;
+                        }
+                    }
+                }
+                current_entry += entry_header.length as usize;
+            }
+        }
+
         AcpiTables {
             valid: true,
             fadt_address,
@@ -202,6 +265,8 @@ impl AcpiTables {
             pm1a_control_block,
             slp_typa,
             slp_typb,
+            processor_apic_ids,
+            processor_count,
         }
     }
 }
