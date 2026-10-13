@@ -234,13 +234,17 @@ impl AcpiTables {
             let mut current_entry = madt_addr as usize + core::mem::size_of::<Madt>();
 
             while current_entry < madt_end {
-                let entry_header = unsafe { core::ptr::read_unaligned(current_entry as *const MadtEntryHeader) };
+                let entry_header =
+                    unsafe { core::ptr::read_unaligned(current_entry as *const MadtEntryHeader) };
                 if entry_header.length == 0 {
                     break;
                 }
-                if entry_header.entry_type == 0 { // Processor Local APIC
+                if entry_header.entry_type == 0 {
+                    // Processor Local APIC
                     if entry_header.length as usize >= core::mem::size_of::<ProcessorLocalApic>() {
-                        let proc_apic = unsafe { core::ptr::read_unaligned(current_entry as *const ProcessorLocalApic) };
+                        let proc_apic = unsafe {
+                            core::ptr::read_unaligned(current_entry as *const ProcessorLocalApic)
+                        };
                         // Check if processor is enabled (bit 0 of flags) or online capable (bit 1 of flags)
                         if (proc_apic.flags & 1) != 0 || (proc_apic.flags & 2) != 0 {
                             if processor_count < 256 {
