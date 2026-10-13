@@ -124,6 +124,9 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 46: Advanced Hardware Integration and Production Polish
 - [ ] **WP-186: SMP (Symmetric Multiprocessing) Support.** Enable all physical CPU cores dynamically discovered via ACPI MADT parsing, bringing up APs (Application Processors) using INIT-SIPI-SIPI sequences, and implement an APIC-based multicore scheduler for executing WASM tasks across all available hardware threads.
+  - [x] **WP-186.1:** Parse MADT in ACPI to discover local APICs.
+  - [ ] **WP-186.2:** Implement INIT-SIPI-SIPI sequence for waking up APs.
+  - [ ] **WP-186.3:** Expand scheduler to be APIC-based multicore.
 - [ ] **WP-187: Hardware-Accelerated Neural Network Inference.** Write a native driver for modern AI accelerators (e.g., Intel NPU, AMD Ryzen AI) or leverage GPU compute via Vulkan/WGPU APIs directly in the kernel to run the `inference_runtime` models natively at high speeds without CPU bottlenecks.
 - [ ] **WP-188: Complete Device Ecosystem Support.** Expand driver support to handle generic XHCI (USB 3.0) hubs, HID input devices seamlessly, and robust Intel HDA/SoundWire audio output, closing the gap between the proof-of-concept drivers and daily-driver usability.
 - [ ] **WP-189: Self-Hosted CI/CD and OS OTA Updates.** Create a secure OTA (Over-The-Air) update mechanism running within the OS that automatically queries a decentralized swarm network, downloads delta patches, verifies cryptographic signatures via `wasi_crypto`, and applies updates safely to an A/B partitioned rootfs.
