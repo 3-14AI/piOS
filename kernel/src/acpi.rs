@@ -246,11 +246,11 @@ impl AcpiTables {
                             core::ptr::read_unaligned(current_entry as *const ProcessorLocalApic)
                         };
                         // Check if processor is enabled (bit 0 of flags) or online capable (bit 1 of flags)
-                        if (proc_apic.flags & 1) != 0 || (proc_apic.flags & 2) != 0 {
-                            if processor_count < 256 {
-                                processor_apic_ids[processor_count] = proc_apic.apic_id;
-                                processor_count += 1;
-                            }
+                        if ((proc_apic.flags & 1) != 0 || (proc_apic.flags & 2) != 0)
+                            && processor_count < 256
+                        {
+                            processor_apic_ids[processor_count] = proc_apic.apic_id;
+                            processor_count += 1;
                         }
                     }
                 }
