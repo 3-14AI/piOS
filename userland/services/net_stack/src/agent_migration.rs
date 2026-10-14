@@ -44,38 +44,64 @@ impl WasmExecutionState {
     pub fn deserialize(data: &[u8]) -> Option<(Self, usize)> {
         let mut offset = 0;
 
-        if data.len() < offset + 4 { return None; }
-        let mem_len = u32::from_le_bytes(data[offset..offset+4].try_into().unwrap()) as usize;
+        if data.len() < offset + 4 {
+            return None;
+        }
+        let mem_len = u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap()) as usize;
         offset += 4;
-        if data.len() < offset + mem_len { return None; }
-        let memory = data[offset..offset+mem_len].to_vec();
+        if data.len() < offset + mem_len {
+            return None;
+        }
+        let memory = data[offset..offset + mem_len].to_vec();
         offset += mem_len;
 
-        if data.len() < offset + 4 { return None; }
-        let stack_len = u32::from_le_bytes(data[offset..offset+4].try_into().unwrap()) as usize;
+        if data.len() < offset + 4 {
+            return None;
+        }
+        let stack_len = u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap()) as usize;
         offset += 4;
-        if data.len() < offset + stack_len { return None; }
-        let stack = data[offset..offset+stack_len].to_vec();
+        if data.len() < offset + stack_len {
+            return None;
+        }
+        let stack = data[offset..offset + stack_len].to_vec();
         offset += stack_len;
 
-        if data.len() < offset + 4 { return None; }
-        let desc_len = u32::from_le_bytes(data[offset..offset+4].try_into().unwrap()) as usize;
+        if data.len() < offset + 4 {
+            return None;
+        }
+        let desc_len = u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap()) as usize;
         offset += 4;
         let mut descriptors = Vec::new();
         for _ in 0..desc_len {
-            if data.len() < offset + 4 { return None; }
-            descriptors.push(u32::from_le_bytes(data[offset..offset+4].try_into().unwrap()));
+            if data.len() < offset + 4 {
+                return None;
+            }
+            descriptors.push(u32::from_le_bytes(
+                data[offset..offset + 4].try_into().unwrap(),
+            ));
             offset += 4;
         }
 
-        if data.len() < offset + 4 { return None; }
-        let source_len = u32::from_le_bytes(data[offset..offset+4].try_into().unwrap()) as usize;
+        if data.len() < offset + 4 {
+            return None;
+        }
+        let source_len = u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap()) as usize;
         offset += 4;
-        if data.len() < offset + source_len { return None; }
-        let wasm_source = data[offset..offset+source_len].to_vec();
+        if data.len() < offset + source_len {
+            return None;
+        }
+        let wasm_source = data[offset..offset + source_len].to_vec();
         offset += source_len;
 
-        Some((Self { memory, stack, descriptors, wasm_source }, offset))
+        Some((
+            Self {
+                memory,
+                stack,
+                descriptors,
+                wasm_source,
+            },
+            offset,
+        ))
     }
 }
 

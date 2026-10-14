@@ -98,7 +98,11 @@ impl UpdateManager {
         }
     }
 
-    pub fn apply_update(&mut self, update_data: &[u8], signature: &[u8]) -> Result<(), &'static str> {
+    pub fn apply_update(
+        &mut self,
+        update_data: &[u8],
+        signature: &[u8],
+    ) -> Result<(), &'static str> {
         if !self.verifier.verify_signature(update_data, signature) {
             return Err("Invalid update signature");
         }
@@ -120,8 +124,14 @@ mod tests {
     #[test]
     fn test_ota_update_manager() {
         let mut manager = UpdateManager::new();
-        assert_eq!(manager.partition_manager.current_partition, BootPartition::A);
+        assert_eq!(
+            manager.partition_manager.current_partition,
+            BootPartition::A
+        );
         assert!(manager.apply_update(b"new_kernel", b"valid_sig").is_ok());
-        assert_eq!(manager.partition_manager.current_partition, BootPartition::B);
+        assert_eq!(
+            manager.partition_manager.current_partition,
+            BootPartition::B
+        );
     }
 }
