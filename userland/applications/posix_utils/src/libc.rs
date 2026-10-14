@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(clippy::missing_safety_doc)]
 
 #[no_mangle]
 #[cfg(not(test))]
@@ -51,7 +52,7 @@ pub extern "C" fn exit(status: i32) -> ! {
 
 #[no_mangle]
 #[cfg(not(test))]
-pub extern "C" fn strlen(s: *const u8) -> usize {
+pub unsafe extern "C" fn strlen(s: *const u8) -> usize {
     if s.is_null() {
         return 0;
     }
@@ -66,7 +67,7 @@ pub extern "C" fn strlen(s: *const u8) -> usize {
 
 #[no_mangle]
 #[cfg(not(test))]
-pub extern "C" fn strcpy(dest: *mut u8, src: *const u8) -> *mut u8 {
+pub unsafe extern "C" fn strcpy(dest: *mut u8, src: *const u8) -> *mut u8 {
     if dest.is_null() || src.is_null() {
         return dest;
     }
@@ -83,7 +84,7 @@ pub extern "C" fn strcpy(dest: *mut u8, src: *const u8) -> *mut u8 {
 
 #[no_mangle]
 #[cfg(not(test))]
-pub extern "C" fn memcpy(dest: *mut u8, src: *const u8, n: usize) -> *mut u8 {
+pub unsafe extern "C" fn memcpy(dest: *mut u8, src: *const u8, n: usize) -> *mut u8 {
     if dest.is_null() || src.is_null() || n == 0 {
         return dest;
     }
