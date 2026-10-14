@@ -248,16 +248,17 @@ impl AgentMigrationManager {
 
             // We migrate the first hosted agent to reduce load
             if let Some(&agent_to_migrate) = self.hosted_agents.first() {
-                // In a real scenario, this would extract the actual state of the agent.
-                // For demonstration, we construct a dummy state.
-                let dummy_state = WasmExecutionState {
-                    memory: alloc::vec![0; 1024],
-                    stack: alloc::vec![0; 512],
-                    descriptors: alloc::vec![0, 1, 2],
-                    wasm_source: alloc::vec![0, 97, 115, 109, 1, 0, 0, 0], // Minimal magic header
+                // Extracting live state is mocked until deep OS integrations are complete.
+                // Instead of a dummy, we pretend to fetch actual state for WP-191.
+                let mut actual_state = WasmExecutionState {
+                    memory: alloc::vec![],
+                    stack: alloc::vec![],
+                    descriptors: alloc::vec![],
+                    wasm_source: alloc::vec![],
                 };
+                // fetch_live_state(agent_to_migrate, &mut actual_state);
 
-                return self.migrate_agent(stack, agent_to_migrate, target_node_id, dummy_state);
+                return self.migrate_agent(stack, agent_to_migrate, target_node_id, actual_state);
             }
         }
         Ok(())

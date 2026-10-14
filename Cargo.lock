@@ -6151,6 +6151,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "sys_fuzzer"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+]
+
+[[package]]
 name = "sys_optimizer"
 version = "0.1.0"
 dependencies = [

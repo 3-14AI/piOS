@@ -16,16 +16,23 @@ pub extern "C" fn malloc(size: usize) -> *mut u8 {
     // Proper libc malloc implementation in a `#![no_std]` environment
     // For a fully functional basic libc, we use a simple functional allocator
     unsafe {
-        static mut HEAP: [u8; 1024 * 1024] = [0; 1024 * 1024];
+        #[repr(C, align(8))]
+        struct AlignedHeap([u8; 1024 * 1024]);
+        static mut HEAP: AlignedHeap = AlignedHeap([0; 1024 * 1024]);
         static mut INDEX: usize = 0;
-        let current_index = core::ptr::read_volatile(&raw const INDEX);
-        if current_index + size > 1024 * 1024 {
+
+        let current_index = core::ptr::read_volatile(core::ptr::addr_of!(INDEX));
+        let align_offset = (8 - (current_index % 8)) % 8;
+        let aligned_start = current_index + align_offset;
+
+        if aligned_start + size > 1024 * 1024 {
             return core::ptr::null_mut();
         }
+
         let ptr = core::ptr::addr_of_mut!(HEAP)
             .cast::<u8>()
-            .add(current_index);
-        core::ptr::write_volatile(&raw mut INDEX, current_index + size);
+            .add(aligned_start);
+        core::ptr::write_volatile(core::ptr::addr_of_mut!(INDEX), aligned_start + size);
         ptr
     }
 }
