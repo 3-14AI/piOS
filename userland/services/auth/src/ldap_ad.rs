@@ -1,6 +1,6 @@
+use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
-use alloc::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct User {
@@ -62,7 +62,11 @@ impl ActiveDirectoryManager {
         Ok(())
     }
 
-    pub fn authenticate_user(&mut self, username: &str, _password_hash: &str) -> Result<Session, &'static str> {
+    pub fn authenticate_user(
+        &mut self,
+        username: &str,
+        _password_hash: &str,
+    ) -> Result<Session, &'static str> {
         // Mock authentication
         if let Some(user) = self.users.get(username) {
             let session_id = String::from("mock_session_id_") + username;
