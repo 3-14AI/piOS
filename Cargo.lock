@@ -365,6 +365,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "auth"
+version = "0.1.0"
+
+[[package]]
 name = "auto_enums"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3108,6 +3112,7 @@ dependencies = [
 name = "init"
 version = "0.1.0"
 dependencies = [
+ "auth",
  "inference_runtime",
  "nl_sh",
  "pios-api",
@@ -4784,6 +4789,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "posix_utils"
+version = "0.1.0"
+
+[[package]]
 name = "potential_utf"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6139,6 +6148,13 @@ dependencies = [
  "libc",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "sys_fuzzer"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
 ]
 
 [[package]]
