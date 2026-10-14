@@ -134,7 +134,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 47: Ecosystem Polish and Enterprise Features
 - [x] **WP-191: Distributed Task Migration.** Expand `WasmNetStack` and Swarm Consensus to natively support migrating full WASM execution states (memory, stack, and descriptors) seamlessly between distinct physical nodes when one node becomes overloaded or predicts a failure, utilizing `wasi_ephemeral_compiler`.
-- [ ] **WP-192: Enterprise Active Directory / LDAP Integration.** Add robust user-session, active-directory, and OAuth2 login-manager capabilities directly within the AI-driven initialization subsystem for corporate multi-user environments.
+- [x] **WP-192: Enterprise Active Directory / LDAP Integration.** Add robust user-session, active-directory, and OAuth2 login-manager capabilities directly within the AI-driven initialization subsystem for corporate multi-user environments.
 - [ ] **WP-193: Hardware-Backed Enclaves (SGX/SEV).** Integrate hardware-level confidential computing environments via verifiable kernel interfaces (`wasi_crypto`) for agent execution that requires strong data sovereignty.
 - [ ] **WP-194: Advanced Telemetry Dashboard.** Create a native Slint-based GUI application and web exporter for real-time observability, tracing, and metric aggregation of the entire multi-node OS cluster.
 - [ ] **WP-195: System Call Fuzzing via Mutated AI Models.** Combine the Kernel Fuzzer with an inference runtime to dynamically generate intelligent test cases targeting WASI boundary edge cases based on prior execution paths.

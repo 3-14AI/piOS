@@ -112,6 +112,7 @@ pub struct InitManager {
     services: BTreeMap<String, Service>,
     pub default_shell: Option<NlShell>,
     pub semantic_provider: Box<dyn SemanticProvider>,
+    pub auth_manager: Option<auth::ldap_ad::ActiveDirectoryManager>,
 }
 
 impl InitManager {
@@ -121,6 +122,7 @@ impl InitManager {
             services: BTreeMap::new(),
             default_shell: None,
             semantic_provider: Box::new(provider),
+            auth_manager: None,
         })
     }
 
@@ -129,7 +131,23 @@ impl InitManager {
             services: BTreeMap::new(),
             default_shell: None,
             semantic_provider: provider,
+            auth_manager: None,
         }
+    }
+
+    pub fn setup_auth_manager(&mut self) -> Result<(), &'static str> {
+        let mut ad_manager = auth::ldap_ad::ActiveDirectoryManager::new();
+        let _ = ad_manager.sync_ldap_users();
+        self.auth_manager = Some(ad_manager);
+
+        self.load_unit(UnitFile {
+            name: "auth_service".to_string(),
+            dependencies: alloc::vec![],
+            exec_start: "auth_daemon".to_string(),
+            restart_on_failure: true,
+        });
+
+        self.start_service("auth_service")
     }
 
     pub fn setup_default_shell(&mut self) -> Result<(), &'static str> {
