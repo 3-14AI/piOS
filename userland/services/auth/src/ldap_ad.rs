@@ -30,6 +30,12 @@ pub struct ActiveDirectoryManager {
     next_uid: u32,
 }
 
+impl Default for ActiveDirectoryManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ActiveDirectoryManager {
     pub fn new() -> Self {
         Self {
