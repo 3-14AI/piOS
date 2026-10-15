@@ -23,6 +23,7 @@ unsafe fn sys_flush_framebuffer(_buf_ptr: *const u8, _buf_len: i32) -> i32 {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
 unsafe fn sys_poll_input_event(_event_ptr: *mut u8) -> i32 {
     6 // WASI_ERRNO_AGAIN
 }
