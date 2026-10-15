@@ -1,0 +1,45 @@
+export component DashboardWindow inherits Window {
+    width: 800px;
+    height: 600px;
+    title: "Advanced Telemetry Dashboard";
+    background: #1e1e1e;
+
+    in property <string> cpu_usage: "0%";
+    in property <string> mem_usage: "0 MB";
+
+    VerticalLayout {
+        padding: 20px;
+        spacing: 20px;
+
+        Text {
+            text: "piOS Telemetry Dashboard";
+            font-size: 24px;
+            color: #ffffff;
+            horizontal-alignment: center;
+        }
+
+        HorizontalLayout {
+            spacing: 20px;
+            Rectangle {
+                background: #333333;
+                border-radius: 10px;
+                padding: 20px;
+                VerticalLayout {
+                    alignment: center;
+                    Text { text: "CPU Usage"; color: #aaaaaa; font-size: 16px; horizontal-alignment: center; }
+                    Text { text: root.cpu_usage; color: #44ff44; font-size: 32px; horizontal-alignment: center; }
+                }
+            }
+            Rectangle {
+                background: #333333;
+                border-radius: 10px;
+                padding: 20px;
+                VerticalLayout {
+                    alignment: center;
+                    Text { text: "Memory Usage"; color: #aaaaaa; font-size: 16px; horizontal-alignment: center; }
+                    Text { text: root.mem_usage; color: #44aaff; font-size: 32px; horizontal-alignment: center; }
+                }
+            }
+        }
+    }
+}
