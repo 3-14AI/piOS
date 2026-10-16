@@ -124,7 +124,7 @@ impl Scheduler {
             self.current_tids[0] == old(self).current_tids[0],
             match res {
                 Ok(tid) => {
-                    tid < MAX_THREADS && tid != self.current_tid &&
+                    tid < MAX_THREADS && tid != self.current_tids[0] &&
                     old(self).tcbs[tid as int].state == ThreadState::Unused &&
                     self.tcbs[tid as int].state == ThreadState::Ready &&
                     self.tcbs[tid as int].stack_ptr == stack_ptr &&
@@ -175,7 +175,7 @@ impl Scheduler {
             self.valid(),
             self.current_tids[0] == old(self).current_tids[0],
     {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             let old_self = *self;
             let mut tcb = self.tcbs[tid];
             tcb.state = ThreadState::Unused;
@@ -202,7 +202,7 @@ impl Scheduler {
             self.valid(),
             self.current_tids[0] == old(self).current_tids[0],
     {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             let is_ready = match self.tcbs[tid].state {
                 ThreadState::Ready => true,
                 _ => false,
@@ -233,7 +233,7 @@ impl Scheduler {
             self.valid(),
             self.current_tids[0] == old(self).current_tids[0],
     {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             let is_suspended = match self.tcbs[tid].state {
                 ThreadState::Suspended => true,
                 _ => false,
@@ -306,7 +306,7 @@ impl Scheduler {
         }
 
         if found {
-            let cur = self.current_tid;
+            let cur = self.current_tids[0];
             let next = next_tid;
 
             if cur != next {
@@ -325,7 +325,7 @@ impl Scheduler {
 
                 self.tcbs[cur] = cur_tcb;
                 self.tcbs[next] = next_tcb;
-                self.current_tid = next;
+                let mut next_tids = self.current_tids; next_tids[0] = next; self.current_tids = next_tids;
 
                 // Prove validity
                 assert(self.current_tids[0] < MAX_THREADS);
@@ -428,7 +428,7 @@ impl Scheduler {
     }
 
     pub fn remove_thread(&mut self, tid: usize, apic_id: usize) -> Result<(), ()> {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             self.tcbs[tid as int].state = ThreadState::Unused;
             Ok(())
         } else {
@@ -437,7 +437,7 @@ impl Scheduler {
     }
 
     pub fn suspend_thread(&mut self, tid: usize, apic_id: usize) -> Result<(), ()> {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             if matches!(self.tcbs[tid as int].state, ThreadState::Ready) {
                 self.tcbs[tid as int].state = ThreadState::Suspended;
                 return Ok(());
@@ -447,7 +447,7 @@ impl Scheduler {
     }
 
     pub fn resume_thread(&mut self, tid: usize, apic_id: usize) -> Result<(), ()> {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             if matches!(self.tcbs[tid as int].state, ThreadState::Suspended) {
                 self.tcbs[tid as int].state = ThreadState::Ready;
                 return Ok(());
@@ -502,7 +502,7 @@ impl Scheduler {
         }
 
         if found && self.current_tid != next_tid {
-            let cur = self.current_tid;
+            let cur = self.current_tids[0];
             let next = next_tid;
 
             trace!(
@@ -513,7 +513,7 @@ impl Scheduler {
 
             self.tcbs[cur].state = ThreadState::Ready;
             self.tcbs[next].state = ThreadState::Running;
-            self.current_tid = next;
+            let mut next_tids = self.current_tids; next_tids[0] = next; self.current_tids = next_tids;
         }
     }
 }
