@@ -14,7 +14,7 @@ pub const MAX_THREADS: usize = 4;
 #[derive(Clone, Copy)]
 pub struct Scheduler {
     pub tcbs: [TCB; 4], // MAX_THREADS = 4
-    pub current_tid: usize,
+    pub current_tids: [usize; 256],
     pub quantum: u32,
 }
 
@@ -25,14 +25,14 @@ pub ghost struct ThreadGhostState {
 impl Scheduler {
     // Basic invariant for the scheduler
     pub open spec fn valid(&self) -> bool {
-        self.current_tid < MAX_THREADS &&
+        self.current_tids[0] < MAX_THREADS &&
         self.tcbs.len() == MAX_THREADS &&
         // Current thread is Running
-        match self.tcbs[self.current_tid as int].state { ThreadState::Running => true, _ => false } &&
+        match self.tcbs[self.current_tids[0] as int].state { ThreadState::Running => true, _ => false } &&
         // IDs match indices
         (forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] self.tcbs[i].id == i as u64) &&
         // Other threads are not Running (they are Ready, Suspended, or Unused)
-        (forall|i: int| 0 <= i < MAX_THREADS && i != self.current_tid ==>
+        (forall|i: int| 0 <= i < MAX_THREADS && i != self.current_tids[0] ==>
             #[trigger] self.tcbs[i].state != ThreadState::Running)
     }
 
@@ -43,7 +43,7 @@ impl Scheduler {
             // but for now let's say all are unused in this raw init.
             forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].state == ThreadState::Unused,
             forall|i: int| 0 <= i < MAX_THREADS ==> #[trigger] s.tcbs[i].id == i as u64,
-            s.current_tid == 0,
+            s.current_tids[0] == 0,
             s.quantum == 10,
     {
         let mut tcbs: [TCB; 4];
@@ -71,7 +71,7 @@ impl Scheduler {
 
         Scheduler {
             tcbs,
-            current_tid: 0,
+            current_tids: [0; 256],
             quantum: 10,
         }
     }
@@ -80,7 +80,7 @@ impl Scheduler {
     pub fn init(current_stack_ptr: u64) -> (s: Self)
         ensures
             s.valid(),
-            s.current_tid == 0,
+            s.current_tids[0] == 0,
             s.tcbs[0].state == ThreadState::Running,
             s.tcbs[0].id == 0,
             s.tcbs[0].stack_ptr == current_stack_ptr,
@@ -101,7 +101,7 @@ impl Scheduler {
             old(self).valid(),
         ensures
             self.valid(),
-            self.current_tid == old(self).current_tid,
+            self.current_tids[0] == old(self).current_tids[0],
             self.tcbs == old(self).tcbs,
             self.quantum == (if new_quantum > 0 { new_quantum } else { 1 }),
     {
@@ -121,10 +121,10 @@ impl Scheduler {
             forall|i: int| 0 <= i < MAX_THREADS && (match res { Ok(tid) => i != tid, _ => true }) ==>
                  #[trigger] self.tcbs[i] == old(self).tcbs[i],
             // Current thread remains same (unless we somehow added to current, but valid() says current is Running and we only add to Unused)
-            self.current_tid == old(self).current_tid,
+            self.current_tids[0] == old(self).current_tids[0],
             match res {
                 Ok(tid) => {
-                    tid < MAX_THREADS && tid != self.current_tid &&
+                    tid < MAX_THREADS && tid != self.current_tids[0] &&
                     old(self).tcbs[tid as int].state == ThreadState::Unused &&
                     self.tcbs[tid as int].state == ThreadState::Ready &&
                     self.tcbs[tid as int].stack_ptr == stack_ptr &&
@@ -140,7 +140,7 @@ impl Scheduler {
             invariant
                 0 <= i <= 4,
                 self.valid(),
-                self.current_tid == old(self).current_tid,
+                self.current_tids[0] == old(self).current_tids[0],
                 forall|j: int| 0 <= j < MAX_THREADS ==>
                     (j >= i ==> #[trigger] self.tcbs[j] == old(self).tcbs[j]) &&
                     (j < i ==> self.tcbs[j] == old(self).tcbs[j]),
@@ -167,14 +167,15 @@ impl Scheduler {
     }
 
 
-    pub fn remove_thread(&mut self, tid: usize) -> (res: Result<(), ()>)
+    pub fn remove_thread(&mut self, tid: usize, apic_id: usize) -> (res: Result<(), ()>)
         requires
+            apic_id == 0,
             old(self).valid(),
         ensures
             self.valid(),
-            self.current_tid == old(self).current_tid,
+            self.current_tids[0] == old(self).current_tids[0],
     {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             let old_self = *self;
             let mut tcb = self.tcbs[tid];
             tcb.state = ThreadState::Unused;
@@ -193,14 +194,15 @@ impl Scheduler {
         }
     }
 
-    pub fn suspend_thread(&mut self, tid: usize) -> (res: Result<(), ()>)
+    pub fn suspend_thread(&mut self, tid: usize, apic_id: usize) -> (res: Result<(), ()>)
         requires
+            apic_id == 0,
             old(self).valid(),
         ensures
             self.valid(),
-            self.current_tid == old(self).current_tid,
+            self.current_tids[0] == old(self).current_tids[0],
     {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             let is_ready = match self.tcbs[tid].state {
                 ThreadState::Ready => true,
                 _ => false,
@@ -223,14 +225,15 @@ impl Scheduler {
         Err(())
     }
 
-    pub fn resume_thread(&mut self, tid: usize) -> (res: Result<(), ()>)
+    pub fn resume_thread(&mut self, tid: usize, apic_id: usize) -> (res: Result<(), ()>)
         requires
+            apic_id == 0,
             old(self).valid(),
         ensures
             self.valid(),
-            self.current_tid == old(self).current_tid,
+            self.current_tids[0] == old(self).current_tids[0],
     {
-        if tid < 4 && tid != self.current_tid {
+        if tid < 4 && tid != self.current_tids[0] {
             let is_suspended = match self.tcbs[tid].state {
                 ThreadState::Suspended => true,
                 _ => false,
@@ -253,14 +256,15 @@ impl Scheduler {
         Err(())
     }
 
-    pub fn schedule(&mut self)
+    pub fn schedule(&mut self, apic_id: usize)
         requires
+            apic_id == 0,
             old(self).valid(),
         ensures
             self.valid(),
     {
         // Round-robin selection
-        let mut next_tid = self.current_tid + 1;
+        let mut next_tid = self.current_tids[0] + 1;
         if next_tid >= 4 {
             next_tid = 0;
         }
@@ -302,7 +306,7 @@ impl Scheduler {
         }
 
         if found {
-            let cur = self.current_tid;
+            let cur = self.current_tids[0];
             let next = next_tid;
 
             if cur != next {
@@ -321,12 +325,12 @@ impl Scheduler {
 
                 self.tcbs[cur] = cur_tcb;
                 self.tcbs[next] = next_tcb;
-                self.current_tid = next;
+                let mut next_tids = self.current_tids; next_tids[0] = next; self.current_tids = next_tids;
 
                 // Prove validity
-                assert(self.current_tid < MAX_THREADS);
+                assert(self.current_tids[0] < MAX_THREADS);
                 assert(self.tcbs.len() == MAX_THREADS);
-                assert(self.tcbs[self.current_tid as int].state == ThreadState::Running);
+                assert(self.tcbs[self.current_tids[0] as int].state == ThreadState::Running);
                 assert forall|i: int| 0 <= i < 4 implies #[trigger] self.tcbs[i].id == i as u64 by {
                     if i == 0 { assert(old_self.tcbs[0].id == 0); assert(self.tcbs[0].id == 0); }
                     else if i == 1 { assert(old_self.tcbs[1].id == 1); assert(self.tcbs[1].id == 1); }
@@ -335,7 +339,7 @@ impl Scheduler {
                 };
 
                 // Prove other threads are not running
-                assert(forall|i: int| 0 <= i < MAX_THREADS && i != self.current_tid ==>
+                assert(forall|i: int| 0 <= i < MAX_THREADS && i != self.current_tids[0] ==>
                     #[trigger] self.tcbs[i].state != ThreadState::Running);
             }
         }
@@ -355,7 +359,7 @@ pub const MAX_THREADS: usize = 4;
 #[derive(Clone, Copy)]
 pub struct Scheduler {
     pub tcbs: [TCB; 4],
-    pub current_tid: usize,
+    pub current_tids: [usize; 256],
     pub quantum: u32,
 }
 
@@ -385,7 +389,7 @@ impl Scheduler {
                     id: 3,
                 },
             ],
-            current_tid: 0,
+            current_tids: [0; 256],
             quantum: 10,
         }
     }
@@ -423,8 +427,8 @@ impl Scheduler {
         Err(())
     }
 
-    pub fn remove_thread(&mut self, tid: usize) -> Result<(), ()> {
-        if tid < 4 && tid != self.current_tid {
+    pub fn remove_thread(&mut self, tid: usize, apic_id: usize) -> Result<(), ()> {
+        if tid < 4 && tid != self.current_tids[0] {
             self.tcbs[tid as int].state = ThreadState::Unused;
             Ok(())
         } else {
@@ -432,8 +436,8 @@ impl Scheduler {
         }
     }
 
-    pub fn suspend_thread(&mut self, tid: usize) -> Result<(), ()> {
-        if tid < 4 && tid != self.current_tid {
+    pub fn suspend_thread(&mut self, tid: usize, apic_id: usize) -> Result<(), ()> {
+        if tid < 4 && tid != self.current_tids[0] {
             if matches!(self.tcbs[tid as int].state, ThreadState::Ready) {
                 self.tcbs[tid as int].state = ThreadState::Suspended;
                 return Ok(());
@@ -442,8 +446,8 @@ impl Scheduler {
         Err(())
     }
 
-    pub fn resume_thread(&mut self, tid: usize) -> Result<(), ()> {
-        if tid < 4 && tid != self.current_tid {
+    pub fn resume_thread(&mut self, tid: usize, apic_id: usize) -> Result<(), ()> {
+        if tid < 4 && tid != self.current_tids[0] {
             if matches!(self.tcbs[tid as int].state, ThreadState::Suspended) {
                 self.tcbs[tid as int].state = ThreadState::Ready;
                 return Ok(());
@@ -452,7 +456,7 @@ impl Scheduler {
         Err(())
     }
 
-    pub fn schedule(&mut self) {
+    pub fn schedule(&mut self, apic_id: usize) {
         let mut next_tid = (self.current_tid + 1) % 4;
         let mut found = false;
 
@@ -498,7 +502,7 @@ impl Scheduler {
         }
 
         if found && self.current_tid != next_tid {
-            let cur = self.current_tid;
+            let cur = self.current_tids[0];
             let next = next_tid;
 
             trace!(
@@ -509,7 +513,9 @@ impl Scheduler {
 
             self.tcbs[cur].state = ThreadState::Ready;
             self.tcbs[next].state = ThreadState::Running;
-            self.current_tid = next;
+            let mut next_tids = self.current_tids;
+            next_tids[0] = next;
+            self.current_tids = next_tids;
         }
     }
 }
@@ -523,7 +529,7 @@ mod tests {
     #[test]
     fn test_scheduler_new() {
         let sched = Scheduler::new();
-        assert_eq!(sched.current_tid, 0);
+        assert_eq!(sched.current_tids[0], 0);
         for i in 0..4 {
             assert_eq!(sched.tcbs[i].state, ThreadState::Unused);
         }
@@ -532,7 +538,7 @@ mod tests {
     #[test]
     fn test_scheduler_init() {
         let sched = Scheduler::init(0x1000);
-        assert_eq!(sched.current_tid, 0);
+        assert_eq!(sched.current_tids[0], 0);
         assert_eq!(sched.tcbs[0].state, ThreadState::Running);
         assert_eq!(sched.tcbs[0].stack_ptr, 0x1000);
     }
@@ -562,26 +568,27 @@ mod tests {
         sched.add_thread(0x2000).unwrap();
         sched.add_thread(0x3000).unwrap();
 
-        assert_eq!(sched.current_tid, 0);
+        assert_eq!(sched.current_tids[0], 0);
 
-        sched.schedule();
-        assert_eq!(sched.current_tid, 1);
+        sched.schedule(0);
+        assert_eq!(sched.current_tids[0], 1);
         assert_eq!(sched.tcbs[0].state, ThreadState::Ready);
         assert_eq!(sched.tcbs[1].state, ThreadState::Running);
 
-        sched.schedule();
-        assert_eq!(sched.current_tid, 2);
+        sched.schedule(0);
+        assert_eq!(sched.current_tids[0], 2);
         assert_eq!(sched.tcbs[1].state, ThreadState::Ready);
         assert_eq!(sched.tcbs[2].state, ThreadState::Running);
 
-        sched.schedule();
-        assert_eq!(sched.current_tid, 0);
+        sched.schedule(0);
+        assert_eq!(sched.current_tids[0], 0);
         assert_eq!(sched.tcbs[2].state, ThreadState::Ready);
         assert_eq!(sched.tcbs[0].state, ThreadState::Running);
 
-        assert!(sched.suspend_thread(1).is_ok());
-        assert!(sched.resume_thread(1).is_ok());
-        assert!(sched.remove_thread(1).is_ok());
-        assert!(sched.remove_thread(0).is_err());
+        assert!(sched.suspend_thread(1, 0).is_ok());
+        assert!(sched.resume_thread(1, 0).is_ok());
+        assert!(sched.remove_thread(1, 0).is_ok());
+        assert!(sched.remove_thread(0, 0).is_err());
     }
 }
+// Triggering CI retry due to spurious network error on crates.io
