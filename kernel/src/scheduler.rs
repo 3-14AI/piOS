@@ -513,7 +513,9 @@ impl Scheduler {
 
             self.tcbs[cur].state = ThreadState::Ready;
             self.tcbs[next].state = ThreadState::Running;
-            let mut next_tids = self.current_tids; next_tids[0] = next; self.current_tids = next_tids;
+            let mut next_tids = self.current_tids;
+            next_tids[0] = next;
+            self.current_tids = next_tids;
         }
     }
 }
