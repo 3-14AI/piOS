@@ -589,3 +589,4 @@ mod tests {
         assert!(sched.remove_thread(0, 0).is_err());
     }
 }
+// Triggering CI retry due to spurious network error on crates.io
