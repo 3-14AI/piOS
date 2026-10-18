@@ -153,3 +153,6 @@ mod tests {
         assert!(governor.fine_tune("weights.bin", b"test_weights").is_ok());
     }
 }
+pub mod monitoring;
+pub mod scheduler_adj;
+pub mod sleep_mgr;
