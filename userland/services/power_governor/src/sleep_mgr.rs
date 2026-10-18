@@ -23,7 +23,11 @@ impl SleepManager {
         }
     }
 
-    pub fn manage_sleep_states(&mut self, user_active: bool, battery_level: u8) -> Result<(), &'static str> {
+    pub fn manage_sleep_states(
+        &mut self,
+        user_active: bool,
+        battery_level: u8,
+    ) -> Result<(), &'static str> {
         // Sleep state management heuristics
         if !user_active {
             if battery_level < 20 {

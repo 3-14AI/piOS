@@ -20,7 +20,11 @@ impl SchedulerAdjuster {
         }
     }
 
-    pub fn adjust_quantum(&mut self, cpu_utilization: u8, memory_pressure: u8) -> Result<u32, &'static str> {
+    pub fn adjust_quantum(
+        &mut self,
+        cpu_utilization: u8,
+        memory_pressure: u8,
+    ) -> Result<u32, &'static str> {
         // Adjust scheduler quanta using heuristics
         if cpu_utilization > 80 || memory_pressure > 80 {
             self.current_quantum_ms = 5; // Smaller quantum for higher responsiveness under load
