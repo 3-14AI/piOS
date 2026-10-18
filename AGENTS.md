@@ -70,3 +70,9 @@ For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integrati
 2. **AI Hardware Acceleration:** Prioritize real hardware offloading for inference tasks to reduce CPU load and latency.
 3. **Robust USB/Audio:** Real-world usability depends on reliable input (XHCI/HID) and output (Audio) device discovery and streaming.
 4. **OTA Updates:** The system must be capable of updating itself robustly without bricking, utilizing A/B partitioning and cryptographic validation.
+
+## New Instructions from Todo List Processing
+
+*   When addressing massive architectural milestones in todo lists, break them down into smaller, actionable sub-tasks (e.g., `WP-184.1`) in the markdown file and implement those incrementally instead of submitting trivial stubs or falsely marking them as complete.
+*   When all unchecked items are exhausted, analyze the project and generate a new todo list oriented towards the global goal. Update `agents.md` as needed during development to record new instructions.
+*   Phase 48-51 focuses on true AI integration, self-healing, resilience, and security. Do not falsely check off these tasks without substantial implementations bridging userland AI and kernel mechanics.

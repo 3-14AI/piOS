@@ -139,3 +139,21 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [x] **WP-194: Advanced Telemetry Dashboard.** Create a native Slint-based GUI application and web exporter for real-time observability, tracing, and metric aggregation of the entire multi-node OS cluster.
 - [x] **WP-195: System Call Fuzzing via Mutated AI Models.** Combine the Kernel Fuzzer with an inference runtime to dynamically generate intelligent test cases targeting WASI boundary edge cases based on prior execution paths.
 - [ ] **WP-196: Native IDE Compilation.** Fully weaponize the native in-OS IDE so users can edit, dynamically compile (using rustc + Cranelift), verify (via Verus), and execute complete standalone applications directly on bare metal without a host OS dependency.
+
+## Phase 48: AI-Native System Optimization
+- [x] **WP-197: Autonomous Resource Governor.** Break into:
+  - [x] **WP-197.1:** Monitor CPU utilization, memory pressure, network traffic.
+  - [x] **WP-197.2:** Adjust scheduler quanta using `sys_optimizer` heuristics.
+  - [x] **WP-197.3:** Manage component sleep states dynamically.
+- [ ] **WP-198: Dynamic Memory Defragmentation.** Enhance the memory manager (`pmm.rs` and `allocator.rs`) with a predictive defragmentation strategy guided by an AI model that learns application allocation patterns to minimize external fragmentation before it occurs.
+
+## Phase 49: Advanced Swarm Intelligence and Resilience
+- [ ] **WP-199: Swarm Fault Tolerance.** Upgrade `swarm_consensus.rs` to support Byzantine Fault Tolerance (BFT), ensuring the distributed OS cluster can continue functioning correctly even if some nodes become malicious or compromised.
+- [ ] **WP-200: Intent-Driven Distributed Task Migration.** Enhance the task migration in `WasmNetStack` to autonomously predict and execute agent migrations based on natural language queries analyzing system health and thermal profiles, without explicit user commands.
+
+## Phase 50: Security and Hardening
+- [ ] **WP-201: Verifiable Zero-Trust Policies.** Implement a formal specification in Verus for the `zero_trust.rs` component to mathematically prove that capability restrictions cannot be bypassed by any WASM application.
+- [ ] **WP-202: AI-Powered Intrusion Prevention.** Evolve the `ids_ips` userland service into a fully autonomous agent that uses the local LLM to proactively generate and deploy firewall rules to the kernel based on detected anomaly patterns in raw network packets.
+
+## Phase 51: True Autopoiesis Loop
+- [ ] **WP-203: Self-Healing Build System.** Create a supervisor agent that monitors kernel panic logs, generates a natural language description of the bug, feeds it to `inference_runtime` to generate a fix, verifies it via Verus, compiles it, and hot-swaps it—all without human intervention.
