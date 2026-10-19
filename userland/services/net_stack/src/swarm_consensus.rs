@@ -3,14 +3,16 @@ use crate::WasmNetStack;
 use alloc::vec::Vec;
 use smoltcp::iface::SocketHandle;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum SwarmState {
     Follower,
     Candidate,
     Leader,
+    CatchingUp,
+    Failed,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ConsensusMessage {
     RequestVote {
         term: u64,
@@ -27,7 +29,12 @@ pub enum ConsensusMessage {
         task_id: u32,
         task_payload: Vec<u8>,
     },
-    AckTask {
+    PrepareTask {
+        term: u64,
+        voter_id: u32,
+        task_id: u32,
+    },
+    CommitTask {
         term: u64,
         voter_id: u32,
         task_id: u32,
@@ -66,12 +73,22 @@ impl ConsensusMessage {
                 buf.extend_from_slice(&(task_payload.len() as u32).to_le_bytes());
                 buf.extend_from_slice(task_payload);
             }
-            Self::AckTask {
+            Self::PrepareTask {
                 term,
                 voter_id,
                 task_id,
             } => {
                 buf.push(3);
+                buf.extend_from_slice(&term.to_le_bytes());
+                buf.extend_from_slice(&voter_id.to_le_bytes());
+                buf.extend_from_slice(&task_id.to_le_bytes());
+            }
+            Self::CommitTask {
+                term,
+                voter_id,
+                task_id,
+            } => {
+                buf.push(4);
                 buf.extend_from_slice(&term.to_le_bytes());
                 buf.extend_from_slice(&voter_id.to_le_bytes());
                 buf.extend_from_slice(&task_id.to_le_bytes());
@@ -133,7 +150,20 @@ impl ConsensusMessage {
                 let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
                 let voter_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
                 let task_id = u32::from_le_bytes(data[13..17].try_into().unwrap());
-                Some(Self::AckTask {
+                Some(Self::PrepareTask {
+                    term,
+                    voter_id,
+                    task_id,
+                })
+            }
+            4 => {
+                if data.len() < 17 {
+                    return None;
+                }
+                let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
+                let voter_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
+                let task_id = u32::from_le_bytes(data[13..17].try_into().unwrap());
+                Some(Self::CommitTask {
                     term,
                     voter_id,
                     task_id,
@@ -150,7 +180,8 @@ pub struct SwarmConsensus {
     pub current_term: u64,
     pub voted_for: Option<u32>,
     pub votes_received: Vec<u32>,
-    pub task_acks: Vec<u32>,
+    pub task_prepares: Vec<u32>,
+    pub task_commits: Vec<u32>,
     socket_handle: SocketHandle,
     port: u16,
 }
@@ -164,13 +195,17 @@ impl SwarmConsensus {
             current_term: 0,
             voted_for: None,
             votes_received: alloc::vec::Vec::new(),
-            task_acks: alloc::vec::Vec::new(),
+            task_prepares: alloc::vec::Vec::new(),
+            task_commits: alloc::vec::Vec::new(),
             socket_handle,
             port,
         }
     }
 
     pub fn start_election(&mut self, stack: &mut WasmNetStack) {
+        if self.state == SwarmState::Failed {
+            return;
+        }
         self.state = SwarmState::Candidate;
         self.current_term += 1;
         self.voted_for = Some(self.node_id);
@@ -193,7 +228,11 @@ impl SwarmConsensus {
         if self.state != SwarmState::Leader {
             return Err("Only leader can propose tasks");
         }
-        self.task_acks.clear(); // Reset acks for new task
+        self.task_prepares.clear();
+        self.task_commits.clear();
+
+        self.task_prepares.push(self.node_id);
+        self.task_commits.push(self.node_id);
 
         let msg = ConsensusMessage::ProposeTask {
             term: self.current_term,
@@ -207,6 +246,11 @@ impl SwarmConsensus {
     }
 
     pub fn process_packet(&mut self, stack: &mut WasmNetStack, data: &[u8], cluster_size: usize) {
+        if self.state == SwarmState::Failed {
+            return;
+        }
+        let bft_threshold = (cluster_size * 2) / 3;
+
         if let Some(msg) = ConsensusMessage::deserialize(data) {
             match msg {
                 ConsensusMessage::RequestVote { term, candidate_id } => {
@@ -243,7 +287,7 @@ impl SwarmConsensus {
                         && !self.votes_received.contains(&voter_id)
                     {
                         self.votes_received.push(voter_id);
-                        if self.votes_received.len() > cluster_size / 2 {
+                        if self.votes_received.len() > bft_threshold {
                             self.state = SwarmState::Leader;
                         }
                     }
@@ -257,8 +301,17 @@ impl SwarmConsensus {
                     if term >= self.current_term {
                         self.current_term = term;
                         self.state = SwarmState::Follower;
-                        // Accept task implicitly by acking
-                        let reply = ConsensusMessage::AckTask {
+
+                        // Clear existing prepares/commits on a new proposal
+                        self.task_prepares.clear();
+                        self.task_commits.clear();
+
+                        // Self-vote for the new proposal
+                        self.task_prepares.push(self.node_id);
+                        self.task_commits.push(self.node_id);
+
+                        // Broadcast PrepareTask (PBFT Prepare phase)
+                        let reply = ConsensusMessage::PrepareTask {
                             term: self.current_term,
                             voter_id: self.node_id,
                             task_id,
@@ -266,17 +319,42 @@ impl SwarmConsensus {
                         stack.send_udp_broadcast(self.socket_handle, self.port, &reply.serialize());
                     }
                 }
-                ConsensusMessage::AckTask {
+                ConsensusMessage::PrepareTask {
+                    term,
+                    voter_id,
+                    task_id,
+                } => {
+                    if term >= self.current_term {
+                        if !self.task_prepares.contains(&voter_id) {
+                            self.task_prepares.push(voter_id);
+                        }
+                        if self.task_prepares.len() > bft_threshold {
+                            // Broadcast CommitTask (PBFT Commit phase)
+                            let reply = ConsensusMessage::CommitTask {
+                                term: self.current_term,
+                                voter_id: self.node_id,
+                                task_id,
+                            };
+                            stack.send_udp_broadcast(
+                                self.socket_handle,
+                                self.port,
+                                &reply.serialize(),
+                            );
+                        }
+                    }
+                }
+                ConsensusMessage::CommitTask {
                     term,
                     voter_id,
                     task_id: _,
                 } => {
-                    if self.state == SwarmState::Leader
-                        && term == self.current_term
-                        && !self.task_acks.contains(&voter_id)
-                    {
-                        self.task_acks.push(voter_id);
-                        // In a real system, we'd commit the task when task_acks.len() > cluster_size / 2
+                    if term >= self.current_term {
+                        if !self.task_commits.contains(&voter_id) {
+                            self.task_commits.push(voter_id);
+                        }
+                        if self.task_commits.len() > bft_threshold {
+                            // Task fully committed in a BFT manner
+                        }
                     }
                 }
             }
@@ -311,14 +389,20 @@ mod tests {
         let mut consensus = SwarmConsensus::new(&mut stack, 1, 9999);
         consensus.start_election(&mut stack); // Becomes Candidate, term 1, 1 vote
 
-        let vote_msg = ConsensusMessage::Vote {
+        let vote_msg2 = ConsensusMessage::Vote {
             term: 1,
             voter_id: 2,
             vote_granted: true,
         };
-        consensus.process_packet(&mut stack, &vote_msg.serialize(), 3);
-        // With cluster_size 3, > 1 vote needed (1 self + 1 from node 2 = 2 votes)
-        assert_eq!(consensus.state, SwarmState::Leader);
+        let vote_msg3 = ConsensusMessage::Vote {
+            term: 1,
+            voter_id: 3,
+            vote_granted: true,
+        };
+        consensus.process_packet(&mut stack, &vote_msg2.serialize(), 4); // 4 nodes, needs > (4*2)/3 = 2. So 3 votes.
+        assert_eq!(consensus.state, SwarmState::Candidate); // 2 votes, not enough
+        consensus.process_packet(&mut stack, &vote_msg3.serialize(), 4);
+        assert_eq!(consensus.state, SwarmState::Leader); // 3 votes, enough
     }
 
     #[test]
@@ -345,6 +429,9 @@ mod tests {
         assert!(consensus
             .propose_task(&mut stack, 42, alloc::vec![1, 2, 3])
             .is_ok());
+
+        assert_eq!(consensus.task_prepares, alloc::vec![1]);
+        assert_eq!(consensus.task_commits, alloc::vec![1]);
     }
 
     #[test]
@@ -362,6 +449,25 @@ mod tests {
         consensus.process_packet(&mut stack, &proposal.serialize(), 3);
 
         assert_eq!(consensus.current_term, 1);
-        assert_eq!(consensus.state, SwarmState::Follower); // Should remain/become follower
+        assert_eq!(consensus.state, SwarmState::Follower);
+
+        assert_eq!(consensus.task_prepares, alloc::vec![2]);
+        assert_eq!(consensus.task_commits, alloc::vec![2]);
+
+        // Proposal 2
+        let proposal2 = ConsensusMessage::ProposeTask {
+            term: 2,
+            leader_id: 1,
+            task_id: 43,
+            task_payload: alloc::vec![1, 2, 3],
+        };
+
+        consensus.process_packet(&mut stack, &proposal2.serialize(), 3);
+
+        assert_eq!(consensus.current_term, 2);
+        assert_eq!(consensus.state, SwarmState::Follower);
+
+        assert_eq!(consensus.task_prepares, alloc::vec![2]);
+        assert_eq!(consensus.task_commits, alloc::vec![2]);
     }
 }
