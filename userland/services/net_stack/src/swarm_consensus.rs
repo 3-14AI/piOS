@@ -1,7 +1,7 @@
 extern crate alloc;
 use crate::WasmNetStack;
-use smoltcp::iface::SocketHandle;
 use alloc::vec::Vec;
+use smoltcp::iface::SocketHandle;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum SwarmState {
@@ -73,13 +73,21 @@ impl ConsensusMessage {
                 buf.extend_from_slice(&(task_payload.len() as u32).to_le_bytes());
                 buf.extend_from_slice(task_payload);
             }
-            Self::PrepareTask { term, voter_id, task_id } => {
+            Self::PrepareTask {
+                term,
+                voter_id,
+                task_id,
+            } => {
                 buf.push(3);
                 buf.extend_from_slice(&term.to_le_bytes());
                 buf.extend_from_slice(&voter_id.to_le_bytes());
                 buf.extend_from_slice(&task_id.to_le_bytes());
             }
-            Self::CommitTask { term, voter_id, task_id } => {
+            Self::CommitTask {
+                term,
+                voter_id,
+                task_id,
+            } => {
                 buf.push(4);
                 buf.extend_from_slice(&term.to_le_bytes());
                 buf.extend_from_slice(&voter_id.to_le_bytes());
@@ -142,7 +150,11 @@ impl ConsensusMessage {
                 let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
                 let voter_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
                 let task_id = u32::from_le_bytes(data[13..17].try_into().unwrap());
-                Some(Self::PrepareTask { term, voter_id, task_id })
+                Some(Self::PrepareTask {
+                    term,
+                    voter_id,
+                    task_id,
+                })
             }
             4 => {
                 if data.len() < 17 {
@@ -151,7 +163,11 @@ impl ConsensusMessage {
                 let term = u64::from_le_bytes(data[1..9].try_into().unwrap());
                 let voter_id = u32::from_le_bytes(data[9..13].try_into().unwrap());
                 let task_id = u32::from_le_bytes(data[13..17].try_into().unwrap());
-                Some(Self::CommitTask { term, voter_id, task_id })
+                Some(Self::CommitTask {
+                    term,
+                    voter_id,
+                    task_id,
+                })
             }
             _ => None,
         }
@@ -319,7 +335,11 @@ impl SwarmConsensus {
                                 voter_id: self.node_id,
                                 task_id,
                             };
-                            stack.send_udp_broadcast(self.socket_handle, self.port, &reply.serialize());
+                            stack.send_udp_broadcast(
+                                self.socket_handle,
+                                self.port,
+                                &reply.serialize(),
+                            );
                         }
                     }
                 }
