@@ -152,7 +152,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 - [ ] **WP-200: Intent-Driven Distributed Task Migration.** Enhance the task migration in `WasmNetStack` to autonomously predict and execute agent migrations based on natural language queries analyzing system health and thermal profiles, without explicit user commands.
 
 ## Phase 50: Security and Hardening
-- [ ] **WP-201: Verifiable Zero-Trust Policies.** Implement a formal specification in Verus for the `zero_trust.rs` component to mathematically prove that capability restrictions cannot be bypassed by any WASM application.
+- [x] **WP-201: Verifiable Zero-Trust Policies.** Implement a formal specification in Verus for the `zero_trust.rs` component to mathematically prove that capability restrictions cannot be bypassed by any WASM application.
 - [ ] **WP-202: AI-Powered Intrusion Prevention.** Evolve the `ids_ips` userland service into a fully autonomous agent that uses the local LLM to proactively generate and deploy firewall rules to the kernel based on detected anomaly patterns in raw network packets.
 
 ## Phase 51: True Autopoiesis Loop

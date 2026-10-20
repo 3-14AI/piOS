@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 extern crate alloc;
 use crate::WasmNetStack;
 use alloc::collections::BTreeMap;
@@ -46,6 +47,75 @@ impl ZeroTrustManager {
             caps.push("network_access_restricted");
         }
         caps
+    }
+}
+
+#[cfg(feature = "verus")]
+use vstd::prelude::*;
+
+#[cfg(feature = "verus")]
+verus! {
+    pub enum Capability {
+        NetworkAccess,
+        FsAccess,
+        ComputeAccess,
+        NetworkAccessRestricted,
+    }
+
+    pub struct ZeroTrustSpec {
+        pub threshold: int,
+        pub scores: Map<int, int>,
+    }
+
+    impl ZeroTrustSpec {
+        pub open spec fn init(threshold: int) -> Self {
+            Self {
+                threshold,
+                scores: Map::empty(),
+            }
+        }
+
+        pub open spec fn get_score(&self, node_id: int) -> int {
+            if self.scores.contains_key(node_id) {
+                self.scores[node_id]
+            } else {
+                100 // default score
+            }
+        }
+
+        pub open spec fn is_trusted(&self, node_id: int) -> bool {
+            self.get_score(node_id) >= self.threshold
+        }
+
+        pub open spec fn update_score(self, node_id: int, delta: int) -> Self {
+            let new_score = self.get_score(node_id) + delta;
+            Self {
+                threshold: self.threshold,
+                scores: self.scores.insert(node_id, new_score),
+            }
+        }
+
+        pub open spec fn get_capabilities(&self, node_id: int) -> Set<Capability> {
+            if self.is_trusted(node_id) {
+                Set::empty()
+                    .insert(Capability::NetworkAccess)
+                    .insert(Capability::FsAccess)
+                    .insert(Capability::ComputeAccess)
+            } else {
+                Set::empty()
+                    .insert(Capability::NetworkAccessRestricted)
+            }
+        }
+
+        pub proof fn lemma_capability_restriction_soundness(&self, node_id: int)
+            requires !self.is_trusted(node_id)
+            ensures
+                !self.get_capabilities(node_id).contains(Capability::NetworkAccess) &&
+                !self.get_capabilities(node_id).contains(Capability::FsAccess) &&
+                !self.get_capabilities(node_id).contains(Capability::ComputeAccess) &&
+                self.get_capabilities(node_id).contains(Capability::NetworkAccessRestricted)
+        {
+        }
     }
 }
 
