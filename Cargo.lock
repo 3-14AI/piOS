@@ -3894,6 +3894,7 @@ dependencies = [
 name = "net_stack"
 version = "0.1.0"
 dependencies = [
+ "llm_inference",
  "log",
  "shadowsocks",
  "shadowsocks-service",

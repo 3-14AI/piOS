@@ -149,7 +149,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 49: Advanced Swarm Intelligence and Resilience
 - [x] **WP-199: Swarm Fault Tolerance.** Upgrade `swarm_consensus.rs` to support Byzantine Fault Tolerance (BFT), ensuring the distributed OS cluster can continue functioning correctly even if some nodes become malicious or compromised. (Implemented PrePrepare-Prepare-Commit PBFT phases with f=(n-1)/3 thresholds in SwarmConsensus)
-- [ ] **WP-200: Intent-Driven Distributed Task Migration.** Enhance the task migration in `WasmNetStack` to autonomously predict and execute agent migrations based on natural language queries analyzing system health and thermal profiles, without explicit user commands.
+- [x] **WP-200: Intent-Driven Distributed Task Migration.** Enhance the task migration in `WasmNetStack` to autonomously predict and execute agent migrations based on natural language queries analyzing system health and thermal profiles, without explicit user commands.
 
 ## Phase 50: Security and Hardening
 - [x] **WP-201: Verifiable Zero-Trust Policies.** Implement a formal specification in Verus for the `zero_trust.rs` component to mathematically prove that capability restrictions cannot be bypassed by any WASM application.
