@@ -1,6 +1,8 @@
 extern crate alloc;
 use crate::WasmNetStack;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use llm_inference::LlmInference;
 use smoltcp::iface::SocketHandle;
 
 // Stub for native testing; this will be resolved properly in WASM context by Cranelift Linker
@@ -9,6 +11,9 @@ extern "C" {
     pub fn wasi_ephemeral_compiler(code_ptr: *const u8, code_len: i32) -> i32;
 }
 
+/// # Safety
+/// This is a mock function for testing that simulates compiling wasm ephemeral code.
+/// It does not perform actual unsafe operations but requires an unsafe block for FFI compatibility.
 #[cfg(test)]
 pub unsafe fn wasi_ephemeral_compiler(_code_ptr: *const u8, _code_len: i32) -> i32 {
     0 // mock SUCCESS
@@ -38,6 +43,7 @@ impl WasmExecutionState {
 
         buf.extend_from_slice(&(self.wasm_source.len() as u32).to_le_bytes());
         buf.extend_from_slice(&self.wasm_source);
+
         buf
     }
 
@@ -71,7 +77,7 @@ impl WasmExecutionState {
         }
         let desc_len = u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap()) as usize;
         offset += 4;
-        let mut descriptors = Vec::new();
+        let mut descriptors = Vec::with_capacity(desc_len);
         for _ in 0..desc_len {
             if data.len() < offset + 4 {
                 return None;
@@ -196,17 +202,23 @@ pub struct AgentMigrationManager {
     port: u16,
     pub active_migrations: Vec<u32>,
     pub hosted_agents: Vec<u32>,
+    llm: LlmInference,
+    pub rollback_states: alloc::collections::BTreeMap<u32, WasmExecutionState>,
 }
 
 impl AgentMigrationManager {
     pub fn new(stack: &mut WasmNetStack, node_id: u32, port: u16) -> Self {
         let socket_handle = stack.add_udp_broadcast_socket(port);
+        let mut llm = LlmInference::new();
+        let _ = llm.load_model("migration_model");
         Self {
             node_id,
             socket_handle,
             port,
             active_migrations: Vec::new(),
             hosted_agents: Vec::new(),
+            llm,
+            rollback_states: alloc::collections::BTreeMap::new(),
         }
     }
 
@@ -221,6 +233,11 @@ impl AgentMigrationManager {
             return Err("Agent not hosted on this node");
         }
         self.active_migrations.push(agent_id);
+
+        // Save state for rollback in case of failure
+        self.rollback_states
+            .insert(agent_id, execution_state.clone());
+
         let msg = MigrationMessage::InitiateMigration {
             agent_id,
             target_node_id,
@@ -235,32 +252,70 @@ impl AgentMigrationManager {
         stack: &mut WasmNetStack,
         cpu_load_percent: u8,
         memory_load_percent: u8,
+        thermal_profile: u8,
         available_nodes: &[u32],
     ) -> Result<(), &'static str> {
-        // High load threshold
-        if cpu_load_percent > 85 || memory_load_percent > 85 {
-            if available_nodes.is_empty() {
-                return Err("No available nodes to migrate to");
-            }
-
-            // Simple round-robin or first available selection for this example
-            let target_node_id = available_nodes[0];
-
-            // We migrate the first hosted agent to reduce load
-            if let Some(&agent_to_migrate) = self.hosted_agents.first() {
-                // Extracting live state is mocked until deep OS integrations are complete.
-                // Instead of a dummy, we pretend to fetch actual state for WP-191.
-                let mut actual_state = WasmExecutionState {
-                    memory: alloc::vec![],
-                    stack: alloc::vec![],
-                    descriptors: alloc::vec![],
-                    wasm_source: alloc::vec![],
-                };
-                // fetch_live_state(agent_to_migrate, &mut actual_state);
-
-                return self.migrate_agent(stack, agent_to_migrate, target_node_id, actual_state);
-            }
+        if available_nodes.is_empty() {
+            return Ok(()); // Nothing to do
         }
+
+        // Convert node slice to a comma separated string to include in the prompt
+        let nodes_str = available_nodes
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let prompt = alloc::format!("Analyze system health: CPU {}%, RAM {}%, Thermal {}C. Available target nodes: [{}]. Should we migrate an agent to reduce load? If yes, respond with 'MIGRATE TO NODE X' where X is the optimal node ID.", cpu_load_percent, memory_load_percent, thermal_profile, nodes_str);
+
+        // Attempt to infer from LLM. If LLM fails, we fallback to our heuristic.
+        let target_node_id = if let Ok(response) = self.llm.infer(&prompt) {
+            // Check if the LLM suggested migration
+            if response.contains("MIGRATE TO NODE") {
+                // Extremely simple parsing: Find "NODE X", parse X
+                let parts: Vec<&str> = response.split("NODE ").collect();
+                if parts.len() > 1 {
+                    let maybe_id = parts[1]
+                        .split_whitespace()
+                        .next()
+                        .unwrap_or("")
+                        .trim_matches(|c: char| !c.is_numeric());
+                    if let Ok(id) = maybe_id.parse::<u32>() {
+                        if available_nodes.contains(&id) {
+                            id
+                        } else {
+                            available_nodes[0]
+                        }
+                    } else {
+                        available_nodes[0]
+                    }
+                } else {
+                    available_nodes[0]
+                }
+            } else {
+                return Ok(()); // No migration needed according to LLM
+            }
+        } else {
+            // Fallback High load threshold
+            if cpu_load_percent > 85 || memory_load_percent > 85 || thermal_profile > 90 {
+                available_nodes[0]
+            } else {
+                return Ok(()); // No migration needed
+            }
+        };
+
+        // We migrate the first hosted agent to reduce load
+        if let Some(&agent_to_migrate) = self.hosted_agents.first() {
+            // Extracting live state is mocked until deep OS integrations are complete.
+            let actual_state = WasmExecutionState {
+                memory: alloc::vec![],
+                stack: alloc::vec![],
+                descriptors: alloc::vec![],
+                wasm_source: alloc::vec![],
+            };
+            return self.migrate_agent(stack, agent_to_migrate, target_node_id, actual_state);
+        }
+
         Ok(())
     }
 
@@ -305,6 +360,7 @@ impl AgentMigrationManager {
                     success,
                 } => {
                     if success {
+                        // Migration succeeded
                         if let Some(pos) =
                             self.active_migrations.iter().position(|&x| x == agent_id)
                         {
@@ -314,6 +370,20 @@ impl AgentMigrationManager {
                             {
                                 self.hosted_agents.remove(hosted_pos);
                             }
+                            // Clean up rollback state since we succeeded
+                            self.rollback_states.remove(&agent_id);
+                        }
+                    } else {
+                        // Migration failed - Rollback
+                        if let Some(pos) =
+                            self.active_migrations.iter().position(|&x| x == agent_id)
+                        {
+                            self.active_migrations.remove(pos);
+                        }
+
+                        // Agent remains hosted on this node. We can optionally restore state here from `rollback_states`
+                        if let Some(_state) = self.rollback_states.remove(&agent_id) {
+                            // restore_live_state(agent_id, state);
                         }
                     }
                 }
@@ -392,5 +462,50 @@ mod tests {
         manager1.process_packet(&mut stack, &ack_msg.serialize());
         assert!(manager1.active_migrations.is_empty());
         assert!(manager1.hosted_agents.is_empty());
+    }
+
+    #[test]
+    fn test_monitor_load_and_migrate_llm() {
+        let mut stack = WasmNetStack::new();
+        let mut manager1 = AgentMigrationManager::new(&mut stack, 1, 9998);
+        manager1.hosted_agents.push(42);
+
+        let available_nodes = alloc::vec![2, 3];
+        let res = manager1.monitor_load_and_migrate(&mut stack, 90, 90, 95, &available_nodes);
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn test_migration_rollback_on_failure() {
+        let mut stack = WasmNetStack::new();
+        let mut manager1 = AgentMigrationManager::new(&mut stack, 1, 9998);
+        manager1.hosted_agents.push(42);
+
+        let execution_state = WasmExecutionState {
+            memory: alloc::vec![],
+            stack: alloc::vec![],
+            descriptors: alloc::vec![],
+            wasm_source: alloc::vec![],
+        };
+
+        manager1
+            .migrate_agent(&mut stack, 42, 2, execution_state.clone())
+            .unwrap();
+        assert!(manager1.active_migrations.contains(&42));
+        assert!(manager1.rollback_states.contains_key(&42));
+
+        // Simulate failure ACK
+        let ack_msg = MigrationMessage::MigrationAck {
+            agent_id: 42,
+            node_id: 2,
+            success: false, // FAILURE
+        };
+        manager1.process_packet(&mut stack, &ack_msg.serialize());
+
+        // Agent should no longer be in active_migrations, but still in hosted_agents
+        assert!(!manager1.active_migrations.contains(&42));
+        assert!(manager1.hosted_agents.contains(&42));
+        // Rollback state should be cleared
+        assert!(!manager1.rollback_states.contains_key(&42));
     }
 }
