@@ -44,8 +44,10 @@ impl IdsIps {
         Ok(())
     }
 
-
-    pub fn analyze_packet_and_generate_rules(&mut self, packet_data: &[u8]) -> Result<bool, &'static str> {
+    pub fn analyze_packet_and_generate_rules(
+        &mut self,
+        packet_data: &[u8],
+    ) -> Result<bool, &'static str> {
         if !self.is_active {
             return Err("IDS/IPS not active");
         }
@@ -142,13 +144,15 @@ mod tests {
         assert!(ids.is_active);
     }
 
-
     #[test]
     fn test_ids_ips_analyze_packet() {
         let mut ids = IdsIps::new();
         ids.init().unwrap();
 
-        let packet = [0x45, 0x00, 0x00, 0x28, 0x00, 0x01, 0x00, 0x00, 0x40, 0x06, 0x7c, 0xcd, 0x7f, 0x00, 0x00, 0x01, 0x7f, 0x00, 0x00, 0x01];
+        let packet = [
+            0x45, 0x00, 0x00, 0x28, 0x00, 0x01, 0x00, 0x00, 0x40, 0x06, 0x7c, 0xcd, 0x7f, 0x00,
+            0x00, 0x01, 0x7f, 0x00, 0x00, 0x01,
+        ];
 
         // mock outputs b"mock_output"
         // 'm' is 109, which is > 80, so it will deploy the firewall rule
