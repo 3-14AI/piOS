@@ -601,7 +601,6 @@ pub fn sys_net_recv(
 
 #[cfg(not(feature = "verus"))]
 #[cfg(not(feature = "verus"))]
-
 pub fn sys_deploy_firewall_rule(caller: Caller<'_, WasiCtx>, rule_ptr: i32, rule_len: i32) -> i32 {
     let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
         Some(m) => m,
