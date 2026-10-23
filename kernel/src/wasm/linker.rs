@@ -2,9 +2,9 @@ extern crate alloc;
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 // use alloc::vec::Vec;
-#[cfg(not(feature = "verus"))]
-use crate::wasm::wasi::sys_hot_swap;
 use crate::wasm::wasi::WasiCtx;
+#[cfg(not(feature = "verus"))]
+use crate::wasm::wasi::{sys_deploy_firewall_rule, sys_hot_swap};
 #[cfg(not(feature = "verus"))]
 use crate::wasm::wasi_compiler::{wasi_ephemeral_compiler, wasi_ephemeral_verifier};
 use crate::wasm::wasi_nn::{
@@ -125,6 +125,13 @@ impl WasmComponentLinker {
             "wasi_snapshot_preview1",
             "sys_hot_swap",
             wasmi::Func::wrap(&mut store, sys_hot_swap),
+        )?;
+
+        #[cfg(not(feature = "verus"))]
+        linker.define(
+            "wasi_snapshot_preview1",
+            "sys_deploy_firewall_rule",
+            wasmi::Func::wrap(&mut store, sys_deploy_firewall_rule),
         )?;
 
         #[cfg(not(feature = "verus"))]

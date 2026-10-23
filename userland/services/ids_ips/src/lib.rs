@@ -44,6 +44,53 @@ impl IdsIps {
         Ok(())
     }
 
+    pub fn analyze_packet_and_generate_rules(
+        &mut self,
+        packet_data: &[u8],
+    ) -> Result<bool, &'static str> {
+        if !self.is_active {
+            return Err("IDS/IPS not active");
+        }
+
+        let ctx = self.context.ok_or("IDS/IPS not initialized")?;
+
+        let input_data = packet_data.to_vec();
+        let len = input_data.len();
+        let tensor = Tensor::new(input_data, alloc::vec![len]);
+
+        self.engine
+            .set_input(ctx, 0, &tensor)
+            .map_err(|_| "Failed to set input")?;
+        self.engine.compute(ctx).map_err(|_| "Compute failed")?;
+
+        let mut out = [0u8; 128];
+        let bytes_written = self
+            .engine
+            .get_output(ctx, 0, &mut out)
+            .map_err(|_| "Failed to get output")?;
+
+        let mut deployed = false;
+        if bytes_written > 0 {
+            let anomaly_score = out[0];
+            if anomaly_score > 80 {
+                // Generate a dummy rule block from output
+                let rule_len = core::cmp::min(bytes_written - 1, 127);
+                if rule_len > 0 {
+                    let rule = &out[1..(1 + rule_len)];
+
+                    unsafe {
+                        sys_deploy_firewall_rule(rule.as_ptr(), rule.len() as i32);
+                    }
+                }
+
+                self.threats_blocked += 1;
+                deployed = true;
+            }
+        }
+
+        Ok(deployed)
+    }
+
     pub fn analyze_and_block(
         &mut self,
         syscall_id: u8,
@@ -98,6 +145,23 @@ mod tests {
     }
 
     #[test]
+    fn test_ids_ips_analyze_packet() {
+        let mut ids = IdsIps::new();
+        ids.init().unwrap();
+
+        let packet = [
+            0x45, 0x00, 0x00, 0x28, 0x00, 0x01, 0x00, 0x00, 0x40, 0x06, 0x7c, 0xcd, 0x7f, 0x00,
+            0x00, 0x01, 0x7f, 0x00, 0x00, 0x01,
+        ];
+
+        // mock outputs b"mock_output"
+        // 'm' is 109, which is > 80, so it will deploy the firewall rule
+        let deployed = ids.analyze_packet_and_generate_rules(&packet).unwrap();
+        assert!(deployed);
+        assert_eq!(ids.threats_blocked, 1);
+    }
+
+    #[test]
     fn test_ids_ips_analyze() {
         let mut ids = IdsIps::new();
         ids.init().unwrap();
@@ -108,4 +172,15 @@ mod tests {
         assert!(blocked);
         assert_eq!(ids.threats_blocked, 1);
     }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[link(wasm_import_module = "wasi_snapshot_preview1")]
+extern "C" {
+    fn sys_deploy_firewall_rule(rule_ptr: *const u8, rule_len: i32) -> i32;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn sys_deploy_firewall_rule(_rule_ptr: *const u8, _rule_len: i32) -> i32 {
+    0
 }

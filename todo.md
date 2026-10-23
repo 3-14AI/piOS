@@ -153,7 +153,7 @@ To achieve the overarching goal of a "fully functional operating system with nat
 
 ## Phase 50: Security and Hardening
 - [x] **WP-201: Verifiable Zero-Trust Policies.** Implement a formal specification in Verus for the `zero_trust.rs` component to mathematically prove that capability restrictions cannot be bypassed by any WASM application.
-- [ ] **WP-202: AI-Powered Intrusion Prevention.** Evolve the `ids_ips` userland service into a fully autonomous agent that uses the local LLM to proactively generate and deploy firewall rules to the kernel based on detected anomaly patterns in raw network packets.
+- [x] **WP-202: AI-Powered Intrusion Prevention.** Evolve the `ids_ips` userland service into a fully autonomous agent that uses the local LLM to proactively generate and deploy firewall rules to the kernel based on detected anomaly patterns in raw network packets.
 
 ## Phase 51: True Autopoiesis Loop
 - [ ] **WP-203: Self-Healing Build System.** Create a supervisor agent that monitors kernel panic logs, generates a natural language description of the bug, feeds it to `inference_runtime` to generate a fix, verifies it via Verus, compiles it, and hot-swaps it—all without human intervention.
