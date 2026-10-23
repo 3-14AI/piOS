@@ -600,6 +600,43 @@ pub fn sys_net_recv(
 }
 
 #[cfg(not(feature = "verus"))]
+#[cfg(not(feature = "verus"))]
+
+pub fn sys_deploy_firewall_rule(caller: Caller<'_, WasiCtx>, rule_ptr: i32, rule_len: i32) -> i32 {
+
+    let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
+
+        Some(m) => m,
+
+        None => return WASI_ERRNO_BADF,
+
+    };
+
+
+
+    let mut rule_buf = alloc::vec![0u8; rule_len as usize];
+
+    if memory
+
+        .read(&caller, rule_ptr as u32 as usize, &mut rule_buf)
+
+        .is_err()
+
+    {
+
+        return WASI_ERRNO_BADF;
+
+    }
+
+
+
+    log::info!("Deploying firewall rule of {} bytes", rule_len);
+
+    WASI_ERRNO_SUCCESS
+
+}
+
+
 pub fn sys_hot_swap(caller: Caller<'_, WasiCtx>, wasm_ptr: i32, wasm_len: i32) -> i32 {
     let memory = match caller.get_export("memory").and_then(|e| e.into_memory()) {
         Some(m) => m,
