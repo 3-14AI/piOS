@@ -314,13 +314,18 @@ impl NpuDriver {
         // Hardware initialization logic
         self.write_register(0x10, 1); // Reset
         self.write_register(0x14, 0); // Clear interrupts
-        let ring_base = self.job_ring.jobs.as_ptr() as u32;
+        let ring_base = self.job_ring.jobs.as_ptr() as usize as u32;
         self.write_register(0x30, ring_base); // Set job ring base address
         self.initialized = true;
         true
     }
 
-    pub fn enqueue_inference_job(&mut self, weights_ptr: u64, input_ptr: u64, output_ptr: u64) -> bool {
+    pub fn enqueue_inference_job(
+        &mut self,
+        weights_ptr: u64,
+        input_ptr: u64,
+        output_ptr: u64,
+    ) -> bool {
         if !self.initialized {
             return false;
         }

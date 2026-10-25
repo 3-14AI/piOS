@@ -52,9 +52,9 @@ pub mod gpu;
 #[cfg(feature = "verus")]
 pub mod input;
 #[cfg(feature = "verus")]
-pub mod nvme;
-#[cfg(feature = "verus")]
 pub mod npu;
+#[cfg(feature = "verus")]
+pub mod nvme;
 #[cfg(feature = "verus")]
 pub mod power;
 #[cfg(feature = "verus")]
@@ -270,9 +270,9 @@ pub mod gpu;
 #[cfg(not(feature = "verus"))]
 pub mod input;
 #[cfg(not(feature = "verus"))]
-pub mod nvme;
-#[cfg(not(feature = "verus"))]
 pub mod npu;
+#[cfg(not(feature = "verus"))]
+pub mod nvme;
 #[cfg(not(feature = "verus"))]
 pub mod power;
 #[cfg(not(feature = "verus"))]
