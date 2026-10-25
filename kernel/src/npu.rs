@@ -169,8 +169,8 @@ verus! {
             requires old(self).initialized == true, old(self).is_computing == false
             ensures self.is_computing == true, success == true
         {
-            self.is_computing = true;
             self.write_register(0x20, 1); // Hardware start bit
+            self.is_computing = true;
             true
         }
 
