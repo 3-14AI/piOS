@@ -139,11 +139,11 @@ impl BitmapSlabAllocator {
 }
 
 #[cfg(feature = "verus")]
+use alloc::vec;
+#[cfg(feature = "verus")]
 use core::alloc::{GlobalAlloc, Layout};
 #[cfg(feature = "verus")]
 use inference_runtime::{InferenceEngine, Tensor};
-#[cfg(feature = "verus")]
-use alloc::vec;
 
 #[cfg(feature = "verus")]
 pub struct DefragManager {
@@ -175,7 +175,11 @@ impl DefragManager {
         }
     }
 
-    pub fn should_defrag(&mut self, pmm_fragmentation_score: f32, slab_fragmentation_score: f32) -> bool {
+    pub fn should_defrag(
+        &mut self,
+        pmm_fragmentation_score: f32,
+        slab_fragmentation_score: f32,
+    ) -> bool {
         // We use a fixed-size array to avoid heap allocations inside the allocator itself
         let mut input_data = [0u8; 4];
         input_data[0] = pmm_fragmentation_score.to_bits() as u8;

@@ -148,9 +148,7 @@ impl PhysicalMemoryManager {
     }
 }
 
-verus! {
-
-} // verus!
+verus! {} // verus!
 
 // Global instance for the allocator (Unverified static access for now)
 // In a real verified system, this would be protected by a verified spinlock.
