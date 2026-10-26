@@ -12,4 +12,4 @@ echo "Verifying kernel..."
 # Verify lib.rs which includes verifier.rs
 # We verify as a library.
 # We need to set 'verus' feature cfg manually for conditional compilation
-$VERUS_BIN kernel/src/lib.rs --crate-type=lib --cfg feature=\"verus\"
+$VERUS_BIN kernel/src/lib.rs --crate-type=lib --cfg feature=\"verus\" -L dependency=target/debug/deps --extern inference_runtime=target/debug/libinference_runtime.rlib --extern vector_db=target/debug/libvector_db.rlib --extern log=target/debug/liblog.rlib --extern spin=target/debug/libspin.rlib

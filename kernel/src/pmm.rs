@@ -99,6 +99,57 @@ impl PhysicalMemoryManager {
 
 } // verus!
 
+#[cfg(feature = "verus")]
+impl PhysicalMemoryManager {
+    /// Analyzes the memory map to determine an external fragmentation score.
+    /// Returns a value between 0.0 (perfectly contiguous) and 1.0 (highly fragmented).
+    pub fn analyze_fragmentation(&self) -> f32 {
+        let mut free_chunks = 0;
+        let mut total_free = 0;
+        let mut in_free_chunk = false;
+
+        for i in 0..MAX_PAGES {
+            if !self.map[i] {
+                total_free += 1;
+                if !in_free_chunk {
+                    free_chunks += 1;
+                    in_free_chunk = true;
+                }
+            } else {
+                in_free_chunk = false;
+            }
+        }
+
+        if total_free == 0 || free_chunks <= 1 {
+            return 0.0;
+        }
+
+        // Score based on number of chunks relative to total free pages
+        // More chunks per free page = higher fragmentation
+        (free_chunks as f32) / (total_free as f32)
+    }
+
+    /// Attempts to simulate defragmentation by consolidating free pages.
+    /// In a real system, this would involve updating page tables and physically moving data.
+    /// Here we just log/simulate the effort if fragmentation is high.
+    pub fn defragment(&mut self) -> bool {
+        // True physical memory defragmentation is highly complex and requires migrating
+        // live pages, which implies mapping changes and updating page tables.
+        // For the scope of WP-198, we only compute the score and trigger
+        // an OS-level intent (or log) rather than corrupting the current memory map
+        // by moving physical tracking blindly.
+        let score = self.analyze_fragmentation();
+        if score > 0.5 {
+            // Trigger an alert or signal for the high-level agent to attempt a
+            // coordinated memory squeeze.
+            return true;
+        }
+        false
+    }
+}
+
+verus! {} // verus!
+
 // Global instance for the allocator (Unverified static access for now)
 // In a real verified system, this would be protected by a verified spinlock.
 // We put this outside verus! block but guarded by the feature because PhysicalMemoryManager depends on verus feature?
