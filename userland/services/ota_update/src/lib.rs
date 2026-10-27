@@ -11,7 +11,9 @@ use alloc::vec::Vec;
 // Need to define WasmNetStack mock internally since the workspace structure is getting complex.
 pub struct WasmNetStack;
 impl WasmNetStack {
-    pub fn new() -> Self { Self }
+    pub fn new() -> Self {
+        Self
+    }
     pub fn mock_query_swarm(&self) -> Vec<UpdateManifest> {
         let mut updates = Vec::new();
         updates.push(UpdateManifest {
@@ -33,10 +35,7 @@ pub unsafe fn sys_crypto_verify(
     0 // Success mock
 }
 
-pub unsafe fn sys_ota_apply_update(
-    _patch_data: *const u8,
-    _patch_len: u32,
-) -> i32 {
+pub unsafe fn sys_ota_apply_update(_patch_data: *const u8, _patch_len: u32) -> i32 {
     0 // Success mock
 }
 
@@ -129,10 +128,7 @@ impl OtaUpdateManager {
     fn apply_update(&mut self, patch_data: &[u8]) {
         // Apply update to A/B partitioned rootfs natively
         unsafe {
-            sys_ota_apply_update(
-                patch_data.as_ptr(),
-                patch_data.len() as u32,
-            );
+            sys_ota_apply_update(patch_data.as_ptr(), patch_data.len() as u32);
         }
     }
 }
@@ -173,12 +169,10 @@ mod allocator {
             let mut current_next = self.next.load(Ordering::Acquire);
             if current_next == 0 {
                 let ptr = addr_of_mut!(HEAP) as usize;
-                match self.next.compare_exchange(
-                    0,
-                    ptr,
-                    Ordering::AcqRel,
-                    Ordering::Acquire,
-                ) {
+                match self
+                    .next
+                    .compare_exchange(0, ptr, Ordering::AcqRel, Ordering::Acquire)
+                {
                     Ok(_) => current_next = ptr,
                     Err(val) => current_next = val,
                 }
