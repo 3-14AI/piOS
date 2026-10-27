@@ -28,7 +28,8 @@ members = [
 , "userland/services/ids_ips", "userland/services/app_preloader", "userland/services/nl_desktop", "libs/llm_inference", "userland/services/driver_synthesizer", "userland/applications/ide",  "userland/services/recording_daemon", "userland/services/proactive_agent", "userland/services/self_hosting_llm", "userland/applications/iso_builder", "userland/applications/nl_term",
     "userland/applications/posix_utils", "userland/applications/web_browser",
     "userland/services/auth", "userland/services/sys_fuzzer",
-    "userland/applications/telemetry_dashboard"]
+    "userland/applications/telemetry_dashboard",
+    "userland/services/ota_update"]
 exclude = [
     "tools/verus"
 ]
