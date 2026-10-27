@@ -1,5 +1,8 @@
 #![no_std]
 #![allow(dead_code)]
+#![allow(clippy::new_without_default)]
+#![allow(clippy::vec_init_then_push)]
+#![allow(clippy::missing_safety_doc)]
 
 extern crate alloc;
 #[cfg(not(target_arch = "wasm32"))]
