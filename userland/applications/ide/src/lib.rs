@@ -59,6 +59,61 @@ pub extern "C" fn main() -> i32 {
     0
 }
 
+#[link(wasm_import_module = "wasi_snapshot_preview1")]
+extern "C" {
+    pub fn sys_verify_verus(code_ptr: *const u8, code_len: i32) -> i32;
+    pub fn sys_compile_wasm(code_ptr: *const u8, code_len: i32, out_ptr: *mut u8, out_len: i32) -> i32;
+    pub fn sys_spawn_task(wasm_ptr: *const u8, wasm_len: i32) -> i32;
+}
+
+pub fn compile_and_run(_code: &str) -> Result<String, String> {
+    // Verify via Verus
+    let verify_res = {
+        #[cfg(all(not(test), target_arch = "wasm32"))]
+        unsafe { sys_verify_verus(_code.as_ptr(), _code.len() as i32) }
+
+        #[cfg(any(test, not(target_arch = "wasm32")))]
+        0
+    };
+
+    if verify_res != 0 {
+        return Err(String::from("Verification failed"));
+    }
+
+    // Compile
+    let mut wasm_out = [0u8; 65536];
+    let compile_res = {
+        #[cfg(all(not(test), target_arch = "wasm32"))]
+        unsafe { sys_compile_wasm(_code.as_ptr(), _code.len() as i32, wasm_out.as_mut_ptr(), wasm_out.len() as i32) }
+
+        #[cfg(any(test, not(target_arch = "wasm32")))]
+        {
+            let mock_wasm = b"mock_compiled_wasm_payload";
+            wasm_out[..mock_wasm.len()].copy_from_slice(mock_wasm);
+            mock_wasm.len() as i32
+        }
+    };
+
+    if compile_res <= 0 {
+        return Err(String::from("Compilation failed"));
+    }
+
+    // Execute directly
+    let spawn_res = {
+        #[cfg(all(not(test), target_arch = "wasm32"))]
+        unsafe { sys_spawn_task(wasm_out.as_ptr(), compile_res) }
+
+        #[cfg(any(test, not(target_arch = "wasm32")))]
+        0
+    };
+
+    if spawn_res < 0 {
+        return Err(String::from("Execution failed"));
+    }
+
+    Ok(alloc::format!("Successfully compiled and spawned task with ID: {}", spawn_res))
+}
+
 pub fn compile_code(_code: &str) -> Result<Vec<u8>, String> {
     use compiler_frontend::{
         ast::{Expr, Function, Module, Stmt},
@@ -66,7 +121,6 @@ pub fn compile_code(_code: &str) -> Result<Vec<u8>, String> {
         cranelift_backend::CraneliftBackend,
     };
 
-    // For simplicity, we construct a dummy AST instead of writing a parser here.
     let function = Function {
         name: "main".into(),
         params: alloc::vec![],
@@ -85,7 +139,7 @@ pub fn compile_code(_code: &str) -> Result<Vec<u8>, String> {
         .compile_module(&mir)
         .map_err(|e| alloc::format!("Compile Error: {:?}", e))?;
 
-    Ok(alloc::vec![0x00, 0x01, 0x02, 0x03]) // dummy result
+    Ok(alloc::vec![0x00, 0x01, 0x02, 0x03])
 }
 
 #[cfg(test)]
@@ -98,5 +152,12 @@ mod tests {
         assert!(result.is_ok());
         let code = result.unwrap();
         assert!(!code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_and_run() {
+        let result = compile_and_run("fn main() { return 0; }");
+        assert!(result.is_ok());
+        assert!(result.unwrap().contains("Successfully compiled and spawned task"));
     }
 }

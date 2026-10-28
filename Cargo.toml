@@ -29,7 +29,7 @@ members = [
     "userland/applications/posix_utils", "userland/applications/web_browser",
     "userland/services/auth", "userland/services/sys_fuzzer",
     "userland/applications/telemetry_dashboard",
-    "userland/services/ota_update"]
+    "userland/services/ota_update", "userland/services/self_healing_build_system"]
 exclude = [
     "tools/verus"
 ]

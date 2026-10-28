@@ -388,3 +388,4 @@ mod initrd_tests {
         verifier::add_vfs_entry_stub(core::ptr::null(), core::ptr::null(), 0);
     }
 }
+pub mod sgx;

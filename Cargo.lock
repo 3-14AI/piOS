@@ -5308,6 +5308,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "self_healing_build_system"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+]
+
+[[package]]
 name = "self_hosting_llm"
 version = "0.1.0"
 dependencies = [
