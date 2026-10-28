@@ -183,4 +183,3 @@ mod tests {
         assert_eq!(ids.threats_blocked, 1);
     }
 }
-
