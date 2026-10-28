@@ -21,16 +21,19 @@ extern "C" {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
 unsafe fn sys_get_framebuffer(_fb_info_ptr: *mut u8) -> i32 {
     0 // WASI_ERRNO_SUCCESS
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
 unsafe fn sys_flush_framebuffer(_buf_ptr: *const u8, _buf_len: i32) -> i32 {
     0 // WASI_ERRNO_SUCCESS
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
 unsafe fn sys_poll_input_event(_event_ptr: *mut u8) -> i32 {
     6 // WASI_ERRNO_AGAIN
 }
@@ -39,6 +42,7 @@ use slint::platform::software_renderer::{MinimalSoftwareWindow, RepaintBufferTyp
 use slint::Rgb8Pixel;
 use std::rc::Rc;
 
+#[allow(dead_code)]
 struct HardwarePlatform {
     window: Rc<MinimalSoftwareWindow>,
 }
@@ -67,6 +71,7 @@ impl slint::platform::Platform for HardwarePlatform {
     }
 }
 
+#[allow(dead_code)]
 fn init_baremetal_platform() -> Option<(Rc<MinimalSoftwareWindow>, slint::Timer)> {
     let mut fb_info = [0u8; 24];
     let res = unsafe { sys_get_framebuffer(fb_info.as_mut_ptr()) };

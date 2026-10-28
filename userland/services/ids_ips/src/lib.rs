@@ -4,6 +4,16 @@ extern crate alloc;
 
 use inference_runtime::{InferenceEngine, Model, Tensor};
 
+#[cfg(target_arch = "wasm32")]
+#[link(wasm_import_module = "wasi_snapshot_preview1")]
+extern "C" {
+    fn sys_deploy_firewall_rule(rule_ptr: *const u8, rule_len: i32) -> i32;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn sys_deploy_firewall_rule(_rule_ptr: *const u8, _rule_len: i32) -> i32 {
+    0
+}
 pub struct IdsIps {
     pub engine: InferenceEngine,
     pub model: Option<Model>,
@@ -174,13 +184,3 @@ mod tests {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
-#[link(wasm_import_module = "wasi_snapshot_preview1")]
-extern "C" {
-    fn sys_deploy_firewall_rule(rule_ptr: *const u8, rule_len: i32) -> i32;
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-unsafe fn sys_deploy_firewall_rule(_rule_ptr: *const u8, _rule_len: i32) -> i32 {
-    0
-}

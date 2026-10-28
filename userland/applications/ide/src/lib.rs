@@ -62,7 +62,12 @@ pub extern "C" fn main() -> i32 {
 #[link(wasm_import_module = "wasi_snapshot_preview1")]
 extern "C" {
     pub fn sys_verify_verus(code_ptr: *const u8, code_len: i32) -> i32;
-    pub fn sys_compile_wasm(code_ptr: *const u8, code_len: i32, out_ptr: *mut u8, out_len: i32) -> i32;
+    pub fn sys_compile_wasm(
+        code_ptr: *const u8,
+        code_len: i32,
+        out_ptr: *mut u8,
+        out_len: i32,
+    ) -> i32;
     pub fn sys_spawn_task(wasm_ptr: *const u8, wasm_len: i32) -> i32;
 }
 
@@ -70,7 +75,9 @@ pub fn compile_and_run(_code: &str) -> Result<String, String> {
     // Verify via Verus
     let verify_res = {
         #[cfg(all(not(test), target_arch = "wasm32"))]
-        unsafe { sys_verify_verus(_code.as_ptr(), _code.len() as i32) }
+        unsafe {
+            sys_verify_verus(_code.as_ptr(), _code.len() as i32)
+        }
 
         #[cfg(any(test, not(target_arch = "wasm32")))]
         0
@@ -84,7 +91,14 @@ pub fn compile_and_run(_code: &str) -> Result<String, String> {
     let mut wasm_out = [0u8; 65536];
     let compile_res = {
         #[cfg(all(not(test), target_arch = "wasm32"))]
-        unsafe { sys_compile_wasm(_code.as_ptr(), _code.len() as i32, wasm_out.as_mut_ptr(), wasm_out.len() as i32) }
+        unsafe {
+            sys_compile_wasm(
+                _code.as_ptr(),
+                _code.len() as i32,
+                wasm_out.as_mut_ptr(),
+                wasm_out.len() as i32,
+            )
+        }
 
         #[cfg(any(test, not(target_arch = "wasm32")))]
         {
@@ -101,7 +115,9 @@ pub fn compile_and_run(_code: &str) -> Result<String, String> {
     // Execute directly
     let spawn_res = {
         #[cfg(all(not(test), target_arch = "wasm32"))]
-        unsafe { sys_spawn_task(wasm_out.as_ptr(), compile_res) }
+        unsafe {
+            sys_spawn_task(wasm_out.as_ptr(), compile_res)
+        }
 
         #[cfg(any(test, not(target_arch = "wasm32")))]
         0
@@ -111,7 +127,10 @@ pub fn compile_and_run(_code: &str) -> Result<String, String> {
         return Err(String::from("Execution failed"));
     }
 
-    Ok(alloc::format!("Successfully compiled and spawned task with ID: {}", spawn_res))
+    Ok(alloc::format!(
+        "Successfully compiled and spawned task with ID: {}",
+        spawn_res
+    ))
 }
 
 pub fn compile_code(_code: &str) -> Result<Vec<u8>, String> {
@@ -158,6 +177,8 @@ mod tests {
     fn test_compile_and_run() {
         let result = compile_and_run("fn main() { return 0; }");
         assert!(result.is_ok());
-        assert!(result.unwrap().contains("Successfully compiled and spawned task"));
+        assert!(result
+            .unwrap()
+            .contains("Successfully compiled and spawned task"));
     }
 }

@@ -3,8 +3,8 @@
 
 extern crate alloc;
 
-use alloc::string::String;
 use alloc::format;
+use alloc::string::String;
 use inference_runtime::{InferenceEngine, Model, Tensor};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -59,7 +59,12 @@ extern "C" {
     pub fn sys_hot_swap(wasm_ptr: *const u8, wasm_len: i32) -> i32;
     pub fn sys_read_panic_log(buf_ptr: *mut u8, buf_len: i32) -> i32;
     pub fn sys_verify_verus(code_ptr: *const u8, code_len: i32) -> i32;
-    pub fn sys_compile_wasm(code_ptr: *const u8, code_len: i32, out_ptr: *mut u8, out_len: i32) -> i32;
+    pub fn sys_compile_wasm(
+        code_ptr: *const u8,
+        code_len: i32,
+        out_ptr: *mut u8,
+        out_len: i32,
+    ) -> i32;
 }
 
 pub struct SelfHealingSupervisor {
@@ -101,7 +106,9 @@ impl SelfHealingSupervisor {
         let mut log_buf = [0u8; 1024];
         let bytes_read = {
             #[cfg(all(not(test), target_arch = "wasm32"))]
-            unsafe { sys_read_panic_log(log_buf.as_mut_ptr(), log_buf.len() as i32) }
+            unsafe {
+                sys_read_panic_log(log_buf.as_mut_ptr(), log_buf.len() as i32)
+            }
 
             #[cfg(any(test, not(target_arch = "wasm32")))]
             {
@@ -138,12 +145,13 @@ impl SelfHealingSupervisor {
             return Err("Model produced empty output");
         }
 
-        let _generated_fix = core::str::from_utf8(&out[..bytes_written])
-            .unwrap_or("fn fixed() {}");
+        let _generated_fix = core::str::from_utf8(&out[..bytes_written]).unwrap_or("fn fixed() {}");
 
         let verify_res = {
             #[cfg(all(not(test), target_arch = "wasm32"))]
-            unsafe { sys_verify_verus(_generated_fix.as_ptr(), _generated_fix.len() as i32) }
+            unsafe {
+                sys_verify_verus(_generated_fix.as_ptr(), _generated_fix.len() as i32)
+            }
 
             #[cfg(any(test, not(target_arch = "wasm32")))]
             0
@@ -156,7 +164,14 @@ impl SelfHealingSupervisor {
         let mut wasm_out = [0u8; 4096];
         let compile_res = {
             #[cfg(all(not(test), target_arch = "wasm32"))]
-            unsafe { sys_compile_wasm(_generated_fix.as_ptr(), _generated_fix.len() as i32, wasm_out.as_mut_ptr(), wasm_out.len() as i32) }
+            unsafe {
+                sys_compile_wasm(
+                    _generated_fix.as_ptr(),
+                    _generated_fix.len() as i32,
+                    wasm_out.as_mut_ptr(),
+                    wasm_out.len() as i32,
+                )
+            }
 
             #[cfg(any(test, not(target_arch = "wasm32")))]
             {
@@ -172,7 +187,9 @@ impl SelfHealingSupervisor {
 
         let swap_res = {
             #[cfg(all(not(test), target_arch = "wasm32"))]
-            unsafe { sys_hot_swap(wasm_out.as_ptr(), compile_res) }
+            unsafe {
+                sys_hot_swap(wasm_out.as_ptr(), compile_res)
+            }
 
             #[cfg(any(test, not(target_arch = "wasm32")))]
             0
@@ -182,7 +199,10 @@ impl SelfHealingSupervisor {
             return Err("Hot-swap failed");
         }
 
-        Ok(format!("Successfully healed system. WASM module size: {}", compile_res))
+        Ok(format!(
+            "Successfully healed system. WASM module size: {}",
+            compile_res
+        ))
     }
 }
 

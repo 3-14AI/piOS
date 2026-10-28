@@ -63,6 +63,7 @@ extern "C" {
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 unsafe fn sys_net_connect(_ip_ptr: i32, _ip_len: i32, _port: i32, fd_out: i32) -> i32 {
     let fd_out_ptr = fd_out as usize as *mut i32;
     *fd_out_ptr = 3;
@@ -70,6 +71,7 @@ unsafe fn sys_net_connect(_ip_ptr: i32, _ip_len: i32, _port: i32, fd_out: i32) -
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 unsafe fn sys_net_send(_fd: i32, _buf_ptr: i32, buf_len: i32, bytes_sent_out: i32) -> i32 {
     let out_ptr = bytes_sent_out as usize as *mut i32;
     *out_ptr = buf_len;
@@ -77,6 +79,7 @@ unsafe fn sys_net_send(_fd: i32, _buf_ptr: i32, buf_len: i32, bytes_sent_out: i3
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 unsafe fn sys_net_recv(_fd: i32, buf_ptr: i32, buf_len: i32, bytes_read_out: i32) -> i32 {
     let mock_data = b"HTTP/1.1 200 OK\r\n\r\nMock content";
     let len = core::cmp::min(mock_data.len(), buf_len as usize);
@@ -123,8 +126,14 @@ impl WebBrowser {
     }
 
     pub fn download_file(&self, ip: &str, port: i32, path: &str) -> Result<String, String> {
+        #[allow(unused_assignments)]
+        #[allow(unused_variables)]
         let mut fd_out = 0i32;
+        #[allow(unused_assignments)]
+        #[allow(unused_variables)]
         let mut bytes_sent_out = 0i32;
+        #[allow(unused_assignments)]
+        #[allow(unused_variables)]
         let mut bytes_read_out = 0i32;
         let mut recv_buf = alloc::vec![0u8; 1024];
 
