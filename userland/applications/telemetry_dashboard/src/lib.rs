@@ -122,6 +122,7 @@ pub struct TelemetryDashboard {
 
 impl TelemetryDashboard {
     pub fn new() -> Result<Self, slint::PlatformError> {
+        #[allow(unused_variables)]
         let baremetal_info = init_baremetal_platform();
 
         let app = DashboardWindow::new()?;
