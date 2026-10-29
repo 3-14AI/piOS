@@ -198,7 +198,17 @@ impl GenerativeUI {
         }
     }
 
+    pub fn set_layout_type(&self, layout: &str) {
+        self.app.set_layout_type(layout.into());
+    }
+
     pub fn handle_nl_command(&mut self, command: &str) {
+        if command.contains("layout horizontal") {
+            self.set_layout_type("horizontal");
+        } else if command.contains("layout vertical") {
+            self.set_layout_type("vertical");
+        }
+
         if command.contains("button") {
             self.app.set_active_element("button".into());
             self.app.set_button_text("AI Button".into());
@@ -296,5 +306,22 @@ mod tests {
             ui.app.get_generative_text(),
             "A simulated view of a user looking at the screen."
         );
+    }
+
+    #[test]
+    fn test_generative_ui_dynamic_layout() {
+        init_test_platform();
+        let mut ui = GenerativeUI::new().unwrap();
+
+        // Initial state
+        assert_eq!(ui.app.get_layout_type(), "vertical");
+
+        // Test horizontal
+        ui.handle_nl_command("layout horizontal");
+        assert_eq!(ui.app.get_layout_type(), "horizontal");
+
+        // Test vertical
+        ui.handle_nl_command("layout vertical");
+        assert_eq!(ui.app.get_layout_type(), "vertical");
     }
 }

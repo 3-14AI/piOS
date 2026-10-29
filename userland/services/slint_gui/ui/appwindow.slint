@@ -9,11 +9,32 @@ export component AppWindow inherits Window {
     in property <string> window_title: "piOS AI Desktop";
     in property <string> button_text: "Click Me";
     in property <color> bg_color: white;
+    in property <string> layout_type: "vertical";
 
     title: window_title;
     background: bg_color;
 
-    VerticalLayout {
+    if root.layout_type == "vertical" : VerticalLayout {
+        alignment: center;
+        spacing: 10px;
+
+        if active_element == "text" : Text {
+            text: root.generative_text;
+            font-size: 24px;
+            horizontal-alignment: center;
+        }
+        if active_element == "button" : Button {
+            text: root.button_text;
+        }
+        if active_element == "window" : Rectangle {
+            background: lightblue;
+            border-color: blue;
+            border-width: 2px;
+            Text { text: "Generated Window"; }
+        }
+    }
+
+    if root.layout_type == "horizontal" : HorizontalLayout {
         alignment: center;
         spacing: 10px;
 
