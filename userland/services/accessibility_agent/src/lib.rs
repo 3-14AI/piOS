@@ -28,16 +28,23 @@ impl AccessibilityAgent {
     }
 
     pub fn analyze_user_interaction(&mut self, interaction_log: &str) -> Option<String> {
-        let model = self.engine.load_model_by_name("accessibility_analyzer").ok()?;
+        let model = self
+            .engine
+            .load_model_by_name("accessibility_analyzer")
+            .ok()?;
         let ctx = self.engine.init_execution_context(&model).ok()?;
 
-        let tensor = Tensor::new(interaction_log.as_bytes().to_vec(), alloc::vec![interaction_log.len()]);
+        let tensor = Tensor::new(
+            interaction_log.as_bytes().to_vec(),
+            alloc::vec![interaction_log.len()],
+        );
 
         if self.engine.set_input(ctx, 0, &tensor).is_ok() && self.engine.compute(ctx).is_ok() {
             let mut out_buffer = alloc::vec![0u8; 128];
             if let Ok(bytes_written) = self.engine.get_output(ctx, 0, &mut out_buffer) {
                 // Mock interpretation of output tensor to change accessibility settings
-                let output = alloc::string::String::from_utf8_lossy(&out_buffer[..bytes_written]).into_owned();
+                let output = alloc::string::String::from_utf8_lossy(&out_buffer[..bytes_written])
+                    .into_owned();
 
                 if interaction_log.contains("squinting") || interaction_log.contains("zoom") {
                     self.font_size = 24;

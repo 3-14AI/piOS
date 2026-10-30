@@ -1,7 +1,7 @@
 extern crate alloc;
+use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
-use alloc::collections::BTreeMap;
 use inference_runtime::{InferenceEngine, Tensor};
 
 pub struct SemanticFS {
@@ -39,15 +39,17 @@ impl SemanticFS {
             if let Ok(_bytes_written) = self.engine.get_output(ctx, 0, &mut out_buffer) {
                 // Check if semantic meaning is similar to an existing file
                 let is_near_identical = self.files.iter().any(|(_p, existing_content)| {
-                     content.contains("fn patched_func") && existing_content.contains("fn patched_func")
+                    content.contains("fn patched_func")
+                        && existing_content.contains("fn patched_func")
                 });
 
                 if is_near_identical {
-                     self.diff_tree.insert(String::from(path), String::from("Diff representation"));
-                     return Some(true); // Deduplicated
+                    self.diff_tree
+                        .insert(String::from(path), String::from("Diff representation"));
+                    return Some(true); // Deduplicated
                 } else {
-                     self.files.insert(String::from(path), String::from(content));
-                     return Some(false); // Stored directly
+                    self.files.insert(String::from(path), String::from(content));
+                    return Some(false); // Stored directly
                 }
             }
         }
@@ -64,10 +66,14 @@ mod tests {
     fn test_semantic_dedup() {
         let mut fs = SemanticFS::new();
 
-        let dedup1 = fs.add_file("/doc1.rs", "fn patched_func() { println!(\"A\"); }").unwrap();
+        let dedup1 = fs
+            .add_file("/doc1.rs", "fn patched_func() { println!(\"A\"); }")
+            .unwrap();
         assert_eq!(dedup1, false);
 
-        let dedup2 = fs.add_file("/doc2.rs", "fn patched_func() { println!(\"B\"); }").unwrap();
+        let dedup2 = fs
+            .add_file("/doc2.rs", "fn patched_func() { println!(\"B\"); }")
+            .unwrap();
         assert_eq!(dedup2, true);
 
         assert_eq!(fs.files.len(), 1);

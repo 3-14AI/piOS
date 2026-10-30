@@ -26,16 +26,24 @@ impl FaultPredictor {
         let model = self.engine.load_model_by_name("fault_predictor").ok()?;
         let ctx = self.engine.init_execution_context(&model).ok()?;
 
-        let tensor = Tensor::new(hw_telemetry.as_bytes().to_vec(), alloc::vec![hw_telemetry.len()]);
+        let tensor = Tensor::new(
+            hw_telemetry.as_bytes().to_vec(),
+            alloc::vec![hw_telemetry.len()],
+        );
 
         if self.engine.set_input(ctx, 0, &tensor).is_ok() && self.engine.compute(ctx).is_ok() {
             let mut out_buffer = alloc::vec![0u8; 128];
             if let Ok(bytes_written) = self.engine.get_output(ctx, 0, &mut out_buffer) {
-                let output = alloc::string::String::from_utf8_lossy(&out_buffer[..bytes_written]).into_owned();
+                let output = alloc::string::String::from_utf8_lossy(&out_buffer[..bytes_written])
+                    .into_owned();
 
-                if hw_telemetry.contains("ECC errors") || hw_telemetry.contains("thermal throttling") {
+                if hw_telemetry.contains("ECC errors")
+                    || hw_telemetry.contains("thermal throttling")
+                {
                     self.active_migrations += 1;
-                    return Some(String::from("migrating WASM contexts due to hardware fault prediction"));
+                    return Some(String::from(
+                        "migrating WASM contexts due to hardware fault prediction",
+                    ));
                 }
 
                 return Some(output);
