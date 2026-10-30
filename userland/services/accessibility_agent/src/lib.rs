@@ -1,6 +1,5 @@
 extern crate alloc;
 use alloc::string::String;
-use alloc::vec::Vec;
 use inference_runtime::{InferenceEngine, Tensor};
 
 pub struct AccessibilityAgent {
