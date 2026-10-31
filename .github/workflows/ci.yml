@@ -18,7 +18,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.95.0-x86_64-unknown-linux-gnu
+          toolchain: nightly-x86_64-unknown-linux-gnu
           components: llvm-tools-preview, rust-src, rustfmt, clippy
 
       - name: Cache target directory
@@ -63,7 +63,7 @@ jobs:
         run: cargo build --workspace --exclude kernel
 
       - name: Run Workspace Tests
-        run: cargo test --workspace
+        run: cargo test --workspace -Zpanic_abort_tests
 
       - name: Verify Kernel with Verus
         run: ./tools/verify_kernel.sh
@@ -106,7 +106,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.95.0-x86_64-unknown-linux-gnu
+          toolchain: nightly-x86_64-unknown-linux-gnu
           components: rust-src
 
       - name: Cache Verus and Z3

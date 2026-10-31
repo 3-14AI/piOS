@@ -8,5 +8,5 @@ To reach the ultimate global goal of a "fully functional operating system with n
 - [x] **WP-219: Distributed Inference Offloading.** Implement the ability for a node to transparently offload heavy `inference_runtime` tensor computations to another node in the Swarm with an idle GPU/NPU.
 
 ## Phase 60: Universal AI Abstraction
-- [ ] **WP-220: Physical BCI/EEG Driver Integration.** Write real `#![no_std]` drivers for commercial BCI headsets (e.g., OpenBCI via USB/Bluetooth) to replace the mock `bci_agent` data source.
-- [ ] **WP-221: Universal Semantic File Protocol.** Standardize the SemanticFS implementation into a network-mountable protocol (like NFS/SMB but for embeddings), allowing legacy OSes to mount and query piOS knowledge graphs.
+- [x] **WP-220: Physical BCI/EEG Driver Integration.** Write real `#![no_std]` drivers for commercial BCI headsets (e.g., OpenBCI via USB/Bluetooth) to replace the mock `bci_agent` data source.
+- [x] **WP-221: Universal Semantic File Protocol.** Standardize the SemanticFS implementation into a network-mountable protocol (like NFS/SMB but for embeddings), allowing legacy OSes to mount and query piOS knowledge graphs.
