@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 pios-api = { path = "../../../libs/pios-api" }
+pios-common = { version = "0.1.0", path = "../../../libs/pios-common" }
 
 [lib]
 crate-type = ["cdylib"]
