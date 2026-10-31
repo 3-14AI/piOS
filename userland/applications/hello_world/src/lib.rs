@@ -12,24 +12,6 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 }
 
 #[cfg(not(test))]
-use core::alloc::{GlobalAlloc, Layout};
-
-#[cfg(not(test))]
-struct DummyAllocator;
-
-#[cfg(not(test))]
-unsafe impl GlobalAlloc for DummyAllocator {
-    unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
-        core::ptr::null_mut()
-    }
-    unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {}
-}
-
-#[cfg(not(test))]
-#[global_allocator]
-static ALLOCATOR: DummyAllocator = DummyAllocator;
-
-#[cfg(not(test))]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     run();
@@ -55,3 +37,7 @@ mod tests {
         run();
     }
 }
+
+#[cfg(not(test))]
+#[global_allocator]
+static ALLOCATOR: pios_common::DummyAllocator = pios_common::DummyAllocator;
