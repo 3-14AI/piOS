@@ -7,3 +7,7 @@ pub mod libc;
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
+
+#[cfg(not(test))]
+#[global_allocator]
+static ALLOCATOR: pios_common::DummyAllocator = pios_common::DummyAllocator;

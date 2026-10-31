@@ -35,7 +35,10 @@ impl GoalWorkflowManager {
         }
 
         let mut actions = Vec::new();
-        let model = self.engine.load_model_by_name("goal_workflow_planner").ok()?;
+        let model = self
+            .engine
+            .load_model_by_name("goal_workflow_planner")
+            .ok()?;
         let ctx = self.engine.init_execution_context(&model).ok()?;
 
         for goal in &self.active_goals {

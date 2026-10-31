@@ -2472,6 +2472,7 @@ name = "hello_world"
 version = "0.1.0"
 dependencies = [
  "pios-api",
+ "pios-common",
 ]
 
 [[package]]
@@ -3588,6 +3589,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4a5ff6bcca6c4867b1c4fd4ef63e4db7436ef363e0ad7531d1558856bae64f4"
 
 [[package]]
+name = "linked_list_allocator"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b23ac50abb8261cb38c6e2a7192d3302e0836dac1628f6a93b82b4fad185897"
+dependencies = [
+ "spinning_top",
+]
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4684,6 +4694,9 @@ version = "0.1.0"
 [[package]]
 name = "pios-common"
 version = "0.1.0"
+dependencies = [
+ "linked_list_allocator",
+]
 
 [[package]]
 name = "piper"
@@ -4794,6 +4807,9 @@ dependencies = [
 [[package]]
 name = "posix_utils"
 version = "0.1.0"
+dependencies = [
+ "pios-common",
+]
 
 [[package]]
 name = "potential_utf"
@@ -5896,6 +5912,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "076e103ed41b9864aa838287efe5f4e3a7a0362dd00671ae62a212e5e4612da2"
 dependencies = [
  "pin-utils",
+]
+
+[[package]]
+name = "spinning_top"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b9eb1a2f4c41445a3a0ff9abc5221c5fcd28e1f13cd7c0397706f9ac938ddb0"
+dependencies = [
+ "lock_api",
 ]
 
 [[package]]

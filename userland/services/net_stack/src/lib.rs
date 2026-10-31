@@ -407,3 +407,5 @@ pub mod multi_swarm;
 pub use multi_swarm::*;
 pub mod swarm_topology;
 pub use swarm_topology::*;
+pub mod inference_offload;
+pub use inference_offload::*;

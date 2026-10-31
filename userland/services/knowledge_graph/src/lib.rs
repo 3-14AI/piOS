@@ -34,7 +34,8 @@ impl KnowledgeGraph {
     }
 
     pub fn ingest_hardware_state(&mut self, state: &str) {
-        self.knowledge.push(alloc::format!("HardwareState: {}", state));
+        self.knowledge
+            .push(alloc::format!("HardwareState: {}", state));
     }
 
     pub fn build_graph(&mut self) -> Option<Vec<String>> {
@@ -43,7 +44,10 @@ impl KnowledgeGraph {
         }
 
         let mut graph = Vec::new();
-        let model = self.engine.load_model_by_name("knowledge_graph_builder").ok()?;
+        let model = self
+            .engine
+            .load_model_by_name("knowledge_graph_builder")
+            .ok()?;
         let ctx = self.engine.init_execution_context(&model).ok()?;
 
         for item in &self.knowledge {

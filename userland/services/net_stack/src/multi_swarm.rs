@@ -1,7 +1,7 @@
 #![no_std]
 
-use alloc::vec::Vec;
 use alloc::string::String;
+use alloc::vec::Vec;
 
 pub struct MultiSwarmProtocol {
     pub connected_clusters: Vec<String>,
@@ -21,7 +21,8 @@ impl MultiSwarmProtocol {
     }
 
     pub fn connect_cluster(&mut self, cluster_id: &str) -> bool {
-        self.connected_clusters.push(alloc::format!("Cluster: {}", cluster_id));
+        self.connected_clusters
+            .push(alloc::format!("Cluster: {}", cluster_id));
         true
     }
 

@@ -36,7 +36,11 @@ impl BciAgent {
         let model = self.engine.load_model_by_name("bci_intent_decoder").ok()?;
         let ctx = self.engine.init_execution_context(&model).ok()?;
 
-        let byte_data: Vec<u8> = self.eeg_buffer.iter().flat_map(|&f| f.to_le_bytes().to_vec()).collect();
+        let byte_data: Vec<u8> = self
+            .eeg_buffer
+            .iter()
+            .flat_map(|&f| f.to_le_bytes().to_vec())
+            .collect();
         let tensor = Tensor::new(byte_data, alloc::vec![self.eeg_buffer.len()]);
 
         if self.engine.set_input(ctx, 0, &tensor).is_ok() && self.engine.compute(ctx).is_ok() {
