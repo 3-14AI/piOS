@@ -275,7 +275,6 @@ pub mod journal;
 pub mod prefetch;
 #[cfg(not(feature = "verus"))]
 pub mod semantic;
-pub mod semantic_fs;
 #[cfg(not(feature = "verus"))]
 pub mod swarm_vfs;
 #[cfg(not(feature = "verus"))]
