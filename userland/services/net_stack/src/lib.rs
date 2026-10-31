@@ -403,3 +403,7 @@ pub mod collaborative_ide;
 pub use collaborative_ide::*;
 pub mod nl_debugger;
 pub use nl_debugger::*;
+pub mod multi_swarm;
+pub use multi_swarm::*;
+pub mod swarm_topology;
+pub use swarm_topology::*;
