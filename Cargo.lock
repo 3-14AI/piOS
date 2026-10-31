@@ -3967,6 +3967,7 @@ dependencies = [
 name = "net_stack"
 version = "0.1.0"
 dependencies = [
+ "inference_runtime",
  "llm_inference",
  "log",
  "shadowsocks",
