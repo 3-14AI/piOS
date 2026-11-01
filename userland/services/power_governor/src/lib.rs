@@ -154,5 +154,6 @@ mod tests {
     }
 }
 pub mod monitoring;
+pub mod predictive_topology;
 pub mod scheduler_adj;
 pub mod sleep_mgr;

@@ -26,10 +26,13 @@ members = [
     "userland/services/semantic_logger",
     "userland/services/sys_optimizer"
 , "userland/services/ids_ips", "userland/services/app_preloader", "userland/services/nl_desktop", "libs/llm_inference", "userland/services/driver_synthesizer", "userland/applications/ide",  "userland/services/recording_daemon", "userland/services/proactive_agent", "userland/services/self_hosting_llm", "userland/applications/iso_builder", "userland/applications/nl_term",
+    "userland/services/quantum_crypto",
+    "userland/services/crypto_auditor",
+    "userland/services/universal_device_synthesis",
     "userland/applications/posix_utils", "userland/applications/web_browser",
     "userland/services/auth", "userland/services/sys_fuzzer",
     "userland/applications/telemetry_dashboard",
-    "userland/services/ota_update", "userland/services/self_healing_build_system", "userland/services/dataset_generator", "userland/services/accessibility_agent", "userland/services/hot_patch_agent", "userland/services/fault_predictor", "userland/services/semantic_dedup", "userland/services/cache_prefetcher"]
+    "userland/services/ota_update", "userland/services/self_healing_build_system", "userland/services/dataset_generator", "userland/services/accessibility_agent", "userland/services/hot_patch_agent", "userland/services/fault_predictor", "userland/services/semantic_dedup", "userland/services/cache_prefetcher", "userland/services/knowledge_graph", "userland/services/goal_workflow", "userland/services/bci_agent", "userland/services/haptic_agent"]
 exclude = [
     "tools/verus"
 ]
