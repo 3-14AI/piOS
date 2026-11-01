@@ -16,3 +16,9 @@ impl MultiSwarm {
         self.interconnected_clusters.push(String::from(cluster));
     }
 }
+
+impl Default for MultiSwarm {
+    fn default() -> Self {
+        Self::new()
+    }
+}

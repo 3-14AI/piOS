@@ -12,4 +12,6 @@ echo "Verifying kernel..."
 # Verify lib.rs which includes verifier.rs
 # We verify as a library.
 # We need to set 'verus' feature cfg manually for conditional compilation
+cargo +1.95.0-x86_64-unknown-linux-gnu build -p inference_runtime -p vector_db
+RUSTC_BOOTSTRAP=1 cargo +1.95.0-x86_64-unknown-linux-gnu build -p kernel --target x86_64-unknown-uefi -Zbuild-std=core,compiler_builtins,alloc,panic_abort
 $VERUS_BIN kernel/src/lib.rs --crate-type=lib --cfg feature=\"verus\" -L dependency=target/debug/deps --extern inference_runtime=target/debug/libinference_runtime.rlib --extern vector_db=target/debug/libvector_db.rlib --extern log=target/debug/liblog.rlib --extern spin=target/debug/libspin.rlib

@@ -3,9 +3,10 @@
 extern crate alloc;
 
 use alloc::string::String;
-use inference_runtime::{InferenceEngine, Tensor};
+use inference_runtime::InferenceEngine;
 
 pub struct BciAgent {
+    #[allow(dead_code)]
     engine: InferenceEngine,
 }
 

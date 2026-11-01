@@ -4,8 +4,7 @@ extern crate alloc;
 
 use alloc::string::String;
 
-pub struct HapticAgent {
-}
+pub struct HapticAgent {}
 
 impl HapticAgent {
     pub fn new() -> Self {

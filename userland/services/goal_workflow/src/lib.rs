@@ -4,9 +4,10 @@ extern crate alloc;
 
 use alloc::string::String;
 use alloc::vec::Vec;
-use inference_runtime::{InferenceEngine, Tensor};
+use inference_runtime::InferenceEngine;
 
 pub struct GoalWorkflow {
+    #[allow(dead_code)]
     engine: InferenceEngine,
     active_goals: Vec<String>,
 }
@@ -27,10 +28,11 @@ impl GoalWorkflow {
         if self.active_goals.is_empty() {
             return None;
         }
-        let mut actions = Vec::new();
-        actions.push(String::from("Compiling code based on intent"));
-        actions.push(String::from("Moving data across distributed VFS"));
-        actions.push(String::from("Adjusting system hardware states"));
+        let actions = alloc::vec![
+            String::from("Compiling code based on intent"),
+            String::from("Moving data across distributed VFS"),
+            String::from("Adjusting system hardware states")
+        ];
         self.active_goals.clear();
         Some(actions)
     }
