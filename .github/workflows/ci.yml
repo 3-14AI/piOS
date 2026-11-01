@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -22,7 +22,7 @@ jobs:
           components: llvm-tools-preview, rust-src, rustfmt, clippy
 
       - name: Cache target directory
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: target
           key: target-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
@@ -31,7 +31,7 @@ jobs:
 
       - name: Cache Verus and Z3
         id: cache-verus
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: tools/verus
           key: verus-${{ runner.os }}-1.95.0-${{ hashFiles('tools/install_verus.sh') }}
@@ -78,7 +78,7 @@ jobs:
 
       - name: Run Test Coverage (95%)
         run: |
-          cargo +nightly tarpaulin --workspace --engine llvm --fail-under 0.01 --exclude-files "tools/verus/*" --out Xml --skip-clean
+          cargo +1.95.0-x86_64-unknown-linux-gnu tarpaulin --workspace --engine llvm --fail-under 0.01 --exclude-files "tools/verus/*" --out Xml --skip-clean
 
 
       - name: Run Fuzz Drivers
@@ -92,7 +92,7 @@ jobs:
         run: ./tools/generate_fv_coverage.sh
 
       - name: Upload FV Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fv-coverage-report
           path: target/fv_coverage/index.html
@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -113,7 +113,7 @@ jobs:
 
       - name: Cache Verus and Z3
         id: cache-verus
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: tools/verus
           key: verus-${{ runner.os }}-1.95.0-${{ hashFiles('tools/install_verus.sh') }}
