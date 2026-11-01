@@ -403,3 +403,5 @@ pub mod collaborative_ide;
 pub use collaborative_ide::*;
 pub mod nl_debugger;
 pub use nl_debugger::*;
+pub mod multi_swarm;
+pub mod self_optimizing_topology;
