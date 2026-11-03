@@ -1,0 +1,25 @@
+<<<<<<< SEARCH
+    #[cfg(not(feature = "verus"))]
+    {
+        // Actually wire this to AcpiTables
+        let mut tables = crate::acpi::AcpiTables::parse();
+        tables.active_cooling_zones[zone_id as usize] = target_temp as u32;
+        if (zone_id as usize) >= tables.active_cooling_count {
+            tables.active_cooling_count = (zone_id as usize) + 1;
+        }
+        log::info!("Thermal zone {} set to {}C", zone_id, target_temp);
+    }
+=======
+    #[cfg(not(feature = "verus"))]
+    {
+        // Actually wire this to AcpiTables
+        let mut tables = crate::acpi::AcpiTables::parse();
+        tables.active_cooling_zones[zone_id as usize] = target_temp as u32;
+        if (zone_id as usize) >= tables.active_cooling_count {
+            tables.active_cooling_count = (zone_id as usize) + 1;
+        }
+        // Force the compiler to see we mutated it
+        let _ = tables;
+        log::info!("Thermal zone {} set to {}C", zone_id, target_temp);
+    }
+>>>>>>> REPLACE

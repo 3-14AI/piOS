@@ -77,11 +77,13 @@ impl PowerGovernor {
 
         if bytes_written > 0 {
             // Read output tensor logic to adjust parameters based on AI inference
-            // Mocking the tensor format. The model is assumed to output 3 bytes:
-            // [desired_cpu_freq_scale, desired_screen_brightness, desired_peripheral_state]
+            // Mocking the tensor format. The model is assumed to output 4 bytes:
+            // [desired_cpu_freq_scale, desired_screen_brightness, desired_peripheral_state, desired_fan_speed]
             let freq_scale = out[0];
             let brightness = out[1];
             let peripheral = out[2];
+            #[allow(unused_variables)]
+            let fan_speed = if out.len() > 3 { out[3] } else { 0 };
 
             if freq_scale > 0 {
                 self.cpu_freq = (freq_scale as i32) * 100;
@@ -103,6 +105,7 @@ impl PowerGovernor {
                     set_cpu_freq(self.cpu_freq);
                     set_screen_brightness(self.screen_brightness);
                     set_peripheral_power_state(1, self.peripheral_state);
+                    set_thermal_zone(0, fan_speed as i32);
                 }
             }
         }
@@ -117,6 +120,7 @@ extern "C" {
     fn set_cpu_freq(freq_mhz: i32) -> i32;
     fn set_screen_brightness(level: i32) -> i32;
     fn set_peripheral_power_state(peripheral_id: i32, state: i32) -> i32;
+    fn set_thermal_zone(zone_id: i32, target_temp: i32) -> i32;
 }
 
 #[cfg(test)]
