@@ -457,7 +457,7 @@ impl Scheduler {
     }
 
     pub fn schedule(&mut self, apic_id: usize) {
-        let mut next_tid = (self.current_tid + 1) % 4;
+        let mut next_tid = (self.current_tids[apic_id] + 1) % 4;
         let mut found = false;
 
         #[cfg(not(feature = "verus"))]
@@ -501,7 +501,7 @@ impl Scheduler {
             }
         }
 
-        if found && self.current_tid != next_tid {
+        if found && self.current_tids[apic_id] != next_tid {
             let cur = self.current_tids[0];
             let next = next_tid;
 

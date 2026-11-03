@@ -1,0 +1,37 @@
+<<<<<<< SEARCH
+pub fn set_thermal_zone(
+    _caller: Caller<'_, WasiCtx>,
+    zone_id: i32,
+    target_temp: i32,
+) -> i32 {
+    if zone_id < 0 || zone_id >= 16 {
+        return WASI_ERRNO_INVAL;
+    }
+    // Simulate setting thermal zone target
+    log::info!("Thermal zone {} set to {}C", zone_id, target_temp);
+    WASI_ERRNO_SUCCESS
+}
+=======
+pub fn set_thermal_zone(
+    _caller: Caller<'_, WasiCtx>,
+    zone_id: i32,
+    target_temp: i32,
+) -> i32 {
+    if zone_id < 0 || zone_id >= 16 {
+        return WASI_ERRNO_INVAL;
+    }
+
+    #[cfg(not(feature = "verus"))]
+    {
+        // Actually wire this to AcpiTables
+        let mut tables = crate::acpi::AcpiTables::parse();
+        tables.active_cooling_zones[zone_id as usize] = target_temp as u32;
+        if (zone_id as usize) >= tables.active_cooling_count {
+            tables.active_cooling_count = (zone_id as usize) + 1;
+        }
+        log::info!("Thermal zone {} set to {}C", zone_id, target_temp);
+    }
+
+    WASI_ERRNO_SUCCESS
+}
+>>>>>>> REPLACE

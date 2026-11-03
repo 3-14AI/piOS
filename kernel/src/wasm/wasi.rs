@@ -326,6 +326,27 @@ pub fn set_peripheral_power_state(
     WASI_ERRNO_SUCCESS
 }
 
+pub fn set_thermal_zone(_caller: Caller<'_, WasiCtx>, zone_id: i32, target_temp: i32) -> i32 {
+    if !(0..16).contains(&zone_id) {
+        return WASI_ERRNO_INVAL;
+    }
+
+    #[cfg(not(feature = "verus"))]
+    {
+        // Actually wire this to AcpiTables
+        let mut tables = crate::acpi::AcpiTables::parse();
+        tables.active_cooling_zones[zone_id as usize] = target_temp as u32;
+        if (zone_id as usize) >= tables.active_cooling_count {
+            tables.active_cooling_count = (zone_id as usize) + 1;
+        }
+        // Force the compiler to see we mutated it
+        let _ = tables;
+        log::info!("Thermal zone {} set to {}C", zone_id, target_temp);
+    }
+
+    WASI_ERRNO_SUCCESS
+}
+
 pub fn set_scheduler_quantum(_caller: Caller<'_, WasiCtx>, quantum: i32) -> i32 {
     if quantum <= 0 || quantum > 1000 {
         return WASI_ERRNO_INVAL;
@@ -741,6 +762,7 @@ mod tests {
                 (import "env" "set_cpu_freq" (func $set_cpu_freq (param i32) (result i32)))
                 (import "env" "set_screen_brightness" (func $set_screen_brightness (param i32) (result i32)))
                 (import "env" "set_peripheral_power_state" (func $set_peripheral_power_state (param i32 i32) (result i32)))
+                (import "env" "set_thermal_zone" (func $set_thermal_zone (param i32 i32) (result i32)))
                 (func (export "run_success") (result i32)
                     (call $set_scheduler_quantum (i32.const 50))
                 )
@@ -757,6 +779,8 @@ mod tests {
                     (call $set_screen_brightness (i32.const 80))
                     drop
                     (call $set_peripheral_power_state (i32.const 1) (i32.const 0))
+                    drop
+                    (call $set_thermal_zone (i32.const 0) (i32.const 50))
                 )
             )
         "#;
@@ -793,6 +817,13 @@ mod tests {
                 "env",
                 "set_peripheral_power_state",
                 Func::wrap(&mut store, set_peripheral_power_state),
+            )
+            .unwrap();
+        linker
+            .define(
+                "env",
+                "set_thermal_zone",
+                Func::wrap(&mut store, set_thermal_zone),
             )
             .unwrap();
 

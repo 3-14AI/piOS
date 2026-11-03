@@ -29,6 +29,8 @@ pub struct AcpiTables {
     pub slp_typb: Option<u8>,
     pub processor_apic_ids: [u8; 256],
     pub processor_count: usize,
+    pub active_cooling_zones: [u32; 16],
+    pub active_cooling_count: usize,
 }
 
 #[cfg(not(feature = "verus"))]
@@ -43,6 +45,8 @@ impl AcpiTables {
             slp_typb: None,
             processor_apic_ids: [0; 256],
             processor_count: 0,
+            active_cooling_zones: [0; 16],
+            active_cooling_count: 0,
         }
     }
 }
@@ -163,6 +167,8 @@ impl AcpiTables {
                 slp_typb: None,
                 processor_apic_ids: [0; 256],
                 processor_count: 0,
+                active_cooling_zones: [0; 16],
+                active_cooling_count: 0,
             };
         }
 
@@ -267,6 +273,8 @@ impl AcpiTables {
             slp_typb,
             processor_apic_ids,
             processor_count,
+            active_cooling_zones: [0; 16],
+            active_cooling_count: 0,
         }
     }
 }
