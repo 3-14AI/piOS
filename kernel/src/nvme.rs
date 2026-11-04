@@ -385,6 +385,31 @@ impl NvmeDriver {
         true
     }
 
+    pub fn set_acoustic_management(&mut self, level: u8) -> bool {
+        if !self.initialized {
+            return false;
+        }
+
+        // Format Admin SQ Entry for Set Features (Opcode 0x09)
+        // Feature Identifier 0x09 is generally used for power/acoustics/etc in ATA over NVMe or vendor specific.
+        // We'll mock the acoustic management setting.
+        let tail = self.sub_queue.tail as usize;
+        self.sq_entries[tail].opcode = 0x09; // Set Features
+        self.sq_entries[tail].cdw10 = 0x09; // Feature Identifier (mock Acoustic Management)
+        self.sq_entries[tail].cdw11 = level as u32; // Feature value
+
+        let _ = self.sub_queue.enqueue();
+        let _ = self.cpl_queue.enqueue();
+
+        // Ring Submission Queue Tail Doorbell
+        unsafe {
+            let doorbell_ptr = (self.mmio_base + 0x1000 + (2 * 4)) as *mut u32;
+            core::ptr::write_volatile(doorbell_ptr, self.sub_queue.tail as u32);
+        }
+
+        true
+    }
+
     pub fn write_sector(&mut self, sector: u64, buffer_addr: usize) -> bool {
         if sector >= self.capacity {
             return false;

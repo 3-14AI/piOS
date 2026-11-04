@@ -85,6 +85,16 @@ impl PowerGovernor {
             #[allow(unused_variables)]
             let fan_speed = if out.len() > 3 { out[3] } else { 0 };
 
+            #[allow(unused_variables)]
+            let acoustic_freq = if out.len() > 4 {
+                (out[4] as i32) * 10
+            } else {
+                440
+            };
+
+            #[allow(unused_variables)]
+            let acoustic_amp = if out.len() > 5 { out[5] } else { 128 };
+
             if freq_scale > 0 {
                 self.cpu_freq = (freq_scale as i32) * 100;
             } else {
@@ -106,6 +116,7 @@ impl PowerGovernor {
                     set_screen_brightness(self.screen_brightness);
                     set_peripheral_power_state(1, self.peripheral_state);
                     set_thermal_zone(0, fan_speed as i32);
+                    set_acoustic_resonance(acoustic_freq, acoustic_amp as i32);
                 }
             }
         }
@@ -121,6 +132,7 @@ extern "C" {
     fn set_screen_brightness(level: i32) -> i32;
     fn set_peripheral_power_state(peripheral_id: i32, state: i32) -> i32;
     fn set_thermal_zone(zone_id: i32, target_temp: i32) -> i32;
+    fn set_acoustic_resonance(freq: i32, amplitude: i32) -> i32;
 }
 
 #[cfg(test)]
