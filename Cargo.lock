@@ -457,6 +457,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "biological_sync"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+]
+
+[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5399,6 +5406,13 @@ dependencies = [
  "log",
  "net_stack",
  "pios-api",
+]
+
+[[package]]
+name = "self_modifying_toolchain"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
 ]
 
 [[package]]
