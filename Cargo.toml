@@ -32,7 +32,8 @@ members = [
     "userland/applications/posix_utils", "userland/applications/web_browser",
     "userland/services/auth", "userland/services/sys_fuzzer",
     "userland/applications/telemetry_dashboard",
-    "userland/services/ota_update", "userland/services/self_healing_build_system", "userland/services/self_modifying_toolchain", "userland/services/biological_sync", "userland/services/dataset_generator", "userland/services/accessibility_agent", "userland/services/hot_patch_agent", "userland/services/fault_predictor", "userland/services/semantic_dedup", "userland/services/cache_prefetcher", "userland/services/knowledge_graph", "userland/services/goal_workflow", "userland/services/bci_agent", "userland/services/haptic_agent"]
+    "userland/services/ota_update", "userland/services/self_healing_build_system", "userland/services/self_modifying_toolchain", "userland/services/biological_sync", "userland/services/dataset_generator", "userland/services/accessibility_agent", "userland/services/hot_patch_agent", "userland/services/fault_predictor", "userland/services/semantic_dedup", "userland/services/cache_prefetcher", "userland/services/knowledge_graph", "userland/services/goal_workflow", "userland/services/bci_agent", "userland/services/haptic_agent",
+    "userland/services/system_profiler"]
 exclude = [
     "tools/verus"
 ]
