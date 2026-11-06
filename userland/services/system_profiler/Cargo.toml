@@ -1,0 +1,14 @@
+[package]
+name = "system_profiler"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "system_profiler"
+path = "src/lib.rs"
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+
+[lints]
+workspace = true

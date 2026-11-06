@@ -6135,6 +6135,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "system_profiler"
+version = "0.1.0"
+dependencies = [
+ "inference_runtime",
+]
+
+[[package]]
 name = "taffy"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
