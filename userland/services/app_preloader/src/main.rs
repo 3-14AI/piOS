@@ -31,7 +31,7 @@ pub extern "C" fn _start() -> ! {
         let mock_time = 9;
         let mock_last_app = 3;
 
-        let _ = preloader.predict_and_preload(mock_time, mock_last_app);
+        let _ = preloader.predict_and_preload(mock_time, 0, mock_last_app, &[1, 2]);
 
         break;
     }
@@ -50,7 +50,7 @@ pub fn main() {
         let mock_time = 9;
         let mock_last_app = 3;
 
-        let _ = preloader.predict_and_preload(mock_time, mock_last_app);
+        let _ = preloader.predict_and_preload(mock_time, 0, mock_last_app, &[1, 2]);
 
         break;
     }

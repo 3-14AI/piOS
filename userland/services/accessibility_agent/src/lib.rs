@@ -70,7 +70,7 @@ mod tests {
     fn test_accessibility_adaptation() {
         let mut agent = AccessibilityAgent::new();
         assert_eq!(agent.font_size, 12);
-        assert_eq!(agent.voice_synthesis, false);
+        assert!(!agent.voice_synthesis);
 
         agent.analyze_user_interaction("User is squinting and requesting zoom.");
 
@@ -78,6 +78,6 @@ mod tests {
         assert_eq!(agent.current_ui_state, "high_contrast_large_text");
 
         agent.analyze_user_interaction("Please read aloud the screen.");
-        assert_eq!(agent.voice_synthesis, true);
+        assert!(agent.voice_synthesis);
     }
 }

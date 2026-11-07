@@ -44,12 +44,16 @@ impl AppPreloader {
     pub fn predict_and_preload(
         &mut self,
         time_of_day_hours: u8,
+        location_id: u8,
         last_app_id: u8,
+        historical_usage_freq: &[u8],
     ) -> Result<u8, &'static str> {
         let ctx = self.context.ok_or("App preloader not initialized")?;
 
-        let input_data = alloc::vec![time_of_day_hours, last_app_id];
-        let tensor = Tensor::new(input_data, alloc::vec![2]);
+        let mut input_data = alloc::vec![time_of_day_hours, location_id, last_app_id];
+        input_data.extend_from_slice(historical_usage_freq);
+
+        let tensor = Tensor::new(input_data.clone(), alloc::vec![input_data.len()]);
 
         self.engine
             .set_input(ctx, 0, &tensor)
@@ -90,7 +94,7 @@ mod tests {
         preloader.init().unwrap();
 
         // With mock "mock_output" output, out[0] is b'm' which is 109
-        let app_id = preloader.predict_and_preload(10, 5).unwrap();
+        let app_id = preloader.predict_and_preload(10, 2, 5, &[1, 2, 3]).unwrap();
         assert_eq!(app_id, 109);
         assert_eq!(preloader.active_preload_slots, 1);
     }

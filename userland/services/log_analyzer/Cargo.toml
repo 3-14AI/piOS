@@ -1,0 +1,11 @@
+[package]
+name = "log_analyzer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+inference_runtime = { path = "../../../libs/inference_runtime" }
+log = "0.4"
+
+[lib]
+crate-type = ["cdylib"]
