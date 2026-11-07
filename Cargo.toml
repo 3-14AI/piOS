@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "userland/services/log_analyzer",
     "userland/services/power_governor",
     "kernel",
     "libs/pios-common",

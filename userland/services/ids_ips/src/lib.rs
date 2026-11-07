@@ -2,6 +2,8 @@
 
 extern crate alloc;
 
+use alloc::string::String;
+use alloc::vec::Vec;
 use inference_runtime::{InferenceEngine, Model, Tensor};
 
 #[cfg(target_arch = "wasm32")]
@@ -20,6 +22,7 @@ pub struct IdsIps {
     pub context: Option<usize>,
     pub is_active: bool,
     pub threats_blocked: usize,
+    pub hunt_alerts: Vec<String>,
 }
 
 impl Default for IdsIps {
@@ -36,6 +39,7 @@ impl IdsIps {
             context: None,
             is_active: false,
             threats_blocked: 0,
+            hunt_alerts: Vec::new(),
         }
     }
 
@@ -52,6 +56,58 @@ impl IdsIps {
         self.context = Some(ctx);
         self.is_active = true;
         Ok(())
+    }
+
+    pub fn advanced_threat_hunt(
+        &mut self,
+        system_metrics: &[u8],
+        open_ports: &[u16],
+    ) -> Result<bool, &'static str> {
+        if !self.is_active {
+            return Err("IDS/IPS not active");
+        }
+        let ctx = self.context.ok_or("IDS/IPS not initialized")?;
+
+        let mut input_data = system_metrics.to_vec();
+        for port in open_ports {
+            input_data.push((*port >> 8) as u8);
+            input_data.push((*port & 0xFF) as u8);
+        }
+
+        let len = input_data.len();
+        let tensor = Tensor::new(input_data, alloc::vec![len]);
+
+        self.engine
+            .set_input(ctx, 0, &tensor)
+            .map_err(|_| "Failed to set input")?;
+        self.engine.compute(ctx).map_err(|_| "Compute failed")?;
+
+        let mut out = [0u8; 128];
+        let bytes_written = self
+            .engine
+            .get_output(ctx, 0, &mut out)
+            .map_err(|_| "Failed to get output")?;
+
+        let mut found_threat = false;
+        if bytes_written > 0 {
+            // "mock_output" analysis
+            let hunt_score = out[0];
+            if hunt_score > 90 {
+                // High threshold for advanced threats
+                self.hunt_alerts
+                    .push(String::from("Advanced threat detected in metrics"));
+
+                // Simulate neutralizing attack
+                let dummy_rule = b"DROP ALL FROM UNKNOWN";
+                unsafe {
+                    sys_deploy_firewall_rule(dummy_rule.as_ptr(), dummy_rule.len() as i32);
+                }
+                self.threats_blocked += 1;
+                found_threat = true;
+            }
+        }
+
+        Ok(found_threat)
     }
 
     pub fn analyze_packet_and_generate_rules(
@@ -181,5 +237,19 @@ mod tests {
         let blocked = ids.analyze_and_block(1, 2, 3).unwrap();
         assert!(blocked);
         assert_eq!(ids.threats_blocked, 1);
+    }
+
+    #[test]
+    fn test_advanced_threat_hunt() {
+        let mut ids = IdsIps::new();
+        ids.init().unwrap();
+
+        let metrics = [0x1, 0x2, 0x3];
+        let ports = [80, 443];
+
+        let found = ids.advanced_threat_hunt(&metrics, &ports).unwrap();
+        assert!(found);
+        assert_eq!(ids.threats_blocked, 1);
+        assert_eq!(ids.hunt_alerts.len(), 1);
     }
 }

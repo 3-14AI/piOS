@@ -68,12 +68,12 @@ mod tests {
         let dedup1 = fs
             .add_file("/doc1.rs", "fn patched_func() { println!(\"A\"); }")
             .unwrap();
-        assert_eq!(dedup1, false);
+        assert!(!dedup1);
 
         let dedup2 = fs
             .add_file("/doc2.rs", "fn patched_func() { println!(\"B\"); }")
             .unwrap();
-        assert_eq!(dedup2, true);
+        assert!(dedup2);
 
         assert_eq!(fs.files.len(), 1);
         assert_eq!(fs.diff_tree.len(), 1);
