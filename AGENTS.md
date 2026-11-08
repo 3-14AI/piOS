@@ -91,3 +91,8 @@ For Phases 24 and 25 (Swarm and Real Hardware), focus on real hardware integrati
 ## Phase 63 (WP-226 and WP-227)
 - Self-Modifying Toolchains (WP-226) is implemented in `userland/services/self_modifying_toolchain`, using `inference_runtime` to generate optimized toolchains dynamically based on hardware constraints.
 - Biological Sync (WP-227) is implemented in `userland/services/biological_sync`, interpreting real-time user metrics and setting ambient environment constraints using `sys_set_ambient_environment`.
+
+## Phase 71-73 Focus: Symbiotic AI OS Integration
+1. **Semantic Data Layer (Phase 71):** Future services should incorporate mechanisms for transforming file operations into vector-based similarity searches, requiring deep integration with `vector_db` and `inference_runtime` across standard WASI I/O paths.
+2. **Continuous OS Symbiosis (Phase 72):** Authentication must move beyond static tokens. Agents must design lightweight, background monitoring daemons that feed interaction data into continuous authentication models.
+3. **Autonomous Kernel Operations (Phase 73):** Kernel enhancements will involve Generative WASI Interfaces. Prepare for architectural changes where missing WASI imports trigger dynamic generation and loading via LLM inference instead of returning `WASI_ERRNO_NOENT`.
