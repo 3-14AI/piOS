@@ -1,0 +1,17 @@
+[package]
+name = "semantic_vfs"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "semantic_vfs"
+path = "src/lib.rs"
+
+[dependencies]
+inference_runtime = { version = "0.1.0", path = "../../../libs/inference_runtime" }
+log = "0.4.35"
+pios-api = { version = "0.1.0", path = "../../../libs/pios-api" }
+vector_db = { version = "0.1.0", path = "../../../libs/vector_db" }
+
+[lints]
+workspace = true
