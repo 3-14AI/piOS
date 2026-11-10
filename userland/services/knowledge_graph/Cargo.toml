@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 inference_runtime = { path = "../../../libs/inference_runtime" }
+vector_db = { version = "0.1.0", path = "../../../libs/vector_db" }
 
 [lib]
 crate-type = ["cdylib", "rlib"]
