@@ -157,6 +157,50 @@ impl IdsIps {
         Ok(deployed)
     }
 
+    pub fn predict_zero_day_exploits(
+        &mut self,
+        traffic_patterns: &[u8],
+    ) -> Result<bool, &'static str> {
+        if !self.is_active {
+            return Err("IDS/IPS not active");
+        }
+
+        let ctx = self.context.ok_or("IDS/IPS not initialized")?;
+
+        let input_data = traffic_patterns.to_vec();
+        let len = input_data.len();
+        let tensor = Tensor::new(input_data, alloc::vec![len]);
+
+        self.engine
+            .set_input(ctx, 0, &tensor)
+            .map_err(|_| "Failed to set input")?;
+        self.engine.compute(ctx).map_err(|_| "Compute failed")?;
+
+        let mut out = [0u8; 128];
+        let bytes_written = self
+            .engine
+            .get_output(ctx, 0, &mut out)
+            .map_err(|_| "Failed to get output")?;
+
+        let mut predicted = false;
+        if bytes_written > 0 {
+            let zero_day_prob = out[0];
+            if zero_day_prob > 85 {
+                let rule_len = core::cmp::min(bytes_written - 1, 127);
+                if rule_len > 0 {
+                    let rule = &out[1..(1 + rule_len)];
+                    unsafe {
+                        sys_deploy_firewall_rule(rule.as_ptr(), rule.len() as i32);
+                    }
+                }
+                self.threats_blocked += 1;
+                predicted = true;
+            }
+        }
+
+        Ok(predicted)
+    }
+
     pub fn analyze_and_block(
         &mut self,
         syscall_id: u8,
@@ -251,5 +295,19 @@ mod tests {
         assert!(found);
         assert_eq!(ids.threats_blocked, 1);
         assert_eq!(ids.hunt_alerts.len(), 1);
+    }
+
+    #[test]
+    fn test_predict_zero_day_exploits() {
+        let mut ids = IdsIps::new();
+        ids.init().unwrap();
+
+        let traffic_patterns = [0xaa, 0xbb, 0xcc, 0xdd];
+
+        // mock outputs b"mock_output"
+        // 'm' is 109, which is > 85, so it will predict and block
+        let predicted = ids.predict_zero_day_exploits(&traffic_patterns).unwrap();
+        assert!(predicted);
+        assert_eq!(ids.threats_blocked, 1);
     }
 }
